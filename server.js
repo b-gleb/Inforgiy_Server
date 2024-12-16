@@ -48,9 +48,12 @@ const maxDate = new Date('2025-12-31');
 // VALIDATION FUNCTIONS
 function formatInitData(initDataUnsafe){
   initDataUnsafe.user.id = parseInt(initDataUnsafe.user.id, 10)
-  initDataUnsafe.user.is_premium = Boolean(initDataUnsafe.user.id)
   initDataUnsafe.user.allows_write_to_pm = Boolean(initDataUnsafe.user.allows_write_to_pm)
   initDataUnsafe.auth_date = parseInt(initDataUnsafe.auth_date, 10)
+
+  if (initDataUnsafe.user?.is_premium !== undefined) {
+    initDataUnsafe.user.is_premium = Boolean(initDataUnsafe.user.is_premium);
+  }
 
   if (initDataUnsafe.can_send_after){initDataUnsafe.can_send_after = parseInt(initDataUnsafe?.can_send_after, 10)}
 
