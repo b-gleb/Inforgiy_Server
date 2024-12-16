@@ -61,8 +61,13 @@ function formatInitData(initDataUnsafe){
 }
 
 const validateInitData = (res, initDataUnsafe) => {
-  //TODO: Add time constrain for validation
-  
+  const unixTime = Math.floor(Date.now() / 1000);
+
+  if (process.env.ENV === 'PROD' && (unixTime - 600) > initDataUnsafe.auth_date){
+    res.status(401).send('Authorization expired')
+    return false
+  }
+
   const { hash, ...rest } = initDataUnsafe;
 
   const dataCheckString = Object.entries(rest).sort().map(([k, v]) => {
