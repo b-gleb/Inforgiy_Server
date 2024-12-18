@@ -181,9 +181,9 @@ async function convertUserId(branch, user_id) {
 
 
 // API
-app.get("/api/ping"), async (req, res) => {
+app.get("/api/ping", async (req, res) => {
   res.send('pong')
-}
+});
 
 
 app.get("/api/auth", async (req, res) => {
