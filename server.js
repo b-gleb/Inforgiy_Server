@@ -96,7 +96,7 @@ const validateInitData = (res, initDataUnsafe) => {
 const validateDate = Joi.date().max(maxDate).min(minDate);
 const validateBranch = Joi.string().valid(...branches);
 const validateUserId = Joi.number().integer().positive();
-const validateLevel = Joi.number().valid(0, 1).allow(null).default(null)
+const validateColor = Joi.number().min(0).max(6).default(0);
 
 
 // SUPPORT FUNCTIONS
@@ -133,10 +133,8 @@ async function convertListRota(branch, data) {
         await Promise.all(
           data[index].map(async (userId) => {
             const username = await convertUserId(branch, userId);
-            userDict[userId] = {username: Object.keys(username)[0], level: Object.values(username)[0]};
-            // userId = 
+            userDict[userId] = {username: Object.keys(username)[0], color: Object.values(username)[0]};
           })
-
         );
 
   
@@ -219,7 +217,7 @@ app.get("/api/auth", async (req, res) => {
 
     // Check for rota keys and add to userBranches if present
     if (userEntry.roles[rotaKey] !== undefined) {
-        userBranches[branch] = {level: userEntry.roles[rotaKey], maxDuties: settup[branch].maxDuties};
+        userBranches[branch] = {color: userEntry.roles[rotaKey], maxDuties: settup[branch].maxDuties};
     }
 
     // Check for admin keys and add to rotaAdmin if present
@@ -423,7 +421,7 @@ app.post("/api/updateUser", async(req, res) => {
     branch: validateBranch.required(),
     modifyUserId: validateUserId.allow(null),
     modifyUsername: Joi.string(),
-    level: validateLevel,
+    color: validateColor,
     initDataUnsafe: Joi.any().required()
   }).or('modifyUserId', 'modifyUsername');
 
@@ -449,7 +447,7 @@ app.post("/api/updateUser", async(req, res) => {
     // Update permissions of user with current rota access
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
       {telegram_id: value.modifyUserId},
-      {$set: {[`roles.rota_${value.branch}`]: value.level}},
+      {$set: {[`roles.rota_${value.branch}`]: value.color}},
       updateOptions
     )
 
@@ -457,7 +455,7 @@ app.post("/api/updateUser", async(req, res) => {
     // Add rota access to a user in DB
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
       {telegram: value.modifyUsername},
-      {$set: {[`roles.rota_${value.branch}`]: value.level}},
+      {$set: {[`roles.rota_${value.branch}`]: value.color}},
       updateOptions
     )
   }
