@@ -40,7 +40,7 @@ async function initializeMongoDB() {
 // VARIABLES
 const branches = ['lns', 'gp'];
 const usersCache = {'lns': {}, 'gp': {}};
-const usersCacheTTL = 60 * 60 * 1000; // 1hr in miliseconds
+const usersCacheTTL = 24 * 3600 * 1000; // 24hr in miliseconds
 const minDate = new Date('2024-01-01');
 const maxDate = new Date('2025-12-31');
 
