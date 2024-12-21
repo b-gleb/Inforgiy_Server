@@ -200,6 +200,7 @@ app.get("/api/auth", async (req, res) => {
   // Logic
   let rotaAdmin = [];
   let userBranches = {};
+  let hasRoles = false;
 
   const userEntry = await mongo_db.collection('users').findOne(
     {telegram_id: initDataUnsafe.user.id},
@@ -218,6 +219,7 @@ app.get("/api/auth", async (req, res) => {
     // Check for rota keys and add to userBranches if present
     if (userEntry.roles[rotaKey] !== undefined) {
         userBranches[branch] = {color: userEntry.roles[rotaKey], maxDuties: settup[branch].maxDuties};
+        hasRoles = true;
     }
 
     // Check for admin keys and add to rotaAdmin if present
@@ -226,7 +228,12 @@ app.get("/api/auth", async (req, res) => {
     }
   });
 
-  res.json({branches: userBranches, rotaAdmin: rotaAdmin})
+
+  if (! hasRoles){
+    res.status(403).send("Forbidden")
+  } else {
+    res.json({branches: userBranches, rotaAdmin: rotaAdmin})
+  }
 
 })
 
