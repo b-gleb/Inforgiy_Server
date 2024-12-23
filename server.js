@@ -218,7 +218,13 @@ app.get("/api/auth", async (req, res) => {
 
     // Check for rota keys and add to userBranches if present
     if (userEntry.roles[rotaKey] !== undefined) {
-        userBranches[branch] = {color: userEntry.roles[rotaKey], maxDuties: settup[branch].maxDuties};
+        userBranches[branch] = {
+          color: userEntry.roles[rotaKey],
+          maxDuties: settup[branch].maxDuties,
+          minDate: settup[branch].minDate,
+          maxDate: settup[branch].maxDate
+        };
+
         hasRoles = true;
     }
 
