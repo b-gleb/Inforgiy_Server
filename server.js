@@ -41,8 +41,6 @@ async function initializeMongoDB() {
 const branches = ['lns', 'gp'];
 const usersCache = {'lns': {}, 'gp': {}};
 const usersCacheTTL = 24 * 3600 * 1000; // 24hr in miliseconds
-const minDate = new Date('2024-01-01');
-const maxDate = new Date('2025-12-31');
 
 
 // VALIDATION FUNCTIONS
@@ -93,7 +91,6 @@ const validateInitData = (res, initDataUnsafe) => {
   }
 };
 
-const validateDate = Joi.date().max(maxDate).min(minDate);
 const validateBranch = Joi.string().valid(...branches);
 const validateUserId = Joi.number().integer().positive();
 const validateColor = Joi.number().min(0).max(6).default(0);
@@ -248,7 +245,7 @@ app.get("/api/rota", async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
       branch: validateBranch.required(),
-      date: validateDate.required()
+      date: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required()
     });
   
     const { error, value } = validationSchema.validate(req.query);
@@ -327,7 +324,7 @@ app.post("/api/updateRota", async(req, res) => {
   const validationSchema = Joi.object({
     type: Joi.string().valid('remove', 'add').required(),
     branch: validateBranch.required(),
-    date: validateDate.required(),
+    date: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required(),
     timeRange: Joi.string().required(),
     modifyUserId: validateUserId.required(),
     initDataUnsafe: Joi.any().required()
