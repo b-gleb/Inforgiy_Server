@@ -324,7 +324,7 @@ app.post("/api/updateRota", async(req, res) => {
   const validationSchema = Joi.object({
     type: Joi.string().valid('remove', 'add').required(),
     branch: validateBranch.required(),
-    date: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required(),
+    date: Joi.date().max(settup[req.body.branch].maxDate).min(settup[req.body.branch].minDate).required(),
     timeRange: Joi.string().required(),
     modifyUserId: validateUserId.required(),
     initDataUnsafe: Joi.any().required()
