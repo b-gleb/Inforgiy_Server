@@ -115,6 +115,33 @@ async function isRotaAdmin(branch, user_id) {
 }
 
 
+async function statistic(initDataUnsafe, action, sub_action = null, misc = null) {
+  if (process.env.ENV === 'DEV') {
+    return
+  }
+
+  const user_entry = await mongo_db.collection('users').findOne(
+    {telegram_id: initDataUnsafe.user.id},
+    {projection: {region: 1, _id: 0}}
+  );
+
+  const user_region = user_entry?.region ?? null;
+
+  const new_entry = {
+    date: new Date(),
+    action: action,
+    sub_action: sub_action,
+    misc: misc,
+    user_id: initDataUnsafe.user.id,
+    username: initDataUnsafe.user.username,
+    user_region: user_region,
+  };
+
+  console.log(new_entry);
+  await mongo_db.collection('usageStatistics').insertOne(new_entry);
+}
+
+
 async function convertListRota(branch, data) {
     const result = {};
 
@@ -382,6 +409,7 @@ app.post("/api/updateRota", async(req, res) => {
     return
   } else {
     res.json(await convertListRota(value.branch, updatedDayEntry.rota))
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId})
     return
   }
 })
@@ -418,6 +446,7 @@ app.post("/api/removeUser", async(req, res) => {
 
   if (updateUser.matchedCount === 1){
     res.send('ok')
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
   } else {
     res.status(404).send("User not found")
   }
@@ -472,6 +501,7 @@ app.post("/api/updateUser", async(req, res) => {
 
   if (updateUser !== null){
     res.send('ok')
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', {modify: value.modifyUserId, modify_username: value.modifyUsername, color: value.color})
   } else {
     return res.status(404).send("User not found")
   }
