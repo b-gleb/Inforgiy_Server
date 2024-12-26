@@ -28,7 +28,7 @@ async function initializeMongoDB() {
   
     try {
       await mongo_client.connect();
-      mongo_db = mongo_client.db("sample_telegram")
+      mongo_db = mongo_client.db("Inforgiy_bot")
       console.log("Connected to MongoDB");
     } catch (error) {
       console.error("Error connecting to MongoDB:", error);
