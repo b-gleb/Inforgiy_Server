@@ -28,7 +28,7 @@ async function initializeMongoDB() {
   
     try {
       await mongo_client.connect();
-      mongo_db = mongo_client.db("Inforgiy_bot")
+      mongo_db = mongo_client.db(process.env.DB_NAME)
       console.log("Connected to MongoDB");
     } catch (error) {
       console.error("Error connecting to MongoDB:", error);
@@ -38,8 +38,8 @@ async function initializeMongoDB() {
 
 
 // VARIABLES
-const branches = ['lns', 'gp'];
-const usersCache = {'lns': {}, 'gp': {}};
+const branches = ['lns', 'gp', 'di'];
+const usersCache = {'lns': {}, 'gp': {}, 'di': {}};
 const usersCacheTTL = 24 * 3600 * 1000; // 24hr in miliseconds
 
 
@@ -285,7 +285,7 @@ app.get("/api/rota", async (req, res) => {
       return res.status(404).send('Day not found')
     }
 
-    if (['lns', 'gp'].includes(value.branch)){
+    if (['lns', 'gp', 'di'].includes(value.branch)){
         const result = await convertListRota(value.branch, dayEntry?.rota ?? {});
         return res.json(result)
     } else {
