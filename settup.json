@@ -5,12 +5,12 @@
         "maxDuties": 5
     },
     "gp": {
-        "minDate": "2024-01-01",
+        "minDate": "2024-12-23",
         "maxDate": "2025-12-31",
         "maxDuties": 4
     },
     "di": {
-        "minDate": "2024-01-01",
+        "minDate": "2024-12-23",
         "maxDate": "2025-12-31",
         "maxDuties": 3
     }
