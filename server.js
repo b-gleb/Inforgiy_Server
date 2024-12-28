@@ -28,7 +28,7 @@ async function initializeMongoDB() {
   
     try {
       await mongo_client.connect();
-      mongo_db = mongo_client.db("Inforgiy_bot")
+      mongo_db = mongo_client.db(process.env.DB_NAME)
       console.log("Connected to MongoDB");
     } catch (error) {
       console.error("Error connecting to MongoDB:", error);
@@ -38,8 +38,8 @@ async function initializeMongoDB() {
 
 
 // VARIABLES
-const branches = ['lns', 'gp'];
-const usersCache = {'lns': {}, 'gp': {}};
+const branches = ['lns', 'gp', 'di'];
+const usersCache = {'lns': {}, 'gp': {}, 'di': {}};
 const usersCacheTTL = 24 * 3600 * 1000; // 24hr in miliseconds
 
 
@@ -116,7 +116,7 @@ async function isRotaAdmin(branch, user_id) {
 
 
 async function statistic(initDataUnsafe, action, sub_action = null, misc = null) {
-  if (process.env.ENV === 'DEV') {
+  if (process.env.ENV === 'TEST') {
     return
   }
 
@@ -156,12 +156,10 @@ async function convertListRota(branch, data) {
         const userDict = {};
         await Promise.all(
           data[index].map(async (userId) => {
-            const username = await convertUserId(branch, userId);
-            userDict[userId] = {username: Object.keys(username)[0], color: Object.values(username)[0]};
+            userDict[userId] = await convertUserId(branch, userId);
           })
         );
 
-  
         result[timeRange] = userDict;
       } else {
         // Use an empty object if no data is available
@@ -191,7 +189,11 @@ async function convertUserId(branch, user_id) {
   }
 
   // Save information to cache
-  usersCache[branch][user_id] = {[userEntry.telegram]: userEntry?.roles[`rota_${branch}`] ?? null};
+  usersCache[branch][user_id] = {
+    username: userEntry.telegram,
+    nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
+    color: userEntry?.roles[`rota_${branch}`]?.c ?? null,
+  }
 
   // Self-destructing cache
   setTimeout(() => {
@@ -285,7 +287,7 @@ app.get("/api/rota", async (req, res) => {
       return res.status(404).send('Day not found')
     }
 
-    if (['lns', 'gp'].includes(value.branch)){
+    if (['lns', 'gp', 'di'].includes(value.branch)){
         const result = await convertListRota(value.branch, dayEntry?.rota ?? {});
         return res.json(result)
     } else {
@@ -330,7 +332,11 @@ app.get("/api/users", async (req, res) => {
 
     // Save to cache
     for (const user of userArray) {
-      usersCache[value.branch][user.telegram_id] = {[user.telegram]: user.roles[`rota_${value.branch}`]};
+      usersCache[value.branch][user.telegram_id] = {
+        username: user.telegram,
+        nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
+        color: user?.roles[`rota_${value.branch}`]?.c ?? null,
+      };
 
       setTimeout(() => {
         delete usersCache[value.branch][user.telegram_id];
@@ -460,6 +466,7 @@ app.post("/api/updateUser", async(req, res) => {
     branch: validateBranch.required(),
     modifyUserId: validateUserId.allow(null),
     modifyUsername: Joi.string(),
+    nick: Joi.string().required(),
     color: validateColor,
     initDataUnsafe: Joi.any().required()
   }).or('modifyUserId', 'modifyUsername');
@@ -486,7 +493,14 @@ app.post("/api/updateUser", async(req, res) => {
     // Update permissions of user with current rota access
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
       {telegram_id: value.modifyUserId},
-      {$set: {[`roles.rota_${value.branch}`]: value.color}},
+      {
+        $set: {
+          [`roles.rota_${value.branch}`]: {
+            nick: value.nick,
+            c: value.color
+          }
+        }
+      },
       updateOptions
     )
 
@@ -494,20 +508,31 @@ app.post("/api/updateUser", async(req, res) => {
     // Add rota access to a user in DB
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
       {telegram: value.modifyUsername},
-      {$set: {[`roles.rota_${value.branch}`]: value.color}},
+      {
+        $set: {
+          [`roles.rota_${value.branch}`]: {
+            nick: value.nick,
+            c: value.color
+          }
+        }
+      },
       updateOptions
     )
   }
 
   if (updateUser !== null){
     res.send('ok')
-    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', {modify: value.modifyUserId, modify_username: value.modifyUsername, color: value.color})
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', {modify: value.modifyUserId, modify_username: value.modifyUsername, nick: value.nick, color: value.color,})
   } else {
     return res.status(404).send("User not found")
   }
 
   // Update cache
-  usersCache[value.branch][updateUser.telegram_id] = {[updateUser.telegram]: updateUser.roles[`rota_${value.branch}`]}
+  usersCache[value.branch][updateUser.telegram_id] = {
+    username: updateUser.telegram,
+    nick: updateUser.roles[`rota_${value.branch}`]?.nick ?? updateUser.telegram,
+    color: updateUser.roles[`rota_${value.branch}`]?.c ?? 0
+  }
 
 
 })
