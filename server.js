@@ -545,9 +545,8 @@ app.get("/api/stats", async (req, res) => {
     startDate: Joi.date().required(),
     endDate: Joi.date().required()
   }).custom((value, helpers) => {
-    // TODO: Needs testing and re-writing
     if (value.startDate > value.endDate) {
-      return helpers.error('any.invalid', { message: 'startDate must be less than or equal to endDate' });
+      return helpers.message('startDate must be less than or equal to endDate');
     }
     return value;
   });
