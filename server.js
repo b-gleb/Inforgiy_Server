@@ -588,7 +588,7 @@ app.get("/api/stats", async (req, res) => {
 
   const stats = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
   const allUserIds = await mongo_db.collection('users').distinct('telegram_id', {
-    "roles.rota_lns": { $exists: true }
+    [`roles.rota_${value.branch}`]: { $exists: true }
   });
   
   // Create a map for fast lookup of search result IDs
@@ -607,8 +607,8 @@ app.get("/api/stats", async (req, res) => {
 
   const usernameStats = await Promise.all(
     allStats.map(async ({ _id, count }) => {
-      const username = await convertUserId(value.branch, _id);
-      return { username: Object.keys(username)[0], count };
+      const userObj = await convertUserId(value.branch, _id);
+      return { nick: userObj.nick, count };
     })
   );
 
