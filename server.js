@@ -61,7 +61,7 @@ function formatInitData(initDataUnsafe){
 const validateInitData = (res, initDataUnsafe) => {
   const unixTime = Math.floor(Date.now() / 1000);
 
-  if (process.env.ENV === 'PROD' && (unixTime - 600) > initDataUnsafe.auth_date){
+  if (process.env.ENV === 'PROD' && (unixTime - 3600) > initDataUnsafe.auth_date){
     res.status(401).send('Authorization expired')
     return false
   }
