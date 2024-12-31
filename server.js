@@ -153,14 +153,15 @@ async function convertListRota(branch, data) {
   
       if (data && data[index]) {
         // Process user_ids asynchronously and convert them to usernames
-        const userDict = {};
+        const userArray = [];
         await Promise.all(
           data[index].map(async (userId) => {
-            userDict[userId] = await convertUserId(branch, userId);
+            const userObj = await convertUserId(branch, userId)
+            userArray.push(userObj);
           })
         );
 
-        result[timeRange] = userDict;
+        result[timeRange] = userArray;
       } else {
         // Use an empty object if no data is available
         result[timeRange] = {};
@@ -200,7 +201,10 @@ async function convertUserId(branch, user_id) {
     delete usersCache[branch][user_id];
   }, usersCacheTTL);
 
-  return usersCache[branch][user_id];
+  const userObj = usersCache[branch][user_id];
+  userObj.id = user_id;
+
+  return userObj;
 }
 
 
@@ -333,6 +337,7 @@ app.get("/api/users", async (req, res) => {
     // Save to cache
     for (const user of userArray) {
       usersCache[value.branch][user.telegram_id] = {
+        id: user.telegram_id,
         username: user.telegram,
         nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
         color: user?.roles[`rota_${value.branch}`]?.c ?? null,
