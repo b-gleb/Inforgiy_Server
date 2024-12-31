@@ -301,6 +301,51 @@ app.get("/api/rota", async (req, res) => {
 })
 
 
+app.get("/api/userDuties", async (req, res) => {
+  // Validation
+  const validationSchema = Joi.object({
+    branch: validateBranch.required(),
+    user_id: validateUserId.required(),
+    startDate: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required(),
+    endDate: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required()
+  }).custom((value, helpers) => {
+    if (value.startDate > value.endDate) {
+      return helpers.message('startDate must be less than or equal to endDate');
+    }
+    return value;
+  });
+
+  const { error, value } = validationSchema.validate(req.query);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  // Logic
+  const cursor = mongo_db.collection(`rota_${value.branch}`).find(
+    {
+      'date': {'$gte': value.startDate},
+      'date': {'$lte': value.endDate},
+      'rota': {'$elemMatch': {'$elemMatch': {'$eq': value.user_id}}}
+    }
+  );
+  const dayArray = await cursor.toArray();
+
+  const result = [];
+
+  dayArray.forEach(dayEntry => {
+    let dayDuties = {date: dayEntry.date, hours: []};
+
+    dayEntry.rota.forEach((timeSlot, index) => {
+      if (timeSlot.includes(value.user_id)){
+        dayDuties.hours.push(index)
+      }
+    });
+
+    result.push(dayDuties);
+  });
+
+  res.json(result);
+})
+
+
 app.get("/api/users", async (req, res) => {
   // Validation
   const validationSchema = Joi.object({
