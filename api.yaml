@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: Inforgiy Web (server)
+  description: |-
+    Inforgiy server documentation for Swagger.
+  version: 1.0.0
+servers:
+  - url: https://inforgiy-server.fly.dev/api/
+# tags:
+paths:
+  /ping:
+    get:
+      summary: "Ping server"
+      description: "Returns a simple pong response to verify the API is running."
+      responses:
+        '200':
+          description: "A pong response"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "pong"
