@@ -400,13 +400,23 @@ app.post("/api/updateRota", async(req, res) => {
       return res.status(403).send('You must be rota admin to add someone else')
     }
 
+    dayEntry = await mongo_db.collection(`rota_${value.branch}`).findOne(
+      {date: value.date}
+    );
+
+    const timeSlot = dayEntry.rota[timeIndex];
+
+    if (!timeSlot.includes(value.modifyUserId)) {
+      timeSlot.push(value.modifyUserId);
+    };
+
     updatedDayEntry = await mongo_db.collection(`rota_${value.branch}`).findOneAndUpdate(
-      {date: value.date},
-      {"$addToSet": {[`rota.${timeIndex}`]: value.modifyUserId}},
+      {_id: dayEntry._id},
+      {"$set": {[`rota.${timeIndex}`]: timeSlot}},
       {
         returnDocument: 'after'
       }
-    )
+    );
   }
 
 
@@ -417,7 +427,7 @@ app.post("/api/updateRota", async(req, res) => {
     res.json(await convertListRota(value.branch, updatedDayEntry.rota))
     await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId})
     return
-  }
+  };
 })
 
 
