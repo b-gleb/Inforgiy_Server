@@ -21,6 +21,74 @@ paths:
                 type: string
                 example: "pong"
 
+  /userDuties:
+    get:
+      summary: "Returns users duties"
+      description: "Returns user duties for the specified branch within a given timeframe."
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to perform the search operation"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: user_id
+          in: query
+          description: "User for which to perform the search"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          description: "Starting date for the search (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: "Last date for the search (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: |-
+            For each day a user is on duty within the range returns an array of JSON objects. 
+
+            If the search produced no results (user_id does not exist or no duties in the specified range) an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date: 
+                      type: string
+                      format: date-time
+                      example: 2025-01-01T00:00:00.000Z
+                    hours:
+                      type: array
+                      items:
+                        type: integer
+                        format: int8
+                      example: [8, 9, 13, 14, 15]
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
+
 components:
   schemas:
     WebAppInitData:
