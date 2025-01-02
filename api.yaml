@@ -21,6 +21,44 @@ paths:
                 type: string
                 example: "pong"
 
+  /rota:
+    get:
+      summary: "Duties of a day"
+      description: "Returns all duties for a branch for a specified day"
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to return the rota"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: date
+          in: query
+          description: "Date for which to return the rota"
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '404':
+          description: "Not Found - Date does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Date not found"
+
   /userDuties:
     get:
       summary: "Returns users duties"
