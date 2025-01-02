@@ -321,8 +321,10 @@ app.get("/api/userDuties", async (req, res) => {
   // Logic
   const cursor = mongo_db.collection(`rota_${value.branch}`).find(
     {
-      'date': {'$gte': value.startDate},
-      'date': {'$lte': value.endDate},
+      '$and': [
+        {'date': {'$gte': value.startDate}},
+        {'date': {'$lte': value.endDate}}
+      ],
       'rota': {'$elemMatch': {'$elemMatch': {'$eq': value.user_id}}}
     }
   );
