@@ -366,7 +366,10 @@ app.get("/api/users", async (req, res) => {
   }
 
   // Logic
-  const searchQuery = {[`roles.rota_${value.branch}`]: {$exists: true}};
+  const searchQuery = {
+    [`roles.rota_${value.branch}`]: {$exists: true},
+    'telegram_id': {'$ne': null}
+  };
   const userCount = await mongo_db.collection('users').countDocuments(searchQuery);
 
   if (Object.entries(usersCache[value.branch]).length !== userCount) {
@@ -648,9 +651,13 @@ app.get("/api/stats", async (req, res) => {
   ]
 
   const stats = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
-  const allUserIds = await mongo_db.collection('users').distinct('telegram_id', {
-    [`roles.rota_${value.branch}`]: { $exists: true }
-  });
+  const allUserIds = await mongo_db.collection('users').distinct(
+    'telegram_id',
+    {
+      [`roles.rota_${value.branch}`]: { $exists: true },
+      'telegram_id': {'$ne': null}
+    }
+  );
   
   // Create a map for fast lookup of search result IDs
   const searchMap = new Map(stats.map(item => [item._id, item]));
@@ -665,7 +672,6 @@ app.get("/api/stats", async (req, res) => {
   // Convert the map back to an array
   const allStats = Array.from(searchMap.values());
   
-
   const usernameStats = await Promise.all(
     allStats.map(async ({ _id, count }) => {
       const userObj = await convertUserId(value.branch, _id);
@@ -674,7 +680,6 @@ app.get("/api/stats", async (req, res) => {
   );
 
   res.json(usernameStats);
-
 })
 
 
