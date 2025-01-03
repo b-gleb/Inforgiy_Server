@@ -129,6 +129,38 @@ paths:
 
 components:
   schemas:
+    userObj:
+      type: object
+      required:
+        - id
+        - username
+        - nick
+        - color
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: "Unique identifier of a user on Telegram"
+          minimum: 0
+          example: 431489551
+        username:
+          type: string
+          format: username
+          description: "Username of user on Telegram"
+          example: "@b_gleb"
+        nick:
+          type: string
+          description: "User's short name or callsign, used to be displayed in the rota"
+          example: Глеб
+        color:
+          type: integer
+          format: int8
+          description: "Integer code for user's color"
+          minimum: 0
+          maximum: 6
+          example: 3
+        
+
     WebAppInitData:
       type: object
       required:
