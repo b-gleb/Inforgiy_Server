@@ -623,10 +623,10 @@ app.get("/api/stats", async (req, res) => {
   const pipeline = [
     {
       '$match': {
-        'date': {
-          '$gte': value.startDate, 
-          '$lte': value.endDate
-        }
+        '$and': [
+          {'date': {'$gte': value.startDate}},
+          {'date': {'$lte': value.endDate}}
+        ]
       }
     }, {
       '$unwind': {
