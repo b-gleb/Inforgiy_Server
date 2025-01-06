@@ -171,6 +171,62 @@ paths:
                 example: "Validation error message"
 
 
+  /removeUser:
+    post:
+      summary: "Remove access to rota"
+      description: "Removes access to rota information from user without deleting such user form the database."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                branch:
+                  type: string
+                  description: "Branch for which to perform the operation"
+                  enum: 
+                    - lns
+                    - gp
+                    - di
+                modifyUserId:
+                  type: integer
+                  format: int64
+                  description: The ID of the user to be modified
+                  example: "123456789"
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "User role removed successfully."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
 components:
   schemas:
     userObj:
