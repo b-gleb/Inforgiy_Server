@@ -171,6 +171,84 @@ paths:
                 example: "Validation error message"
 
 
+  /updateUser:
+    post:
+      summary: "Update user rota access"
+      description: "Grants access to rota information or changes user information."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - nick
+                - initDataUnsafe
+              properties:
+                branch:
+                  type: string
+                  description: "Branch for which to perform the operation"
+                  enum: 
+                    - lns
+                    - gp
+                    - di
+                # TODO: Replace all user parameters with userObj schema
+                modifyUserId:
+                  type: integer
+                  nullable: true
+                  format: int64
+                  description: "ID of the user to be modified"
+                  example: "123456789"
+                modifyUsername:
+                  type: string
+                  format: username
+                  example: "@b_gleb"
+                  description: "Telegram username of the person"
+                nick:
+                  type: string
+                  description: "Nickname or callsign of the user"
+                  example: "Глеб"
+                color:
+                  type: integer
+                  format: int8
+                  description: "Integer code for user's color"
+                  minimum: 0
+                  maximum: 6
+                  example: 3
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "User role updated successfully."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
   /removeUser:
     post:
       summary: "Remove access to rota"
