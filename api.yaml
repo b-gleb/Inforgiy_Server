@@ -21,6 +21,91 @@ paths:
                 type: string
                 example: "pong"
 
+
+  /auth:
+    get:
+      summary: "Get information needed for app launch"
+      description: "Get information needed for app launch, validate initDataUnsafe"
+      parameters:
+        - name: initDataUnsafe
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/WebAppInitData'
+      responses:
+        '200':
+          description: "Returns a JSON object of user permissions including admin permissions"
+          content:
+            application/json:
+              schema:
+                  type: object
+                  properties:
+                    branches:
+                      additionalProperties:
+                        type: object
+                        properties:
+                          color:
+                            type: integer
+                            description: "Integer code for user's color"
+                            minimum: 0
+                            maximum: 6
+                            example: 3
+                          maxDuties:
+                            type: integer
+                            description: "Maximum number of users per hour slot"
+                            example: 3
+                          minDate:
+                            type: string
+                            format: date
+                            description: "Minimum applicable date"
+                            example: "2024-01-01"
+                          maxDate:
+                            type: string
+                            format: date
+                            description: "Maximum applicable date"
+                            example: "2026-01-01"
+                      example:
+                        lns:
+                          color: 0
+                          maxDuties: 3
+                          minDate: "2024-01-01"
+                          maxDate: "2026-01-01"
+                        gp:
+                          color: 1
+                          maxDuties: 2
+                          minDate: "2024-02-01"
+                          maxDate: "2025-12-31"
+                    rotaAdmin:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - lns
+                          - gp
+                          - di
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '403':
+          description: "Forbidden - User does not have any rota roles."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Forbidden"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
   /rota:
     get:
       summary: "Duties of a day"
