@@ -131,7 +131,12 @@ paths:
             type: string
             format: date
       responses:
-        # TODO: Add 200 response
+        '200':
+          description: "Returns rota information."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rota'
         '400':
           description: "Bad Request - Invalid input data."
           content:
