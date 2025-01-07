@@ -159,6 +159,91 @@ paths:
                 type: string
                 example: "Date not found"
 
+  /updateRota:
+      post:
+        tags:
+          - Rota
+        summary: "Update rota for a particilar day"
+        description: "Adds or removes a user from rota for a particilar day."
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - branch
+                  - date
+                  - timeRange
+                  - modifyUserId
+                  - initDataUnsafe
+                properties:
+                  type:
+                    type: string
+                    description: "Defines the mode of operation to perform"
+                    enum:
+                      - add
+                      - remove
+                  branch:
+                    type: string
+                    description: "Branch for which to perform the operation"
+                    enum: 
+                      - lns
+                      - gp
+                      - di
+                  date:
+                    type: string
+                    format: date
+                    description: "Date for which to perform the operation"
+                    example: "2025-01-01"
+                  timeRange:
+                    type: string
+                    description: "Time range string indicating which time range the operation is performed on"
+                    example: "00:00-01:00"
+                  modifyUserId:
+                    type: integer
+                    format: int64
+                    description: "ID of the user to add or remove from rota"
+                    example: 123456789
+                  initDataUnsafe:
+                    $ref: '#/components/schemas/WebAppInitData'
+          required: true
+        responses:
+          '200':
+            description: "Rota updated successfully."
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Rota'
+          '400':
+            description: "Bad Request - Invalid input data."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Validation error message"
+          '401':
+            description: "Unauthorized - Unable to verify hash."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Unable to verify hash"
+          '403':
+            description: "Forbidden - User is not authorized to perform this action."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "You must be a rota admin"
+          '404':
+            description: "Not Found - Date does not exist."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Date not found"
+
   /users:
     get:
       tags:
@@ -310,7 +395,7 @@ paths:
                   nullable: true
                   format: int64
                   description: "ID of the user to be modified"
-                  example: "123456789"
+                  example: 123456789
                 modifyUsername:
                   type: string
                   format: username
@@ -391,7 +476,7 @@ paths:
                   type: integer
                   format: int64
                   description: The ID of the user to be modified
-                  example: "123456789"
+                  example: 123456789
                 initDataUnsafe:
                   $ref: '#/components/schemas/WebAppInitData'
         required: true
