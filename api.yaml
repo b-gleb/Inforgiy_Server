@@ -390,6 +390,64 @@ paths:
                 example: "User not found"
 
 
+  /stats:
+    get:
+      tags:
+        - Statistics
+      summary: "Total duties for branch users"
+      description: "Shows number of duties for all users in a branch between two dates (inclusive)"
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to perform the search operation"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: startDate
+          in: query
+          description: "Start date of collecting stats (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2025-01-01'
+        - name: endDate
+          in: query
+          description: "End date of collecting stats (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2025-01-31'
+      responses:
+        '200':
+          description: "Returns an array of JSON objects with user's nickname and statistics shown"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nick:
+                      type: string
+                      example: Глеб
+                    count:
+                      type: integer
+                      example: 14
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
+
 components:
   schemas:
     userObj:
