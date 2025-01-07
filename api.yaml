@@ -108,6 +108,8 @@ paths:
 
   /rota:
     get:
+      tags:
+        - Rota
       summary: "Duties of a day"
       description: "Returns all duties for a branch for a specified day"
       parameters:
@@ -147,6 +149,8 @@ paths:
 
   /users:
     get:
+      tags:
+        - Users
       summary: "All users of a branch"
       description: "Returns all users for a specified branch"
       parameters:
@@ -190,6 +194,8 @@ paths:
 
   /userDuties:
     get:
+      tags:
+        - Rota
       summary: "Returns users duties"
       description: "Returns user duties for the specified branch within a given timeframe."
       parameters:
@@ -258,6 +264,8 @@ paths:
 
   /updateUser:
     post:
+      tags:
+        - Users
       summary: "Update user rota access"
       description: "Grants access to rota information or changes user information."
       requestBody:
@@ -336,6 +344,8 @@ paths:
 
   /removeUser:
     post:
+      tags:
+        - Users
       summary: "Remove access to rota"
       description: "Removes access to rota information from user without deleting such user form the database."
       requestBody:
