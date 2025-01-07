@@ -1,0 +1,840 @@
+openapi: 3.0.3
+info:
+  title: Inforgiy Web (server)
+  description: |-
+    Inforgiy Server API documentation.
+  version: 1.0.0
+servers:
+  - url: https://inforgiy-server.fly.dev/api/
+# tags:
+paths:
+  /ping:
+    get:
+      summary: "Ping server"
+      description: "Returns a simple pong response to verify the API is running."
+      responses:
+        '200':
+          description: "A pong response"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "pong"
+
+
+  /auth:
+    get:
+      summary: "Get information needed for app launch"
+      description: "Get information needed for app launch, validate initDataUnsafe"
+      parameters:
+        - name: initDataUnsafe
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/WebAppInitData'
+      responses:
+        '200':
+          description: "Returns a JSON object of user permissions including admin permissions"
+          content:
+            application/json:
+              schema:
+                  type: object
+                  properties:
+                    branches:
+                      additionalProperties:
+                        type: object
+                        properties:
+                          color:
+                            type: integer
+                            description: "Integer code for user's color"
+                            minimum: 0
+                            maximum: 6
+                            example: 3
+                          maxDuties:
+                            type: integer
+                            description: "Maximum number of users per hour slot"
+                            example: 3
+                          minDate:
+                            type: string
+                            format: date
+                            description: "Minimum applicable date"
+                            example: "2024-01-01"
+                          maxDate:
+                            type: string
+                            format: date
+                            description: "Maximum applicable date"
+                            example: "2026-01-01"
+                      example:
+                        lns:
+                          color: 0
+                          maxDuties: 3
+                          minDate: "2024-01-01"
+                          maxDate: "2026-01-01"
+                        gp:
+                          color: 1
+                          maxDuties: 2
+                          minDate: "2024-02-01"
+                          maxDate: "2025-12-31"
+                    rotaAdmin:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - lns
+                          - gp
+                          - di
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '401':
+          description: "Unauthorized - Unable to verify hash."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unable to verify hash"
+        '403':
+          description: "Forbidden - User does not have any rota roles."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Forbidden"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
+  /rota:
+    get:
+      tags:
+        - Rota
+      summary: "Duties of a day"
+      description: "Returns all duties for a branch for a specified day"
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to return the rota"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: date
+          in: query
+          description: "Date for which to return the rota"
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: "Returns rota information."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rota'
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '404':
+          description: "Not Found - Date does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Date not found"
+
+  /updateRota:
+      post:
+        tags:
+          - Rota
+        summary: "Update rota for a particilar day"
+        description: "Adds or removes a user from rota for a particilar day."
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - branch
+                  - date
+                  - timeRange
+                  - modifyUserId
+                  - initDataUnsafe
+                properties:
+                  type:
+                    type: string
+                    description: "Defines the mode of operation to perform"
+                    enum:
+                      - add
+                      - remove
+                  branch:
+                    type: string
+                    description: "Branch for which to perform the operation"
+                    enum: 
+                      - lns
+                      - gp
+                      - di
+                  date:
+                    type: string
+                    format: date
+                    description: "Date for which to perform the operation"
+                    example: "2025-01-01"
+                  timeRange:
+                    type: string
+                    description: "Time range string indicating which time range the operation is performed on"
+                    example: "00:00-01:00"
+                  modifyUserId:
+                    type: integer
+                    format: int64
+                    description: "ID of the user to add or remove from rota"
+                    example: 123456789
+                  initDataUnsafe:
+                    $ref: '#/components/schemas/WebAppInitData'
+          required: true
+        responses:
+          '200':
+            description: "Rota updated successfully."
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Rota'
+          '400':
+            description: "Bad Request - Invalid input data."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Validation error message"
+          '401':
+            description: "Unauthorized - Unable to verify hash."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Unable to verify hash"
+          '403':
+            description: "Forbidden - User is not authorized to perform this action."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "You must be a rota admin"
+          '404':
+            description: "Not Found - Date does not exist."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Date not found"
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: "All users of a branch"
+      description: "Returns all users for a specified branch"
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to return all users"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: initDataUnsafe
+          in: query
+          description: "Data provided by the Telegram script to authenticate and validate the user"
+          required: true
+          schema:
+            $ref: '#/components/schemas/WebAppInitData'
+      responses:
+        '200':
+          description: "Returns all users who have the branch's rota permission"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/userObj'
+              example:
+                431489551:
+                  id: 431489551
+                  username: "@b_gleb"
+                  nick: "Глеб"
+                  color: 3
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '401':
+          description: "Unauthorized - Unable to verify hash."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unable to verify hash"
+        '403':
+          description: "Forbidden - User is not rota admin."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+
+  /userDuties:
+    get:
+      tags:
+        - Rota
+      summary: "Returns users duties"
+      description: "Returns user duties for the specified branch within a given timeframe."
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to perform the search operation"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: user_id
+          in: query
+          description: "User for which to perform the search"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          description: "Starting date for the search (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: "Last date for the search (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: |-
+            For each day a user is on duty within the range returns an array of JSON objects. 
+
+            If the search produced no results (user_id does not exist or no duties in the specified range) an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date: 
+                      type: string
+                      format: date-time
+                      example: 2025-01-01T00:00:00.000Z
+                    hours:
+                      type: array
+                      items:
+                        type: integer
+                        format: int8
+                      example: [8, 9, 13, 14, 15]
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
+
+  /updateUser:
+    post:
+      tags:
+        - Users
+      summary: "Update user rota access"
+      description: "Grants access to rota information or changes user information."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - nick
+                - initDataUnsafe
+              properties:
+                branch:
+                  type: string
+                  description: "Branch for which to perform the operation"
+                  enum: 
+                    - lns
+                    - gp
+                    - di
+                modifyUserId:
+                  type: integer
+                  nullable: true
+                  format: int64
+                  description: "ID of the user to be modified"
+                  example: 123456789
+                modifyUsername:
+                  type: string
+                  format: username
+                  example: "@b_gleb"
+                  description: "Telegram username of the person"
+                nick:
+                  type: string
+                  description: "Nickname or callsign of the user"
+                  example: "Глеб"
+                color:
+                  type: integer
+                  format: int8
+                  description: "Integer code for user's color"
+                  minimum: 0
+                  maximum: 6
+                  example: 3
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "User role updated successfully."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '401':
+          description: "Unauthorized - Unable to verify hash."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unable to verify hash"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
+  /removeUser:
+    post:
+      tags:
+        - Users
+      summary: "Remove access to rota"
+      description: "Removes access to rota information from user without deleting such user form the database."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                branch:
+                  type: string
+                  description: "Branch for which to perform the operation"
+                  enum: 
+                    - lns
+                    - gp
+                    - di
+                modifyUserId:
+                  type: integer
+                  format: int64
+                  description: The ID of the user to be modified
+                  example: 123456789
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "User role removed successfully."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
+  /stats:
+    get:
+      tags:
+        - Statistics
+      summary: "Total duties for branch users"
+      description: "Shows number of duties for all users in a branch between two dates (inclusive)"
+      parameters:
+        - name: branch
+          in: query
+          description: "Branch for which to perform the search operation"
+          required: true
+          schema:
+            type: string
+            enum:
+              - lns
+              - gp
+              - di
+        - name: startDate
+          in: query
+          description: "Start date of collecting stats (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2025-01-01'
+        - name: endDate
+          in: query
+          description: "End date of collecting stats (inclusive)"
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2025-01-31'
+      responses:
+        '200':
+          description: "Returns an array of JSON objects with user's nickname and statistics shown"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nick:
+                      type: string
+                      example: Глеб
+                    count:
+                      type: integer
+                      example: 14
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
+
+components:
+  schemas:
+    userObj:
+      type: object
+      required:
+        - id
+        - username
+        - nick
+        - color
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: "Unique identifier of a user on Telegram"
+          minimum: 0
+          example: 431489551
+        username:
+          type: string
+          format: username
+          description: "Username of user on Telegram"
+          example: "@b_gleb"
+        nick:
+          type: string
+          description: "User's short name or callsign, used to be displayed in the rota"
+          example: Глеб
+        color:
+          type: integer
+          format: int8
+          description: "Integer code for user's color"
+          minimum: 0
+          maximum: 6
+          example: 3
+
+
+    Rota:
+      type: object
+      required:
+        - "00:00-01:00"
+        - "01:00-02:00"
+        - "02:00-03:00"
+        - "03:00-04:00"
+        - "04:00-05:00"
+        - "05:00-06:00"
+        - "06:00-07:00"
+        - "07:00-08:00"
+        - "08:00-09:00"
+        - "09:00-10:00"
+        - "10:00-11:00"
+        - "11:00-12:00"
+        - "12:00-13:00"
+        - "13:00-14:00"
+        - "14:00-15:00"
+        - "15:00-16:00"
+        - "16:00-17:00"
+        - "17:00-18:00"
+        - "18:00-19:00"
+        - "19:00-20:00"
+        - "20:00-21:00"
+        - "21:00-22:00"
+        - "22:00-23:00"
+        - "23:00-24:00"
+      properties:
+        "00:00-01:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "01:00-02:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "02:00-03:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "03:00-04:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "04:00-05:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "05:00-06:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "06:00-07:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "07:00-08:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "08:00-09:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "09:00-10:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "10:00-11:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "11:00-12:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "12:00-13:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "13:00-14:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "14:00-15:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "15:00-16:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "16:00-17:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "17:00-18:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "18:00-19:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "19:00-20:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "20:00-21:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "21:00-22:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "22:00-23:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+        "23:00-24:00":
+          type: array
+          items:
+            $ref: '#/components/schemas/userObj'
+
+
+    WebAppInitData:
+      type: object
+      required:
+        - auth_date
+        - hash
+        - signature
+      properties:
+        query_id:
+          type: string
+          description: A unique identifier for the Mini App session, required for sending messages via the [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) method.
+        user:
+          $ref: '#/components/schemas/WebAppUser'
+          description: An object containing data about the current user.
+        receiver:
+          $ref: '#/components/schemas/WebAppUser'
+          description: An object containing data about the chat partner of the current user in the chat where the bot was launched via the attachment menu. Returned only for private chats and only for Mini Apps launched via the attachment menu.
+        chat:
+          # $ref: '#/components/schemas/WebAppChat'
+          type: object
+          description: An object containing data about the chat where the bot was launched via the attachment menu. Returned for supergroups, channels and group chats – only for Mini Apps launched via the attachment menu.
+          example: WebAppChat
+        chat_type:
+          type: string
+          description: Type of the chat from which the Mini App was opened. Can be either “sender” for a private chat with the user opening the link, “private”, “group”, “supergroup”, or “channel”. Returned only for Mini Apps launched from direct links.
+          example: private
+          enum: 
+            - sender
+            - private
+            - group
+            - supergroup
+            - channel
+        chat_instance:
+          type: string
+          description: Global identifier, uniquely corresponding to the chat from which the Mini App was opened. Returned only for Mini Apps launched from a direct link.
+          example: "3682667635294298985"
+        start_param:
+          type: string
+          description: |- 
+            The value of the startattach parameter, passed via link. Only returned for Mini Apps when launched from the attachment menu via link.
+
+            The value of the `start_param` parameter will also be passed in the GET-parameter `tgWebAppStartParam`, so the Mini App can load the correct interface right away.
+        can_send_after:
+          type: integer
+          description: Time in seconds, after which a message can be sent via the [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) method.
+        auth_date:
+          type: integer
+          description: Unix time when the form was opened.
+          example: 1734382707
+        hash:
+          type: string
+          description: A hash of all passed parameters, which the bot server can use to [check their validity](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).
+        signature:
+          type: string
+          description: A signature of all passed parameters (except hash), which the third party can use to [check their validity](https://core.telegram.org/bots/webapps#validating-data-for-third-party-use).
+
+    WebAppUser:
+      type: object
+      required:
+        - id
+        - first_name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 431489551
+        is_bot:
+          type: boolean
+          description: True, if this user is a bot. Returns in the [receiver](https://core.telegram.org/bots/webapps#webappinitdata) field only.
+          example:
+        first_name:
+          type: string
+          description: First name of the user or bot.
+          example: Gleb
+        last_name:
+          type: string
+          description: Last name of the user or bot.
+          example: ""
+        username:
+          type: string
+          description: Username of the user or bot.
+          example: b_gleb
+        language_code:
+          type: string
+          description: "[IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) of the user's language. Returns in user field only."
+          example: "en"
+        is_premium:
+          type: boolean
+          description: True, if this user is a Telegram Premium user. Otherwise not returned
+          example: true
+        added_to_attachment_menu:
+          type: boolean
+          description: True, if this user added the bot to the attachment menu. Otherwise not returned
+          example: 
+        allows_write_to_pm:
+          type: boolean
+          description: True, if this user allowed the bot to message them. Otherwise not returned
+          example: true
+        photo_url:
+          type: string
+          format: url
+          description: URL of the user’s profile photo. The photo can be in .jpeg or .svg formats.
+          example: https://t.me/i/userpic/320/f9lMcAEZ9LLk5VrnMlRoKpflnsKzXyvf3TG6wXthun8.svg
