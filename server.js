@@ -399,7 +399,7 @@ app.get("/api/users", async (req, res) => {
     }
   }
 
-  res.json(usersCache[value.branch])
+  res.json(Object.values(usersCache[value.branch]))
 
 })
 
