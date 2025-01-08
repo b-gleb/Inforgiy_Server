@@ -273,15 +273,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   $ref: '#/components/schemas/userObj'
-              example:
-                431489551:
-                  id: 431489551
-                  username: "@b_gleb"
-                  nick: "Глеб"
-                  color: 3
         '400':
           description: "Bad Request - Invalid input data."
           content:
