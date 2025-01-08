@@ -387,7 +387,6 @@ paths:
               type: object
               required:
                 - branch
-                - nick
                 - initDataUnsafe
               properties:
                 branch:
@@ -397,28 +396,8 @@ paths:
                     - lns
                     - gp
                     - di
-                modifyUserId:
-                  type: integer
-                  nullable: true
-                  format: int64
-                  description: "ID of the user to be modified"
-                  example: 123456789
-                modifyUsername:
-                  type: string
-                  format: username
-                  example: "@b_gleb"
-                  description: "Telegram username of the person"
-                nick:
-                  type: string
-                  description: "Nickname or callsign of the user"
-                  example: "Глеб"
-                color:
-                  type: integer
-                  format: int8
-                  description: "Integer code for user's color"
-                  minimum: 0
-                  maximum: 6
-                  example: 3
+                userObj:
+                  $ref: '#/components/schemas/userObj'
                 initDataUnsafe:
                   $ref: '#/components/schemas/WebAppInitData'
         required: true
