@@ -529,12 +529,14 @@ app.post("/api/updateUser", async(req, res) => {
   // Validation
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
-    modifyUserId: validateUserId.allow(null),
-    modifyUsername: Joi.string(),
-    nick: Joi.string().required(),
-    color: validateColor,
+    userObj: Joi.object({
+      id: validateUserId.allow(null),
+      username: Joi.string(),
+      nick: Joi.string().required(),
+      color: validateColor
+    }).or('id', 'username').required(),
     initDataUnsafe: Joi.any().required()
-  }).or('modifyUserId', 'modifyUsername');
+  });
 
   const { error, value } = validationSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -554,30 +556,30 @@ app.post("/api/updateUser", async(req, res) => {
     returnDocument: 'after'
   };
 
-  if (value.modifyUserId) {
+  if (value.userObj.id) {
     // Update permissions of user with current rota access
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
-      {telegram_id: value.modifyUserId},
+      {telegram_id: value.userObj.id},
       {
         $set: {
           [`roles.rota_${value.branch}`]: {
-            nick: value.nick,
-            c: value.color
+            nick: value.userObj.nick,
+            c: value.userObj.color
           }
         }
       },
       updateOptions
     )
 
-  } else if (!value.modifyUserId && value.modifyUsername) {
+  } else if (!value.userObj.id && value.userObj.username) {
     // Add rota access to a user in DB
     updateUser = await mongo_db.collection('users').findOneAndUpdate(
-      {telegram: value.modifyUsername},
+      {telegram: value.userObj.username},
       {
         $set: {
           [`roles.rota_${value.branch}`]: {
-            nick: value.nick,
-            c: value.color
+            nick: value.userObj.nick,
+            c: value.userObj.color
           }
         }
       },
@@ -587,13 +589,14 @@ app.post("/api/updateUser", async(req, res) => {
 
   if (updateUser !== null){
     res.send('ok')
-    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', {modify: value.modifyUserId, modify_username: value.modifyUsername, nick: value.nick, color: value.color,})
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
   } else {
     return res.status(404).send("User not found")
   }
 
   // Update cache
   usersCache[value.branch][updateUser.telegram_id] = {
+    id: updateUser.telegram_id,
     username: updateUser.telegram,
     nick: updateUser.roles[`rota_${value.branch}`]?.nick ?? updateUser.telegram,
     color: updateUser.roles[`rota_${value.branch}`]?.c ?? 0
