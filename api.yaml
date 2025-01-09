@@ -549,6 +549,81 @@ paths:
                 example: "Validation error message"
 
 
+  /stats/user:
+    post:
+      tags:
+        - Statistics
+      summary: "Total user duty hours"
+      description: "Total user duty hours in the specified time ranges of dates"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                branch:
+                  type: string
+                  description: "Branch for which to perform the operation"
+                  enum: 
+                    - lns
+                    - gp
+                    - di
+                user_id:
+                  type: integer
+                  format: int64
+                  description: "The ID of the user to calculate the stats for"
+                  example: 123456789
+                dateRange: 
+                  type: array
+                  description: "An array of dates (inclusive) for which to calculate the statistics"
+                  items:
+                    type: array
+                    items:
+                      type: string
+                      format: date
+                      minItems: 2
+                      maxItems: 2
+                  example: [["2025-01-01", "2025-12-31"]]
+        required: true
+      responses:
+        '200':
+          description: "An array of JSON objects with statistics"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    dateRange:
+                      type: array
+                      description: "An array of dates (inclusive) for which the statistics were calculated"
+                      items:
+                        type: string
+                        format: date
+                        minItems: 2
+                        maxItems: 2
+                      example: ["2025-01-01", "2025-12-31"]
+                    count:
+                      type: integer
+                      description: "Total number of duty units performed by a user in the period"
+                      example: 20
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '404':
+          description: "Not Found - User does not exist."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+
+
 components:
   schemas:
     userObj:
