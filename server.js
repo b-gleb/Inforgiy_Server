@@ -631,6 +631,68 @@ app.post("/api/stats/user", async (req, res) => {
   // Logic
   const stats = {};
 
+  for (const dateRange of value.dateRanges){
+    const pipeline = [
+      {
+        '$match': {
+          '$and': [
+            {
+              'date': {
+                '$gte': dateRange[0]
+              }
+            }, {
+              'date': {
+                '$lte': dateRange[1]
+              }
+            }
+          ]
+        }
+      }, {
+        '$unwind': {
+          'path': '$rota'
+        }
+      }, {
+        '$unwind': {
+          'path': '$rota'
+        }
+      }, {
+        '$match': {
+          'rota': {
+            '$in': value.user_ids
+          }
+        }
+      }, {
+        '$group': {
+          '_id': '$rota', 
+          'count': {
+            '$sum': 1
+          }
+        }
+      }
+    ];
+
+    const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
+
+    // TODO:If user has no duties nothing is returned at the moment
+    for (const document of pipeline_output) {
+      (stats[document._id] ??= []).push({
+        dateRange: dateRange,
+        count: document.count
+      });
+    };
+  };
+
+  // TODO: If no user_ids given fetch all users
+  // Conver user ids to nick names
+  const allUserIds = Object.keys(stats);
+  const convertedStats = await Promise.all(
+    allUserIds.map( async (user_id) => {
+      const userObj = await convertUserId(value.branch, Number(user_id));
+      return [userObj.nick, stats[user_id]];
+    })
+  );
+
+  res.json(Object.fromEntries(convertedStats));
 })
 
 app.get("/api/stats", async (req, res) => {
