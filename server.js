@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const Joi = require('joi');
+const Joi = require('joi').extend(require('@joi/date'));
 const crypto = require('crypto');
 // const corsOptions = {
 //     origin: ["http://localhost:3000"]
@@ -90,6 +90,18 @@ const validateInitData = (res, initDataUnsafe) => {
     return false
   }
 };
+
+const validateDateRange = Joi.array()
+  .length(2)
+  .items(
+    Joi.date().format('YYYY-MM-DD').utc().required(),
+    Joi.date().format('YYYY-MM-DD').utc().required()
+  )
+  .custom((value, helpers) => {
+    if (value[0] > value[1]) {
+      return helpers.message('startDate must be less than or equal to endDate');
+    }
+    return value;})
 
 const validateBranch = Joi.string().valid(...branches);
 const validateUserId = Joi.number().integer().positive();
@@ -605,6 +617,21 @@ app.post("/api/updateUser", async(req, res) => {
 
 })
 
+app.post("/api/stats/user", async (req, res) => {
+  // Validation
+  const validationSchema = Joi.object({
+    branch: validateBranch.required(),
+    user_ids: Joi.array().items(validateUserId),
+    dateRanges: Joi.array().min(1).items(validateDateRange).required()
+  });
+
+  const { error, value } = validationSchema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  // Logic
+  const stats = {};
+
+})
 
 app.get("/api/stats", async (req, res) => {
   // Validation
