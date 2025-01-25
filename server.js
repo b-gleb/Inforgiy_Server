@@ -673,16 +673,29 @@ app.post("/api/stats/user", async (req, res) => {
 
     const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
 
-    // TODO:If user has no duties nothing is returned at the moment
+    // An array to account for all returned user ids
+    const returnedUserIds = [];
+
+    // For returned users push stats values
     for (const document of pipeline_output) {
       (stats[document._id] ??= []).push({
         dateRange: dateRange,
         count: document.count
       });
+
+      returnedUserIds.push(document._id);
     };
+
+    // Identify user_ids not returned and fill them with zero
+    const notReturnedUserIds = value.user_ids.filter(user_id => !returnedUserIds.includes(user_id));
+    for (const user_id of notReturnedUserIds) {
+      (stats[user_id] ??= []).push({
+        dateRange: dateRange,
+        count: 0
+      })
+    }
   };
 
-  // TODO: If no user_ids given fetch all users
   // Conver user ids to nick names
   const allUserIds = Object.keys(stats);
   const convertedStats = await Promise.all(
