@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const Joi = require('joi');
+const Joi = require('joi').extend(require('@joi/date'));
 const crypto = require('crypto');
 // const corsOptions = {
 //     origin: ["http://localhost:3000"]
@@ -90,6 +90,18 @@ const validateInitData = (res, initDataUnsafe) => {
     return false
   }
 };
+
+const validateDateRange = Joi.array()
+  .length(2)
+  .items(
+    Joi.date().format('YYYY-MM-DD').utc().required(),
+    Joi.date().format('YYYY-MM-DD').utc().required()
+  )
+  .custom((value, helpers) => {
+    if (value[0] > value[1]) {
+      return helpers.message('startDate must be less than or equal to endDate');
+    }
+    return value;})
 
 const validateBranch = Joi.string().valid(...branches);
 const validateUserId = Joi.number().integer().positive();
@@ -605,84 +617,99 @@ app.post("/api/updateUser", async(req, res) => {
 
 })
 
-
-app.get("/api/stats", async (req, res) => {
+app.post("/api/stats", async (req, res) => {
   // Validation
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().required()
-  }).custom((value, helpers) => {
-    if (value.startDate > value.endDate) {
-      return helpers.message('startDate must be less than or equal to endDate');
-    }
-    return value;
+    user_ids: Joi.array().min(1).items(validateUserId).required(),
+    dateRanges: Joi.array().min(1).items(validateDateRange).required()
   });
 
-  const { error, value } = validationSchema.validate(req.query);
+  const { error, value } = validationSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   // Logic
-  const pipeline = [
-    {
-      '$match': {
-        '$and': [
-          {'date': {'$gte': value.startDate}},
-          {'date': {'$lte': value.endDate}}
-        ]
-      }
-    }, {
-      '$unwind': {
-        'path': '$rota'
-      }
-    }, {
-      '$unwind': {
-        'path': '$rota'
-      }
-    }, {
-      '$group': {
-        '_id': '$rota', 
-        'count': {
-          '$sum': 1
+  const stats = {};
+
+  for (const dateRange of value.dateRanges){
+    const pipeline = [
+      {
+        '$match': {
+          '$and': [
+            {
+              'date': {
+                '$gte': dateRange[0]
+              }
+            }, {
+              'date': {
+                '$lte': dateRange[1]
+              }
+            }
+          ]
+        }
+      }, {
+        '$unwind': {
+          'path': '$rota'
+        }
+      }, {
+        '$unwind': {
+          'path': '$rota'
+        }
+      }, {
+        '$match': {
+          'rota': {
+            '$in': value.user_ids
+          }
+        }
+      }, {
+        '$group': {
+          '_id': '$rota', 
+          'count': {
+            '$sum': 1
+          }
         }
       }
-    }, {
-      '$sort': {
-        'count': -1
-      }
-    }
-  ]
+    ];
 
-  const stats = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
-  const allUserIds = await mongo_db.collection('users').distinct(
-    'telegram_id',
-    {
-      [`roles.rota_${value.branch}`]: { $exists: true },
-      'telegram_id': {'$ne': null}
+    const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
+
+    // An array to account for all returned user ids
+    const returnedUserIds = [];
+
+    // For returned users push stats values
+    for (const document of pipeline_output) {
+      (stats[document._id] ??= []).push({
+        dateRange: dateRange,
+        count: document.count
+      });
+
+      returnedUserIds.push(document._id);
+    };
+
+    // Identify user_ids not returned and fill them with zero
+    const notReturnedUserIds = value.user_ids.filter(user_id => !returnedUserIds.includes(user_id));
+    for (const user_id of notReturnedUserIds) {
+      (stats[user_id] ??= []).push({
+        dateRange: dateRange,
+        count: 0
+      })
     }
-  );
-  
-  // Create a map for fast lookup of search result IDs
-  const searchMap = new Map(stats.map(item => [item._id, item]));
-  
-  // Add missing IDs from userIds to search results with count 0
-  allUserIds.forEach(id => {
-    if (!searchMap.has(id)) {
-      searchMap.set(id, { _id: id, count: 0 });
-    }
-  });
-  
-  // Convert the map back to an array
-  const allStats = Array.from(searchMap.values());
-  
-  const usernameStats = await Promise.all(
-    allStats.map(async ({ _id, count }) => {
-      const userObj = await convertUserId(value.branch, _id);
-      return { nick: userObj.nick, count };
+  };
+
+  // Conver user ids to nick names
+  const allUserIds = Object.keys(stats);
+  const convertedStats = await Promise.all(
+    allUserIds.map( async (user_id) => {
+      const userObj = await convertUserId(value.branch, Number(user_id));
+      if (userObj) {
+        return [userObj.nick, stats[user_id]];
+      } else {
+        return res.status(404).send("User not found")
+      }
     })
   );
 
-  res.json(usernameStats);
+  res.json(Object.fromEntries(convertedStats));
 })
 
 
