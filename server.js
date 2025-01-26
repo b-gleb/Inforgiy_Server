@@ -617,7 +617,7 @@ app.post("/api/updateUser", async(req, res) => {
 
 })
 
-app.post("/api/stats/user", async (req, res) => {
+app.post("/api/stats", async (req, res) => {
   // Validation
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
@@ -706,85 +706,6 @@ app.post("/api/stats/user", async (req, res) => {
   );
 
   res.json(Object.fromEntries(convertedStats));
-})
-
-app.get("/api/stats", async (req, res) => {
-  // Validation
-  const validationSchema = Joi.object({
-    branch: validateBranch.required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().required()
-  }).custom((value, helpers) => {
-    if (value.startDate > value.endDate) {
-      return helpers.message('startDate must be less than or equal to endDate');
-    }
-    return value;
-  });
-
-  const { error, value } = validationSchema.validate(req.query);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  // Logic
-  const pipeline = [
-    {
-      '$match': {
-        '$and': [
-          {'date': {'$gte': value.startDate}},
-          {'date': {'$lte': value.endDate}}
-        ]
-      }
-    }, {
-      '$unwind': {
-        'path': '$rota'
-      }
-    }, {
-      '$unwind': {
-        'path': '$rota'
-      }
-    }, {
-      '$group': {
-        '_id': '$rota', 
-        'count': {
-          '$sum': 1
-        }
-      }
-    }, {
-      '$sort': {
-        'count': -1
-      }
-    }
-  ]
-
-  const stats = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
-  const allUserIds = await mongo_db.collection('users').distinct(
-    'telegram_id',
-    {
-      [`roles.rota_${value.branch}`]: { $exists: true },
-      'telegram_id': {'$ne': null}
-    }
-  );
-  
-  // Create a map for fast lookup of search result IDs
-  const searchMap = new Map(stats.map(item => [item._id, item]));
-  
-  // Add missing IDs from userIds to search results with count 0
-  allUserIds.forEach(id => {
-    if (!searchMap.has(id)) {
-      searchMap.set(id, { _id: id, count: 0 });
-    }
-  });
-  
-  // Convert the map back to an array
-  const allStats = Array.from(searchMap.values());
-  
-  const usernameStats = await Promise.all(
-    allStats.map(async ({ _id, count }) => {
-      const userObj = await convertUserId(value.branch, _id);
-      return { nick: userObj.nick, count };
-    })
-  );
-
-  res.json(usernameStats);
 })
 
 
