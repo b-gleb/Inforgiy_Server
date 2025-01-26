@@ -621,7 +621,7 @@ app.post("/api/stats", async (req, res) => {
   // Validation
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
-    user_ids: Joi.array().items(validateUserId),
+    user_ids: Joi.array().min(1).items(validateUserId).required(),
     dateRanges: Joi.array().min(1).items(validateDateRange).required()
   });
 
@@ -701,7 +701,11 @@ app.post("/api/stats", async (req, res) => {
   const convertedStats = await Promise.all(
     allUserIds.map( async (user_id) => {
       const userObj = await convertUserId(value.branch, Number(user_id));
-      return [userObj.nick, stats[user_id]];
+      if (userObj) {
+        return [userObj.nick, stats[user_id]];
+      } else {
+        return res.status(404).send("User not found")
+      }
     })
   );
 
