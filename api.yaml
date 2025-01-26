@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.0.1
+  version: 1.0.2
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 # tags:
@@ -492,69 +492,11 @@ paths:
 
 
   /stats:
-    get:
-      tags:
-        - Statistics
-      summary: "Total duties for branch users"
-      description: "Shows number of duties for all users in a branch between two dates (inclusive)"
-      parameters:
-        - name: branch
-          in: query
-          description: "Branch for which to perform the search operation"
-          required: true
-          schema:
-            type: string
-            enum:
-              - lns
-              - gp
-              - di
-        - name: startDate
-          in: query
-          description: "Start date of collecting stats (inclusive)"
-          required: true
-          schema:
-            type: string
-            format: date
-            example: '2025-01-01'
-        - name: endDate
-          in: query
-          description: "End date of collecting stats (inclusive)"
-          required: true
-          schema:
-            type: string
-            format: date
-            example: '2025-01-31'
-      responses:
-        '200':
-          description: "Returns an array of JSON objects with user's nickname and statistics shown"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    nick:
-                      type: string
-                      example: Глеб
-                    count:
-                      type: integer
-                      example: 14
-        '400':
-          description: "Bad Request - Invalid input data."
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Validation error message"
-
-
-  /stats/user:
     post:
       tags:
         - Statistics
-      summary: "Total user duty hours"
-      description: "Total user duty hours in the specified time ranges of dates"
+      summary: "Duty hours by user and period"
+      description: "Duty hours by user and period"
       requestBody:
         content:
           application/json:
@@ -568,46 +510,58 @@ paths:
                     - lns
                     - gp
                     - di
-                user_id:
-                  type: integer
-                  format: int64
-                  description: "The ID of the user to calculate the stats for"
-                  example: 123456789
-                dateRange: 
+                user_ids:
                   type: array
-                  description: "An array of dates (inclusive) for which to calculate the statistics"
+                  minItems: 1
+                  items:
+                    type: integer
+                    format: int64
+                    description: "The ID of the user to calculate the stats for"
+                    example: 123456789
+                dateRanges: 
+                  type: array
+                  description: "An array of arrays of dates (inclusive) for which to calculate the statistics"
                   items:
                     type: array
                     items:
                       type: string
-                      format: date
+                      format: "YYYY-MM-DD"
                       minItems: 2
                       maxItems: 2
                   example: [["2025-01-01", "2025-12-31"]]
         required: true
       responses:
         '200':
-          description: "An array of JSON objects with statistics"
+          description: "JSON object with statistics"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    dateRange:
-                      type: array
-                      description: "An array of dates (inclusive) for which the statistics were calculated"
-                      items:
-                        type: string
-                        format: date
-                        minItems: 2
-                        maxItems: 2
-                      example: ["2025-01-01", "2025-12-31"]
-                    count:
-                      type: integer
-                      description: "Total number of duty units performed by a user in the period"
-                      example: 20
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      dateRange:
+                        type: array
+                        items:
+                          type: string
+                          format: date-time
+                        description: Start and end date of the range.
+                      count:
+                        type: integer
+                        description: Count associated with the date range.
+                example:
+                  Глеб:
+                    - dateRange: ["2025-01-01T00:00:00.000Z", "2025-01-31T00:00:00.000Z"]
+                      count: 29
+                    - dateRange: ["2025-02-01T00:00:00.000Z", "2025-02-28T00:00:00.000Z"]
+                      count: 3
+                  Ulla:
+                    - dateRange: ["2025-01-01T00:00:00.000Z", "2025-01-31T00:00:00.000Z"]
+                      count: 66
+                    - dateRange: ["2025-02-01T00:00:00.000Z", "2025-02-28T00:00:00.000Z"]
+                      count: 0
         '400':
           description: "Bad Request - Invalid input data."
           content:
