@@ -155,13 +155,13 @@ async function statistic(initDataUnsafe, action, sub_action = null, misc = null)
 
 
 async function convertListRota(branch, data) {
-    const result = {};
+    const result = [];
 
     for (let index = 0; index < 24; index++) {
       // Create the time range string
       const startHour = String(index).padStart(2, '0');
       const endHour = String(index + 1).padStart(2, '0');
-      const timeRange = `${startHour}:00-${endHour}:00`;
+      const label = `${startHour}:00-${endHour}:00`;
   
       if (data && data[index]) {
         // Process user_ids asynchronously and convert them to usernames
@@ -173,10 +173,16 @@ async function convertListRota(branch, data) {
           })
         );
 
-        result[timeRange] = userArray;
+        result.push({
+          users: userArray,
+          label: label
+        });
       } else {
         // Use an empty object if no data is available
-        result[timeRange] = {};
+        result.push({
+          users: [],
+          label: label
+        });
       }
     }
   
