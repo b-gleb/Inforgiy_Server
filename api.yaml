@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.0.2
+  version: 1.0.3
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 # tags:
@@ -613,129 +613,15 @@ components:
 
 
     Rota:
-      type: object
-      required:
-        - "00:00-01:00"
-        - "01:00-02:00"
-        - "02:00-03:00"
-        - "03:00-04:00"
-        - "04:00-05:00"
-        - "05:00-06:00"
-        - "06:00-07:00"
-        - "07:00-08:00"
-        - "08:00-09:00"
-        - "09:00-10:00"
-        - "10:00-11:00"
-        - "11:00-12:00"
-        - "12:00-13:00"
-        - "13:00-14:00"
-        - "14:00-15:00"
-        - "15:00-16:00"
-        - "16:00-17:00"
-        - "17:00-18:00"
-        - "18:00-19:00"
-        - "19:00-20:00"
-        - "20:00-21:00"
-        - "21:00-22:00"
-        - "22:00-23:00"
-        - "23:00-24:00"
-      properties:
-        "00:00-01:00":
-          type: array
-          items:
+      type: array
+      items:
+        type: object
+        properties:
+          users:
             $ref: '#/components/schemas/userObj'
-        "01:00-02:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "02:00-03:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "03:00-04:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "04:00-05:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "05:00-06:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "06:00-07:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "07:00-08:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "08:00-09:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "09:00-10:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "10:00-11:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "11:00-12:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "12:00-13:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "13:00-14:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "14:00-15:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "15:00-16:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "16:00-17:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "17:00-18:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "18:00-19:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "19:00-20:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "20:00-21:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "21:00-22:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "22:00-23:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
-        "23:00-24:00":
-          type: array
-          items:
-            $ref: '#/components/schemas/userObj'
+          label:
+            type: string
+            example: "00:00-01:00"
 
 
     WebAppInitData:
