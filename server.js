@@ -150,7 +150,6 @@ async function statistic(initDataUnsafe, action, sub_action = null, misc = null)
     user_region: user_region,
   };
 
-  console.log(new_entry);
   await mongo_db.collection('usageStatistics').insertOne(new_entry);
 }
 
@@ -395,7 +394,6 @@ app.get("/api/users", async (req, res) => {
       {projection: {'telegram_id': 1, 'telegram': 1, [`roles.rota_${value.branch}`]: 1, '_id': 0}}
     );
     const userArray = await userCursor.toArray();
-    console.log('Users fetched');
 
     // Save to cache
     for (const user of userArray) {
@@ -831,6 +829,7 @@ app.post("/api/stats/cumulative", async (req, res) => {
     ];
 
     const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
+    // TODO: App crashes if pipeline output is empty
 
     result.push({
       user_id: value.user_id,
