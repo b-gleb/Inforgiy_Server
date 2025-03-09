@@ -344,7 +344,8 @@ app.get("/api/userDuties", async (req, res) => {
         {'date': {'$lte': value.endDate}}
       ],
       'rota': {'$elemMatch': {'$elemMatch': {'$eq': value.user_id}}}
-    }
+    },
+    {sort: {date: 1}}
   );
   const dayArray = await cursor.toArray();
 
