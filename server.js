@@ -38,8 +38,8 @@ async function initializeMongoDB() {
 
 
 // VARIABLES
-const branches = ['lns', 'gp', 'di'];
-const usersCache = {'lns': {}, 'gp': {}, 'di': {}};
+const branches = ['lns', 'gp', 'di', 'orel', 'ryaz'];
+const usersCache = {'lns': {}, 'gp': {}, 'di': {}, 'orel': {}, 'ryaz': {}};
 const usersCacheTTL = 24 * 3600 * 1000; // 24hr in miliseconds
 
 
@@ -309,7 +309,7 @@ app.get("/api/rota", async (req, res) => {
       return res.status(404).send('Day not found')
     }
 
-    if (['lns', 'gp', 'di'].includes(value.branch)){
+    if (['lns', 'gp', 'di', 'orel', 'ryaz'].includes(value.branch)){
         const result = await convertListRota(value.branch, dayEntry?.rota ?? {});
         return res.json(result)
     } else {

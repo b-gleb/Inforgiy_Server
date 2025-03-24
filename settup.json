@@ -13,5 +13,15 @@
         "minDate": "2024-01-01",
         "maxDate": "2025-12-31",
         "maxDuties": 3
+    },
+    "ryaz": {
+        "minDate": "2024-01-01",
+        "maxDate": "2025-12-31",
+        "maxDuties": 3
+    },
+    "orel": {
+        "minDate": "2024-01-01",
+        "maxDate": "2025-12-31",
+        "maxDuties": 3
     }
 }
