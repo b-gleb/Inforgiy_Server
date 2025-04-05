@@ -10,7 +10,7 @@ const crypto = require('crypto');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+module.exports = app;
 const settup = require('./settup.json');
 
 
