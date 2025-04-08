@@ -618,7 +618,9 @@ components:
         type: object
         properties:
           users:
-            $ref: '#/components/schemas/userObj'
+            type: array
+            items:
+              $ref: '#/components/schemas/userObj'
           label:
             type: string
             example: "00:00-01:00"
