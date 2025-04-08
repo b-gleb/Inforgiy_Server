@@ -1,0 +1,65 @@
+require('dotenv').config();
+const Joi = require('joi').extend(require('@joi/date'));
+const crypto = require('crypto');
+const settup = require('../config/settup.json');
+
+
+const validateBranch = Joi.string().valid(...Object.keys(settup));
+const validateUserId = Joi.number().integer().positive();
+const validateColor = Joi.number().min(0).max(6).default(0);
+
+
+const validateDateRange = Joi.array()
+  .length(2)
+  .items(
+    Joi.date().format('YYYY-MM-DD').utc().required(),
+    Joi.date().format('YYYY-MM-DD').utc().required()
+  )
+  .custom((value, helpers) => {
+    if (value[0] > value[1]) {
+      return helpers.message('startDate must be less than or equal to endDate');
+    }
+    return value;
+  });
+
+
+const validateInitData = (res, initDataUnsafe) => {
+  const unixTime = Math.floor(Date.now() / 1000);
+
+  if (process.env.ENV === 'PROD' && (unixTime - 3600) > initDataUnsafe.auth_date){
+    res.status(401).send('Authorization expired')
+    return false
+  }
+
+  const { hash, ...rest } = initDataUnsafe;
+
+  const dataCheckString = Object.entries(rest).sort().map(([k, v]) => {
+      if (typeof v === "object" && v !== null) {
+          v = JSON.stringify(v);
+      }
+
+      if (typeof v === "string" && /(https?:\/\/[^\s]+)/.test(v)) {
+          v = v.replace(/\//g, "\\/");
+      }
+      
+      return `${k}=${v}`;
+  }).join("\n");
+
+  const secret = crypto.createHmac("sha256", "WebAppData").update(process.env.TOKEN);
+  const calculatedHash = crypto.createHmac("sha256", secret.digest()).update(dataCheckString).digest("hex");
+  
+  if (calculatedHash === hash){
+    return true
+  } else {
+    res.status(401).send('Unable to verify hash')
+    return false
+  }
+};
+
+module.exports = {
+    validateBranch,
+    validateUserId,
+    validateColor,
+    validateDateRange,
+    validateInitData
+};
