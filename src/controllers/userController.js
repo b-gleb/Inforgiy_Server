@@ -1,8 +1,8 @@
-const { getDB } = require('../config/db');
-const Joi = require('joi');
-const { formatInitData, isRotaAdmin, statistic } = require('../utils/helpers');
-const { usersCache, usersCacheTTL } = require('../cache/usersCache');
-const { validateBranch, validateUserId, validateColor, validateInitData } = require('../utils/responseValidation');
+import { getDB } from '../config/db.js';
+import Joi from 'joi';
+import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
+import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
+import { validateBranch, validateUserId, validateColor, validateInitData } from '../utils/responseValidation.js';
 
 
 const users = async (req, res) => {
@@ -178,8 +178,8 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   users,
-  updateUser,
-  removeUser
-}
+  removeUser,
+  updateUser
+};

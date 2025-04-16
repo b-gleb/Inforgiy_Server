@@ -1,7 +1,7 @@
-const { getDB } = require('../config/db');
-const Joi = require('joi')
-const { validateBranch, validateUserId, validateDateRange } = require('../utils/responseValidation');
-const { convertUserId } = require('../utils/converters');
+import { getDB } from '../config/db.js';
+import Joi from 'joi'
+import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
+import { convertUserId } from '../utils/converters.js';
 
 
 
@@ -102,7 +102,6 @@ const stats = async (req, res) => {
   res.json(Object.fromEntries(convertedStats));
 }
 
-  
-module.exports = {
-  stats
+export default {
+  stats,
 };

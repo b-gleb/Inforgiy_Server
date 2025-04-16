@@ -1,8 +1,8 @@
-const { getDB } = require('../config/db');
-const Joi = require('joi');
-const { formatInitData } = require('../utils/helpers');
-const { validateInitData } = require('../utils/responseValidation');
-const settup = require('../config/settup.json');
+import { getDB } from '../config/db.js';
+import Joi from 'joi';
+import { formatInitData } from '../utils/helpers.js';
+import { validateInitData } from '../utils/responseValidation.js';
+import settup from '../config/settup.json' with { type: 'json' };
 
 
 const ping = async (req, res) => {
@@ -70,8 +70,7 @@ const auth = async (req, res) => {
 
 };
 
-
-module.exports = {
-  auth,
-  ping
-}
+export default {
+  ping,
+  auth
+};

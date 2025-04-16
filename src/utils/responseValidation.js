@@ -1,15 +1,21 @@
-require('dotenv').config();
-const Joi = require('joi').extend(require('@joi/date'));
-const crypto = require('crypto');
-const settup = require('../config/settup.json');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import BaseJoi from 'joi';
+import joiDate from '@joi/date';
+const Joi = BaseJoi.extend(joiDate);
+
+import crypto from 'crypto';
+import settup from '../config/settup.json' with { type: 'json' };
 
 
-const validateBranch = Joi.string().valid(...Object.keys(settup));
-const validateUserId = Joi.number().integer().positive();
-const validateColor = Joi.number().min(0).max(6).default(0);
+// Simple Validation
+export const validateBranch = Joi.string().valid(...Object.keys(settup));
+export const validateUserId = Joi.number().integer().positive();
+export const validateColor = Joi.number().min(0).max(6).default(0);
 
-
-const validateDateRange = Joi.array()
+// Complex Validation
+export const validateDateRange = Joi.array()
   .length(2)
   .items(
     Joi.date().format('YYYY-MM-DD').utc().required(),
@@ -23,7 +29,7 @@ const validateDateRange = Joi.array()
   });
 
 
-const validateInitData = (res, initDataUnsafe) => {
+export const validateInitData = (res, initDataUnsafe) => {
   const unixTime = Math.floor(Date.now() / 1000);
 
   if (process.env.ENV === 'PROD' && (unixTime - 3600) > initDataUnsafe.auth_date){
@@ -54,12 +60,4 @@ const validateInitData = (res, initDataUnsafe) => {
     res.status(401).send('Unable to verify hash')
     return false
   }
-};
-
-module.exports = {
-    validateBranch,
-    validateUserId,
-    validateColor,
-    validateDateRange,
-    validateInitData
 };

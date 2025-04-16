@@ -1,9 +1,8 @@
-const { getDB } = require('../config/db');
-const { usersCache, usersCacheTTL } = require('../cache/usersCache');
+import { getDB } from '../config/db.js';
+import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 
 
-
-async function convertUserId(branch, user_id) {
+export async function convertUserId(branch, user_id) {
   const mongo_db = getDB();
   
   // Check cache
@@ -41,7 +40,7 @@ async function convertUserId(branch, user_id) {
 }
 
 
-async function convertListRota(branch, data) {
+export async function convertListRota(branch, data) {
   const result = [];
 
   for (let index = 0; index < 24; index++) {
@@ -74,9 +73,4 @@ async function convertListRota(branch, data) {
   }
 
   return result;
-}
-
-module.exports = {
-  convertUserId,
-  convertListRota
 }

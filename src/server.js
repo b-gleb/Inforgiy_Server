@@ -1,5 +1,5 @@
-const app = require('./app');
-const { initializeMongoDB } = require('./config/db');
+import app from './app.js';;
+import { initializeMongoDB } from './config/db.js';
 
 let mongo_client;
 

@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const defaultController = require('../controllers/defaultController');
+import defaultController from '../controllers/defaultController.js';
 
 router.get('/ping', defaultController.ping);
 router.get('/auth', defaultController.auth);
 
-module.exports = router;
+export default router;

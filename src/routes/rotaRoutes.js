@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const rotaController = require('../controllers/rotaController');
+import rotaController from '../controllers/rotaController.js';
 
 router.get('/rota', rotaController.rota);
 router.post('/updateRota', rotaController.updateRota);
 router.get('/userDuties', rotaController.userDuties);
 
-module.exports = router;
+export default router;

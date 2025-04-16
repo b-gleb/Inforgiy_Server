@@ -1,9 +1,9 @@
-const { getDB } = require('../config/db');
-const { convertListRota } = require('../utils/converters');
-const Joi = require('joi');
-const { formatInitData, isRotaAdmin, statistic } = require('../utils/helpers');
-const { validateBranch, validateUserId, validateInitData } = require('../utils/responseValidation');
-const settup = require('../config/settup.json')
+import { getDB } from '../config/db.js';
+import Joi from 'joi';
+import { convertListRota } from '../utils/converters.js';
+import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
+import { validateBranch, validateUserId, validateInitData } from '../utils/responseValidation.js';
+import settup from '../config/settup.json' with { type: 'json' };
 
 
 
@@ -165,9 +165,8 @@ const updateRota = async (req, res) => {
   };
 };
 
-
-module.exports = {
+export default {
   rota,
-  updateRota,
-  userDuties
+  userDuties,
+  updateRota
 };

@@ -1,9 +1,11 @@
-require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
 let mongo_client, mongo_db;
 
-const initializeMongoDB = async () => {
+export const initializeMongoDB = async () => {
   mongo_client = new MongoClient(process.env.MONGO_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -23,14 +25,9 @@ const initializeMongoDB = async () => {
   };
 };
 
-const getDB = () => {
+export const getDB = () => {
   if (!mongo_db) {
     throw new Error('MongoDB not initialized. Call initializeMongoDB() first.');
   }
   return mongo_db;
 };
-
-module.exports = {
-  initializeMongoDB,
-  getDB
-}

@@ -1,7 +1,7 @@
-const { getDB } = require('../config/db');
+import { getDB } from '../config/db.js';
 
 
-function formatInitData(initDataUnsafe){
+export function formatInitData(initDataUnsafe){
   initDataUnsafe.user.id = parseInt(initDataUnsafe.user.id, 10)
   initDataUnsafe.user.allows_write_to_pm = Boolean(initDataUnsafe.user.allows_write_to_pm)
   initDataUnsafe.auth_date = parseInt(initDataUnsafe.auth_date, 10)
@@ -16,7 +16,7 @@ function formatInitData(initDataUnsafe){
 }
 
 
-async function isRotaAdmin(branch, user_id) {
+export async function isRotaAdmin(branch, user_id) {
   const mongo_db = getDB();
   const userEntry = await mongo_db.collection('users').findOne(
     { telegram_id: user_id },
@@ -35,7 +35,7 @@ async function isRotaAdmin(branch, user_id) {
 }
 
 
-async function statistic(initDataUnsafe, action, sub_action = null, misc = null) {
+export async function statistic(initDataUnsafe, action, sub_action = null, misc = null) {
   if (process.env.ENV === 'TEST') {
     return
   }
@@ -61,10 +61,4 @@ async function statistic(initDataUnsafe, action, sub_action = null, misc = null)
 
   console.log(new_entry);
   await mongo_db.collection('usageStatistics').insertOne(new_entry);
-}
-
-module.exports = {
-  formatInitData,
-  isRotaAdmin,
-  statistic
 }

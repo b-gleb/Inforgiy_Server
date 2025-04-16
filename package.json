@@ -2,10 +2,11 @@
   "name": "inforgiy-server",
   "version": "1.0.5",
   "description": "",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage --coverageDirectory='coverage'",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --coverageDirectory='coverage'",
     "server": "npm src/server.js",
     "dev": "nodemon src/server.js"
   },

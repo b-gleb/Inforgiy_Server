@@ -1,5 +1,6 @@
-// const {MongoClient} = require('mongodb');
-const { initializeMongoDB } = require('../src/config/db');
+// import {MongoClient} from 'mongodb';
+import { jest } from '@jest/globals';
+import { initializeMongoDB } from '../src/config/db.js';
 
 let mongo_client;
 
