@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const { parseISO, formatISO, addDays, isBefore, isAfter, isEqual } = require('date-fns');
 const express = require('express');
 const cors = require('cors');
 const Joi = require('joi').extend(require('@joi/date'));
@@ -149,7 +150,6 @@ async function statistic(initDataUnsafe, action, sub_action = null, misc = null)
     user_region: user_region,
   };
 
-  console.log(new_entry);
   await mongo_db.collection('usageStatistics').insertOne(new_entry);
 }
 
@@ -401,7 +401,6 @@ app.get("/api/users", async (req, res) => {
       {projection: {'telegram_id': 1, 'telegram': 1, [`roles.rota_${value.branch}`]: 1, '_id': 0}}
     );
     const userArray = await userCursor.toArray();
-    console.log('Users fetched');
 
     // Save to cache
     for (const user of userArray) {
@@ -718,6 +717,136 @@ app.post("/api/stats", async (req, res) => {
 
   res.json(Object.fromEntries(convertedStats));
 })
+
+
+function fillMissingDates(data, startDate, endDate) {
+  let result = [];
+  let lastKnownCount = 0;
+  let index = 0;
+  let firstDataDate = data[0]?.date ?? startDate; // fallback to startDate when data is an empty array (ie no stats avaliable for user)
+
+  // Fill missing dates before the first data point with zero
+  while (isBefore(startDate, firstDataDate)) {
+      result.push({ date: formatISO(startDate, { representation: 'complete' }), cumulativeCount: 0 });
+      startDate = addDays(startDate, 1);
+  }
+
+  while (!isAfter(startDate, endDate)) {
+      let dateStr = formatISO(startDate, { representation: 'complete' });
+
+      if (index < data.length && isEqual(data[index].date, startDate)) {
+          lastKnownCount = data[index].cumulativeCount;
+          result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+          index++;
+      } else {
+          result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+      }
+      
+      startDate = addDays(startDate, 1);
+  }
+  
+  return result;
+}
+
+
+app.post("/api/stats/cumulative", async (req, res) => {
+  // Validation
+  const validationSchema = Joi.object({
+    branch: validateBranch.required(),
+    user_id: validateUserId.required(),
+    dateRanges: Joi.array().min(1).items(validateDateRange).required()
+  });
+
+  const { error, value } = validationSchema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  // Logic
+  const result = [];
+
+  for (const dateRange of value.dateRanges){
+    const pipeline = [
+      {
+        $match:
+          {
+            $and: [
+              {
+                date: {
+                  $gte: dateRange[0]
+                }
+              },
+              {
+                date: {
+                  $lte: dateRange[1]
+                }
+              }
+            ]
+          }
+      },
+      {
+        $unwind: {
+          path: "$rota"
+        }
+      },
+      {
+        $unwind: {
+          path: "$rota"
+        }
+      },
+      {
+        $match:
+          {
+            rota: value.user_id
+          }
+      },
+      {
+        $group: {
+          _id: "$date",
+          dailyCount: {
+            $sum: 1
+          }
+        }
+      },
+      {
+        $sort: {
+          _id: 1
+        }
+      },
+      {
+        $setWindowFields: {
+          sortBy: {
+            _id: 1
+          },
+          output: {
+            cumulativeCount: {
+              $sum: "$dailyCount",
+              window: {
+                documents: ["unbounded", "current"]
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          date: "$_id",
+          cumulativeCount: 1,
+          _id: 0
+        }
+      }
+    ];
+
+    const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
+
+    result.push({
+      user_id: value.user_id,
+      dateRange: dateRange,
+      data: fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
+    });
+    
+  }
+
+  res.json(result);
+});
 
 
 // Start the server
