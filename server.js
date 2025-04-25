@@ -723,7 +723,7 @@ function fillMissingDates(data, startDate, endDate) {
   let result = [];
   let lastKnownCount = 0;
   let index = 0;
-  let firstDataDate = data[0].date;
+  let firstDataDate = data[0]?.date ?? startDate; // fallback to startDate when data is an empty array (ie no stats avaliable for user)
 
   // Fill missing dates before the first data point with zero
   while (isBefore(startDate, firstDataDate)) {
@@ -836,7 +836,6 @@ app.post("/api/stats/cumulative", async (req, res) => {
     ];
 
     const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
-    // TODO: App crashes if pipeline output is empty
 
     result.push({
       user_id: value.user_id,
@@ -847,7 +846,7 @@ app.post("/api/stats/cumulative", async (req, res) => {
   }
 
   res.json(result);
-})
+});
 
 
 // Start the server
