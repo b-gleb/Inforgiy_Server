@@ -444,6 +444,10 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - branch
+                - modifyUserId
+                - initDataUnsafe
               properties:
                 branch:
                   type: string
@@ -502,6 +506,10 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - branch
+                - user_ids
+                - dateRanges
               properties:
                 branch:
                   type: string
@@ -590,6 +598,10 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - branch
+                - user_id
+                - dateRanges
               properties:
                 branch:
                     type: string
