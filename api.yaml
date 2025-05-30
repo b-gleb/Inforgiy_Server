@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.0.3
+  version: 1.0.6
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 # tags:
@@ -125,11 +125,7 @@ paths:
           description: "Branch for which to return the rota"
           required: true
           schema:
-            type: string
-            enum:
-              - lns
-              - gp
-              - di
+            $ref: '#/components/schemas/Branch'
         - name: date
           in: query
           description: "Date for which to return the rota"
@@ -185,12 +181,7 @@ paths:
                       - add
                       - remove
                   branch:
-                    type: string
-                    description: "Branch for which to perform the operation"
-                    enum: 
-                      - lns
-                      - gp
-                      - di
+                    $ref: '#/components/schemas/Branch'
                   date:
                     type: string
                     format: date
@@ -256,11 +247,7 @@ paths:
           description: "Branch for which to return all users"
           required: true
           schema:
-            type: string
-            enum:
-              - lns
-              - gp
-              - di
+            $ref: '#/components/schemas/Branch'
         - name: initDataUnsafe
           in: query
           description: "Data provided by the Telegram script to authenticate and validate the user"
@@ -310,11 +297,7 @@ paths:
           description: "Branch for which to perform the search operation"
           required: true
           schema:
-            type: string
-            enum:
-              - lns
-              - gp
-              - di
+            $ref: '#/components/schemas/Branch'
         - name: user_id
           in: query
           description: "User for which to perform the search"
@@ -384,12 +367,8 @@ paths:
                 - initDataUnsafe
               properties:
                 branch:
-                  type: string
                   description: "Branch for which to perform the operation"
-                  enum: 
-                    - lns
-                    - gp
-                    - di
+                  $ref: '#/components/schemas/Branch'
                 userObj:
                   $ref: '#/components/schemas/userObj'
                 initDataUnsafe:
@@ -444,14 +423,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - branch
+                - modifyUserId
+                - initDataUnsafe
               properties:
                 branch:
-                  type: string
                   description: "Branch for which to perform the operation"
-                  enum: 
-                    - lns
-                    - gp
-                    - di
+                  $ref: '#/components/schemas/Branch'
                 modifyUserId:
                   type: integer
                   format: int64
@@ -502,14 +481,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - branch
+                - user_ids
+                - dateRanges
               properties:
                 branch:
-                  type: string
                   description: "Branch for which to perform the operation"
-                  enum: 
-                    - lns
-                    - gp
-                    - di
+                  $ref: '#/components/schemas/Branch'
                 user_ids:
                   type: array
                   minItems: 1
@@ -578,8 +557,98 @@ paths:
                 example: "User not found"
 
 
+  /stats/cummulative:
+    post:
+      tags:
+        - Statistics
+      summary: "Cummulative sum of hours for user"
+      description: "Cummulative sum of hours across a date range"
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - user_id
+                - dateRanges
+              properties:
+                branch:
+                    description: "Branch for which to perform the operation"
+                    $ref: '#/components/schemas/Branch'
+                user_id:
+                    type: integer
+                    format: int64
+                    description: "The ID of the user to calculate the stats for"
+                    example: 123456789
+                dateRanges: 
+                  type: array
+                  description: "An array of arrays of dates (inclusive) for which to calculate the statistics"
+                  items:
+                    type: array
+                    items:
+                      type: string
+                      format: "YYYY-MM-DD"
+                      minItems: 2
+                      maxItems: 2
+                  example: [["2025-01-01", "2025-01-02"]]
+      responses:
+        '200':
+          description: JSON object with cummulative statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      format: int64
+                      example: 123456789
+                    dateRange:
+                      type: array
+                      minItems: 2
+                      maxItems: 2
+                      items:
+                        type: string
+                        format: date
+                      example: ["2025-01-01", "2025-01-02"]
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          date:
+                            type: string
+                            format: "YYYY-MM-DD"
+                            example: "2025-01-01"
+                          cumulativeCount:
+                            type: integer
+                            example: 5
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
+
 components:
   schemas:
+    Branch:
+      type: string
+      description: "Identifier of the branch for which to perform the operation"
+      enum:
+        - lns
+        - di
+        - gp
+        - orel
+        - ryaz
+
+
     userObj:
       type: object
       required:

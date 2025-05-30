@@ -1,6 +1,6 @@
 {
   "name": "inforgiy-server",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "type": "module",
   "main": "src/server.js",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@joi/date": "^2.1.1",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "joi": "^17.13.3",

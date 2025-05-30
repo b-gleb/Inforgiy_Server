@@ -12,7 +12,7 @@
     "di": {
         "minDate": "2024-01-01",
         "maxDate": "2025-12-31",
-        "maxDuties": 3
+        "maxDuties": 4
     },
     "ryaz": {
         "minDate": "2024-01-01",
