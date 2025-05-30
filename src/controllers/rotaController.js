@@ -19,7 +19,6 @@ const rota = async (req, res) => {
 
   // Logic
   const mongo_db = getDB();
-  // console.log(mongo_db)
   const dayEntry = await mongo_db.collection(`rota_${value.branch}`).findOne({date: value.date});
 
   if (dayEntry === null){
@@ -136,7 +135,7 @@ const updateRota = async (req, res) => {
       return res.status(403).send('You must be rota admin to add someone else')
     }
 
-    dayEntry = await mongo_db.collection(`rota_${value.branch}`).findOne(
+    let dayEntry = await mongo_db.collection(`rota_${value.branch}`).findOne(
       {date: value.date}
     );
 
