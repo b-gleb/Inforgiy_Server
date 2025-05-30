@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { isBefore, formatISO, addDays, isAfter, isEqual } from "date-fns";
 
 
 export function formatInitData(initDataUnsafe){
@@ -61,4 +62,34 @@ export async function statistic(initDataUnsafe, action, sub_action = null, misc 
 
   console.log(new_entry);
   await mongo_db.collection('usageStatistics').insertOne(new_entry);
+}
+
+
+export function fillMissingDates(data, startDate, endDate) {
+  let result = [];
+  let lastKnownCount = 0;
+  let index = 0;
+  let firstDataDate = data[0]?.date ?? startDate; // fallback to startDate when data is an empty array (ie no stats avaliable for user)
+
+  // Fill missing dates before the first data point with zero
+  while (isBefore(startDate, firstDataDate)) {
+      result.push({ date: formatISO(startDate, { representation: 'complete' }), cumulativeCount: 0 });
+      startDate = addDays(startDate, 1);
+  }
+
+  while (!isAfter(startDate, endDate)) {
+      let dateStr = formatISO(startDate, { representation: 'complete' });
+
+      if (index < data.length && isEqual(data[index].date, startDate)) {
+          lastKnownCount = data[index].cumulativeCount;
+          result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+          index++;
+      } else {
+          result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+      }
+      
+      startDate = addDays(startDate, 1);
+  }
+  
+  return result;
 }

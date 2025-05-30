@@ -2,7 +2,7 @@ import { getDB } from '../config/db.js';
 import Joi from 'joi'
 import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
 import { convertUserId } from '../utils/converters.js';
-
+import { fillMissingDates } from '../utils/helpers.js';
 
 
 const stats = async (req, res) => {
@@ -102,6 +102,109 @@ const stats = async (req, res) => {
   res.json(Object.fromEntries(convertedStats));
 }
 
+
+const stats_cumulative = async (req, res) => {
+  // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      user_id: validateUserId.required(),
+      dateRanges: Joi.array().min(1).items(validateDateRange).required()
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    // Logic
+    const mongo_db = getDB();
+    const result = [];
+
+    for (const dateRange of value.dateRanges){
+      const pipeline = [
+        {
+          $match:
+            {
+              $and: [
+                {
+                  date: {
+                    $gte: dateRange[0]
+                  }
+                },
+                {
+                  date: {
+                    $lte: dateRange[1]
+                  }
+                }
+              ]
+            }
+        },
+        {
+          $unwind: {
+            path: "$rota"
+          }
+        },
+        {
+          $unwind: {
+            path: "$rota"
+          }
+        },
+        {
+          $match:
+            {
+              rota: value.user_id
+            }
+        },
+        {
+          $group: {
+            _id: "$date",
+            dailyCount: {
+              $sum: 1
+            }
+          }
+        },
+        {
+          $sort: {
+            _id: 1
+          }
+        },
+        {
+          $setWindowFields: {
+            sortBy: {
+              _id: 1
+            },
+            output: {
+              cumulativeCount: {
+                $sum: "$dailyCount",
+                window: {
+                  documents: ["unbounded", "current"]
+                }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            date: "$_id",
+            cumulativeCount: 1,
+            _id: 0
+          }
+        }
+      ];
+
+      const pipeline_output = await mongo_db.collection(`rota_${value.branch}`).aggregate(pipeline).toArray();
+
+      result.push({
+        user_id: value.user_id,
+        dateRange: dateRange,
+        data: fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
+      });
+      
+    }
+
+    res.json(result);
+};
+
+
 export default {
   stats,
+  stats_cumulative
 };
