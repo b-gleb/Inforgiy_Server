@@ -47,9 +47,7 @@ const auth = async (req, res) => {
     if (userEntry.roles[rotaKey] !== undefined) {
         userBranches[branch] = {
           color: userEntry.roles[rotaKey],
-          maxDuties: settup[branch].maxDuties,
-          minDate: settup[branch].minDate,
-          maxDate: settup[branch].maxDate
+          maxDuties: settup[branch].maxDuties
         };
 
         hasRoles = true;

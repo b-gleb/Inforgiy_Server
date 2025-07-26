@@ -54,27 +54,13 @@ paths:
                             type: integer
                             description: "Maximum number of users per hour slot"
                             example: 3
-                          minDate:
-                            type: string
-                            format: date
-                            description: "Minimum applicable date"
-                            example: "2024-01-01"
-                          maxDate:
-                            type: string
-                            format: date
-                            description: "Maximum applicable date"
-                            example: "2026-01-01"
                       example:
                         lns:
                           color: 0
                           maxDuties: 3
-                          minDate: "2024-01-01"
-                          maxDate: "2026-01-01"
                         gp:
                           color: 1
                           maxDuties: 2
-                          minDate: "2024-02-01"
-                          maxDate: "2025-12-31"
                     rotaAdmin:
                       type: array
                       items:

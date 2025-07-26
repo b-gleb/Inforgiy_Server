@@ -3,7 +3,6 @@ import Joi from 'joi';
 import { convertListRota } from '../utils/converters.js';
 import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
 import { validateBranch, validateUserId, validateInitData } from '../utils/responseValidation.js';
-import settup from '../config/settup.json' with { type: 'json' };
 
 
 
@@ -11,7 +10,7 @@ const rota = async (req, res) => {
   // Validation
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
-    date: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required()
+    date: Joi.date().required()
   });
 
   const { error, value } = validationSchema.validate(req.query);
@@ -39,8 +38,8 @@ const userDuties = async (req, res) => {
   const validationSchema = Joi.object({
     branch: validateBranch.required(),
     user_id: validateUserId.required(),
-    startDate: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required(),
-    endDate: Joi.date().max(settup[req.query.branch].maxDate).min(settup[req.query.branch].minDate).required()
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required()
   }).custom((value, helpers) => {
     if (value.startDate > value.endDate) {
       return helpers.message('startDate must be less than or equal to endDate');
@@ -91,7 +90,7 @@ const updateRota = async (req, res) => {
   const validationSchema = Joi.object({
     type: Joi.string().valid('remove', 'add').required(),
     branch: validateBranch.required(),
-    date: Joi.date().max(settup[req.body.branch].maxDate).min(settup[req.body.branch].minDate).required(),
+    date: Joi.date().required(),
     timeRange: Joi.string().required(),
     modifyUserId: validateUserId.required(),
     initDataUnsafe: Joi.any().required()
