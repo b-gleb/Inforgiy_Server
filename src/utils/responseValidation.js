@@ -12,7 +12,7 @@ import settup from '../config/settup.json' with { type: 'json' };
 // Simple Validation
 export const validateBranch = Joi.string().valid(...Object.keys(settup));
 export const validateUserId = Joi.number().integer().positive();
-export const validateColor = Joi.number().min(0).max(6).default(0);
+export const validateColor = Joi.number().integer().min(0).max(6).default(0);
 
 // Complex Validation
 export const validateDateRange = Joi.array()
