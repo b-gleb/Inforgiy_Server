@@ -1,10 +1,11 @@
 import { jest } from '@jest/globals';
-import { initializeMongoDB } from '../src/database.js';
+// TODO: Potentially substitute with a mock database
+import database from '../src/database.js';
 let mongo_client;
 
 beforeAll(async () => {
   console.log = jest.fn();
-  mongo_client = await initializeMongoDB();
+  mongo_client = await database.initializeMongoDB();
 });
   
 afterAll(async () => {
