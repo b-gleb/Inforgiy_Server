@@ -1,7 +1,10 @@
 import request from 'supertest';
+import makeApp from '../../src/app.js';
+// TODO: Substitute with mock database
+import database from '../../src/database.js';
 import { lastDayOfYear, format } from "date-fns";
-import app from '../../src/app.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+const app = makeApp(database);
 
 
 describe.each(Object.keys(settup))('VALID GET /api/rota for branch %s', (branch) => {

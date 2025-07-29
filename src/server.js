@@ -1,8 +1,9 @@
-import app from './app.js';
+import makeApp from './app.js';
 import database from './database.js';
 
 let server;
 let mongoClient;
+const app = makeApp(database);
 
 async function startServer() {
   try {

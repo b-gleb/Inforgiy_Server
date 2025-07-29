@@ -29,3 +29,8 @@ export const getDB = () => {
   }
   return mongo_db;
 };
+
+
+export default {
+  initializeMongoDB,
+};
