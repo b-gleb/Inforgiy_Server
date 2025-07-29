@@ -164,6 +164,130 @@ export async function updateUser(branch, userId, nick, color) {
   return entry;
 };
 
+///////////
+// STATS //
+///////////
+export async function getDateRangeStats(branch, userIds, dateRange) {
+  const pipeline = [
+    {
+      '$match': {
+        '$and': [
+          {
+            'date': {
+              '$gte': dateRange[0]
+            }
+          }, {
+            'date': {
+              '$lte': dateRange[1]
+            }
+          }
+        ]
+      }
+    }, {
+      '$unwind': {
+        'path': '$rota'
+      }
+    }, {
+      '$unwind': {
+        'path': '$rota'
+      }
+    }, {
+      '$match': {
+        'rota': {
+          '$in': userIds
+        }
+      }
+    }, {
+      '$group': {
+        '_id': '$rota', 
+        'count': {
+          '$sum': 1
+        }
+      }
+    }
+  ];
+
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput;
+};
+
+
+export async function getCummulativeStats(branch, userId, dateRange) {
+  const pipeline = [
+    {
+      $match:
+        {
+          $and: [
+            {
+              date: {
+                $gte: dateRange[0]
+              }
+            },
+            {
+              date: {
+                $lte: dateRange[1]
+              }
+            }
+          ]
+        }
+    },
+    {
+      $unwind: {
+        path: "$rota"
+      }
+    },
+    {
+      $unwind: {
+        path: "$rota"
+      }
+    },
+    {
+      $match:
+        {
+          rota: userId
+        }
+    },
+    {
+      $group: {
+        _id: "$date",
+        dailyCount: {
+          $sum: 1
+        }
+      }
+    },
+    {
+      $sort: {
+        _id: 1
+      }
+    },
+    {
+      $setWindowFields: {
+        sortBy: {
+          _id: 1
+        },
+        output: {
+          cumulativeCount: {
+            $sum: "$dailyCount",
+            window: {
+              documents: ["unbounded", "current"]
+            }
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        date: "$_id",
+        cumulativeCount: 1,
+        _id: 0
+      }
+    }
+  ];
+
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput;
+};
+
 
 // TODO: getDB to be removed after 
 export const getDB = () => {
@@ -187,4 +311,7 @@ export default {
   addUserPermission,
   removeUserPermission,
   updateUser,
+  // STATS
+  getDateRangeStats,
+  getCummulativeStats
 };

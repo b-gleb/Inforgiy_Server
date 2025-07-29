@@ -7,7 +7,7 @@ dotenv.config();
 import defaultRoutes from './routes/defaultRoutes.js';
 import makeRotaRoutes from './routes/rotaRoutes.js';
 import makeUserRoutes from './routes/userRoutes.js';
-import statRoutes from './routes/statRoutes.js';
+import makeStatRoutes from './routes/statRoutes.js';
 
 export default function makeApp(database) {
   const app = express();
@@ -17,7 +17,7 @@ export default function makeApp(database) {
   app.use('/api', defaultRoutes);
   app.use('/api', makeRotaRoutes(database));
   app.use('/api', makeUserRoutes(database));
-  app.use('/api', statRoutes);
+  app.use('/api', makeStatRoutes(database));
 
   return app;
 };
