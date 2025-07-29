@@ -1,10 +1,10 @@
+import { MongoClient, ServerApiVersion } from 'mongodb';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { MongoClient, ServerApiVersion } from 'mongodb';
-
 let mongo_client;
 let mongo_db;
+
 
 export const initializeMongoDB = async () => {
   mongo_client = new MongoClient(process.env.MONGO_URI, {
@@ -21,6 +21,8 @@ export const initializeMongoDB = async () => {
   return mongo_client;
 };
 
+
+// TODO: getDB to be removed after 
 export const getDB = () => {
   if (!mongo_db) {
     throw new Error('MongoDB not initialized. Call initializeMongoDB() first.');

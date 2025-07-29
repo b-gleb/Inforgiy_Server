@@ -1,4 +1,4 @@
-import { getDB } from '../config/db.js';
+import { getDB } from '../database.js';
 import { isBefore, formatISO, addDays, isAfter, isEqual } from "date-fns";
 
 

@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { initializeMongoDB } from '../src/config/db.js';
+import { initializeMongoDB } from '../src/database.js';
 let mongo_client;
 
 beforeAll(async () => {

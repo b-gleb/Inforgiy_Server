@@ -1,4 +1,4 @@
-import { getDB } from '../config/db.js';
+import { getDB } from '../database.js';
 import Joi from 'joi'
 import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
 import { convertUserId } from '../utils/converters.js';

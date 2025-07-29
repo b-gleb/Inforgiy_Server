@@ -1,4 +1,4 @@
-import { getDB } from '../config/db.js';
+import { getDB } from '../database.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 
 
