@@ -1,185 +1,157 @@
-import { getDB } from '../database.js';
 import Joi from 'joi';
 import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 import { validateBranch, validateUserId, validateColor, validateInitData } from '../utils/responseValidation.js';
 
+export default function makeUserController(database) {
+  const users = async (req, res) => {
+    // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      initDataUnsafe: Joi.any().required()
+    });
 
-const users = async (req, res) => {
-  // Validation
-  const validationSchema = Joi.object({
-    branch: validateBranch.required(),
-    initDataUnsafe: Joi.any().required()
-  });
+    const { error, value } = validationSchema.validate(req.query);
+    if (error) return res.status(400).send(error.details[0].message);
 
-  const { error, value } = validationSchema.validate(req.query);
-  if (error) return res.status(400).send(error.details[0].message);
+    const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
+    if (! validateInitData(res, initDataUnsafe)){return};
 
-  const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
-  if (! validateInitData(res, initDataUnsafe)){return};
-
-  if (! await isRotaAdmin(value.branch, value.initDataUnsafe.user.id)) {
-    return res.status(403).send('You must be a rota admin') 
-  }
-
-  // Logic
-  const mongo_db = getDB();
-  const searchQuery = {
-    [`roles.rota_${value.branch}`]: {$exists: true},
-    'telegram_id': {'$ne': null}
-  };
-  const userCount = await mongo_db.collection('users').countDocuments(searchQuery);
-
-  if (Object.entries(usersCache[value.branch]).length !== userCount) {
-    // Reset cache
-    usersCache[value.branch] = {};
-
-    // Fetch data
-    const userCursor = mongo_db.collection('users').find(
-      searchQuery,
-      {projection: {'telegram_id': 1, 'telegram': 1, [`roles.rota_${value.branch}`]: 1, '_id': 0}}
-    );
-    const userArray = await userCursor.toArray();
-    console.log('Users fetched');
-
-    // Save to cache
-    for (const user of userArray) {
-      usersCache[value.branch][user.telegram_id] = {
-        id: user.telegram_id,
-        username: user.telegram,
-        nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
-        color: user?.roles[`rota_${value.branch}`]?.c ?? null,
-      };
-
-      setTimeout(() => {
-        delete usersCache[value.branch][user.telegram_id];
-      }, usersCacheTTL);
+    if (! await isRotaAdmin(value.branch, value.initDataUnsafe.user.id)) {
+      return res.status(403).send('You must be a rota admin') 
     }
-  }
 
-  res.json(Object.values(usersCache[value.branch]))
-};
+    // Logic
+    const userCount = await database.getUserCount(value.branch);
 
+    if (Object.entries(usersCache[value.branch]).length !== userCount) {
+      // Reset cache
+      usersCache[value.branch] = {};
 
-const removeUser = async (req, res) => {
-  // Validation
-  const validationSchema = Joi.object({
-    branch: validateBranch.required(),
-    modifyUserId: validateUserId.required(),
-    initDataUnsafe: Joi.any().required()
-  });
+      // Fetch data
+      const userArray = await database.getBranchUsers(value.branch);
 
-  const { error, value } = validationSchema.validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+      // Save to cache
+      for (const user of userArray) {
+        usersCache[value.branch][user.telegram_id] = {
+          id: user.telegram_id,
+          username: user.telegram,
+          nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
+          color: user?.roles[`rota_${value.branch}`]?.c ?? null,
+        };
 
-  const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
-  if (! validateInitData(res, initDataUnsafe)){return};
+        setTimeout(() => {
+          delete usersCache[value.branch][user.telegram_id];
+        }, usersCacheTTL);
+      }
+    }
 
-  if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
-    res.status(403).send('You must be a rota admin')
-    return 
-  }
-
-  // Logic
-  const mongo_db = getDB();
-  const updateUser = await mongo_db.collection('users').updateOne(
-    {telegram_id: value.modifyUserId},
-    {$unset: {[`roles.rota_${value.branch}`]: null}}
-  )
-
-  // Update cache
-  delete usersCache[value.branch][value.modifyUserId]
-
-  if (updateUser.matchedCount === 1){
-    res.send('ok')
-    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
-  } else {
-    res.status(404).send("User not found")
-  }
-};
-
-
-const updateUser = async (req, res) => {
-  // Validation
-  const validationSchema = Joi.object({
-    branch: validateBranch.required(),
-    userObj: Joi.object({
-      id: validateUserId.allow(null),
-      username: Joi.string(),
-      nick: Joi.string().required(),
-      color: validateColor
-    }).or('id', 'username').required(),
-    initDataUnsafe: Joi.any().required()
-  });
-
-  const { error, value } = validationSchema.validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
-  if (! validateInitData(res, initDataUnsafe)){return};
-
-  if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
-    res.status(403).send('You must be a rota admin')
-    return 
-  }
-
-  // Logic
-  const mongo_db = getDB();
-  let updateUser;
-  const updateOptions = {
-    projection: {telegram_id: 1, telegram: 1, [`roles.rota_${value.branch}`]: 1, _id: 0},
-    returnDocument: 'after'
+    res.json(Object.values(usersCache[value.branch]))
   };
 
-  if (value.userObj.id) {
-    // Update permissions of user with current rota access
-    updateUser = await mongo_db.collection('users').findOneAndUpdate(
-      {telegram_id: value.userObj.id},
-      {
-        $set: {
-          [`roles.rota_${value.branch}`]: {
-            nick: value.userObj.nick,
-            c: value.userObj.color
-          }
-        }
-      },
-      updateOptions
+
+  const removeUser = async (req, res) => {
+    // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      modifyUserId: validateUserId.required(),
+      initDataUnsafe: Joi.any().required()
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
+    if (! validateInitData(res, initDataUnsafe)){return};
+
+    if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
+      res.status(403).send('You must be a rota admin')
+      return 
+    }
+
+    // Logic
+    const removedUser = await database.removeUserPermission(
+      value.branch,
+      value.modifyUserId
     )
 
-  } else if (!value.userObj.id && value.userObj.username) {
-    // Add rota access to a user in DB
-    updateUser = await mongo_db.collection('users').findOneAndUpdate(
-      {telegram: value.userObj.username},
-      {
-        $set: {
-          [`roles.rota_${value.branch}`]: {
-            nick: value.userObj.nick,
-            c: value.userObj.color
-          }
-        }
-      },
-      updateOptions
-    )
-  }
+    // Update cache
+    delete usersCache[value.branch][value.modifyUserId]
 
-  if (updateUser !== null){
-    res.send('ok')
-    await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
-  } else {
-    return res.status(404).send("User not found")
-  }
+    if (removedUser.matchedCount === 1){
+      res.send('ok')
+      await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
+    } else {
+      res.status(404).send("User not found")
+    }
+  };
 
-  // Update cache
-  usersCache[value.branch][updateUser.telegram_id] = {
-    id: updateUser.telegram_id,
-    username: updateUser.telegram,
-    nick: updateUser.roles[`rota_${value.branch}`]?.nick ?? updateUser.telegram,
-    color: updateUser.roles[`rota_${value.branch}`]?.c ?? 0
-  }
-};
 
-export default {
-  users,
-  removeUser,
-  updateUser
+  const updateUser = async (req, res) => {
+    // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      userObj: Joi.object({
+        id: validateUserId.allow(null),
+        username: Joi.string(),
+        nick: Joi.string().required(),
+        color: validateColor
+      }).or('id', 'username').required(),
+      initDataUnsafe: Joi.any().required()
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
+    if (! validateInitData(res, initDataUnsafe)){return};
+
+    if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
+      res.status(403).send('You must be a rota admin')
+      return 
+    }
+
+    // Logic
+    let updatedUser;
+
+    if (value.userObj.id) {
+      // Update permissions of user with current rota access
+      updatedUser = await database.updateUser(
+        value.branch,
+        value.userObj.id,
+        value.userObj.nick,
+        value.userObj.color
+      );
+
+    } else if (!value.userObj.id && value.userObj.username) {
+      // Add rota access to a user in DB
+      updatedUser = await database.addUserPermission(
+        value.branch,
+        value.userObj.username,
+        value.userObj.nick,
+        value.userObj.color
+      );
+    };
+
+    if (updatedUser !== null){
+      res.send('ok')
+      await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
+    } else {
+      return res.status(404).send("User not found")
+    }
+
+    // Update cache
+    usersCache[value.branch][updatedUser.telegram_id] = {
+      id: updatedUser.telegram_id,
+      username: updatedUser.telegram,
+      nick: updatedUser.roles[`rota_${value.branch}`]?.nick ?? updatedUser.telegram,
+      color: updatedUser.roles[`rota_${value.branch}`]?.c ?? 0
+    }
+  };
+
+  return {
+    users,
+    removeUser,
+    updateUser
+  };
 };

@@ -21,7 +21,9 @@ export const initializeMongoDB = async () => {
   return mongo_client;
 };
 
-
+//////////
+// ROTA //
+//////////
 export async function getRota(branch, date) {
   const entry = await mongo_db.collection(`rota_${branch}`).findOne({date: date});
   return entry;
@@ -67,6 +69,101 @@ export async function removeUserFromRota(branch, date, timeIndex, modifyUserId) 
   return entry;
 };
 
+///////////
+// USERS //
+///////////
+
+// GENERATORS //
+function branchUsersSearchQuery(branch) {
+  return {
+    [`roles.rota_${branch}`]: {$exists: true},
+    'telegram_id': {'$ne': null}
+  };
+};
+
+
+function userProjection(branch) {
+  return {
+    'telegram_id': 1,
+    'telegram': 1,
+    [`roles.rota_${branch}`]: 1,
+    '_id': 0
+  };
+};
+
+// DATABASE FUNCITONS //
+export async function getUserCount(branch) {
+  const query = branchUsersSearchQuery(branch);
+  const count = await mongo_db.collection('users').countDocuments(query);
+  return count;
+};
+
+
+export async function getBranchUsers(branch) {
+  const query = branchUsersSearchQuery(branch);
+  const projection = userProjection(branch);
+  const cursor = mongo_db.collection('users').find(
+    query,
+    {
+      projection: projection
+    }
+  );
+  const entriesArray = await cursor.toArray();
+  return entriesArray;
+};
+
+
+export async function addUserPermission(branch, username, nick, color) {
+  const projection = userProjection(branch);
+  const entry = await mongo_db.collection('users').findOneAndUpdate(
+    {telegram: username},
+    {
+      $set: {
+        [`roles.rota_${branch}`]: {
+          nick: nick,
+          c: color
+        }
+      }
+    },
+    {
+      projection: projection,
+      returnDocument: 'after'
+    }
+  );
+
+  return entry;
+};
+
+
+export async function removeUserPermission(branch, userId) {
+  const entry = await mongo_db.collection('users').updateOne(
+    {telegram_id: userId},
+    {$unset: {[`roles.rota_${branch}`]: null}}
+  );
+  return entry;
+};
+
+
+export async function updateUser(branch, userId, nick, color) {
+  const projection = userProjection(branch);
+  const entry = await mongo_db.collection('users').findOneAndUpdate(
+    {telegram_id: userId},
+    {
+      $set: {
+        [`roles.rota_${branch}`]: {
+          nick: nick,
+          c: color
+        }
+      }
+    },
+    {
+      projection: projection,
+      returnDocument: 'after'
+    }
+  );
+  return entry;
+};
+
 
 // TODO: getDB to be removed after 
 export const getDB = () => {
@@ -79,8 +176,15 @@ export const getDB = () => {
 
 export default {
   initializeMongoDB,
+  // ROTA
   getRota,
   getUserDuties,
   addUserToRota,
-  removeUserFromRota
+  removeUserFromRota,
+  // USERS
+  getUserCount,
+  getBranchUsers,
+  addUserPermission,
+  removeUserPermission,
+  updateUser,
 };

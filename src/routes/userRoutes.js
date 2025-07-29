@@ -1,9 +1,13 @@
 import express from'express';
-const router = express.Router();
-import userController from'../controllers/userController.js';
+import makeUserController from'../controllers/userController.js';
 
-router.get('/users', userController.users);
-router.post('/updateUser', userController.updateUser);
-router.post('/removeUser', userController.removeUser);
+export default function makeUserRoutes(database) {
+  const router = express.Router();
+  const userController = makeUserController(database);
 
-export default router;
+  router.get('/users', userController.users);
+  router.post('/updateUser', userController.updateUser);
+  router.post('/removeUser', userController.removeUser);
+
+  return router;
+};

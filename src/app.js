@@ -6,7 +6,7 @@ dotenv.config();
 // ROUTES
 import defaultRoutes from './routes/defaultRoutes.js';
 import makeRotaRoutes from './routes/rotaRoutes.js';
-import userRoutes from './routes/userRoutes.js';
+import makeUserRoutes from './routes/userRoutes.js';
 import statRoutes from './routes/statRoutes.js';
 
 export default function makeApp(database) {
@@ -16,7 +16,7 @@ export default function makeApp(database) {
 
   app.use('/api', defaultRoutes);
   app.use('/api', makeRotaRoutes(database));
-  app.use('/api', userRoutes);
+  app.use('/api', makeUserRoutes(database));
   app.use('/api', statRoutes);
 
   return app;
