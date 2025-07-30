@@ -16,6 +16,37 @@ const app = makeApp({
   addUserToRota
 });
 
+const rotaDBEntry = {
+  "_id": "676d7f9f8300f637d426cee9",
+  "date": new Date(2025, 2, 9),
+  "rota": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [1813610409],
+    [1171875915, 1813610409],
+    [1171875915, 1813610409],
+    [1171875915],
+    [1171875915],
+    [1171875915],
+    [1171875915],
+    [573769247],
+    [573769247],
+    [573769247],
+    [573769247],
+    [573769247],
+    [573769247]
+  ]
+}
+
 
 describe('GET /api/rota', () => {
   beforeEach(() => {
@@ -132,6 +163,129 @@ describe('GET /api/rota', () => {
       });
 
       expect(typeof res.body[0]['label']).toBe('string');
+    });
+  });
+});
+
+
+describe('GET /api/userDuties', () => {
+  beforeEach(() => {
+    getUserDuties.mockReset();
+  });
+
+  describe('INVALID PARAMETRS GET /api/userDuties', () => {
+    it('should respond with a status code 400 when any parameter is missing', async () => {
+      const bodyData = [
+        {userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08'},
+        {branch: Object.keys(settup)[0], startDate: '2025-01-01', endDate: '2025-01-08'},
+        {branch: Object.keys(settup)[0], userId: 1230, endDate: '2025-01-08'},
+        {branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-01'},
+        {}
+      ]
+
+      for (const body of bodyData){
+        const res = await request(app).get('/api/userDuties').query(body);
+        expect(res.statusCode).toBe(400);
+      }
+      
+    });
+
+
+    it('should respond with a status code 400 when startDate is larger than endDate', async () => {
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-08', endDate: '2025-01-01'});
+
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+
+  describe('VALID PARAMETERS GET /api/userDuties', () => {
+    it('should respond with status code 200', async () => {
+      getUserDuties.mockResolvedValue([]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.statusCode).toBe(200);
+    });
+
+
+    it('should specify json in the content type header', async () => {
+      getUserDuties.mockResolvedValue([]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+    });
+
+  
+    it('should query the database for user duties', async () => {
+      getUserDuties.mockResolvedValue([]);
+      const res = await request(app).get('/api/userDuties').query({branch: 'di', userId: 12345, startDate: '2026-01-01', endDate: '2026-01-08'});
+
+      expect(getUserDuties.mock.calls.length).toBe(1);
+      expect(getUserDuties.mock.calls[0][0]).toBe('di');
+      expect(getUserDuties.mock.calls[0][1]).toBe(12345);
+      expect(getUserDuties.mock.calls[0][2].toISOString()).toBe('2026-01-01T00:00:00.000Z');
+      expect(getUserDuties.mock.calls[0][3].toISOString()).toBe('2026-01-08T00:00:00.000Z');
+    });
+  });
+
+
+  describe('RESPONSE VALIDATION GET /api/userDuties', () => {
+    it('should return an empty array if no duties are found', async () => {
+      getUserDuties.mockResolvedValue([]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body).toHaveLength(0);
+    });
+
+
+    it('should return an array of objects if any duties are found', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.body[0]).toBeInstanceOf(Object);
+    });
+
+
+    it('array element should have properties "date" and "hours"', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.body[0]).toHaveProperty('date');
+      expect(res.body[0]).toHaveProperty('hours');
+    });
+
+
+    it('array element property "date" should be of type date', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(typeof res.body[0]['date']).toBe('string');
+      expect(res.body[0]['date']).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/);
+    });
+
+
+    it('array element property "hours" should be of type array', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.body[0]['hours']).toBeInstanceOf(Array);
+    });
+
+
+    it('array element property "hours" should not be empty', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(res.body[0]['hours']).not.toHaveLength(0);
+    });
+
+
+    it('array element property "hours" should contain numbers', async () => {
+      getUserDuties.mockResolvedValue([rotaDBEntry]);
+      const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
+
+      expect(Number.isInteger(res.body[0]['hours'][0])).toBe(true);
     });
   });
 });
