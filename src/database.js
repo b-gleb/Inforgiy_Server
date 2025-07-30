@@ -92,6 +92,15 @@ function userProjection(branch) {
 };
 
 // DATABASE FUNCITONS //
+export async function getUserRoles(userId) {
+  const entry = await mongo_db.collection('users').findOne(
+    {telegram_id: userId},
+    {projection: {roles: 1}}
+  );
+  return entry;
+};
+
+
 export async function getUserCount(branch) {
   const query = branchUsersSearchQuery(branch);
   const count = await mongo_db.collection('users').countDocuments(query);
@@ -306,6 +315,7 @@ export default {
   addUserToRota,
   removeUserFromRota,
   // USERS
+  getUserRoles,
   getUserCount,
   getBranchUsers,
   addUserPermission,
