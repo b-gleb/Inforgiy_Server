@@ -111,7 +111,7 @@ describe('GET /api/rota', () => {
     });
 
 
-    it('array element "users" should be an object', async () => {
+    it('array element property "users" should be of type object', async () => {
       getRota.mockResolvedValue({});
 
       const res = await request(app).get('/api/rota').query({
@@ -123,7 +123,7 @@ describe('GET /api/rota', () => {
     });
 
 
-    it('array element "label" should be a string', async () => {
+    it('array element property "label" should be of type string', async () => {
       getRota.mockResolvedValue({});
 
       const res = await request(app).get('/api/rota').query({
