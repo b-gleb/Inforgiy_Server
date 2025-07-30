@@ -284,7 +284,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/Branch'
-        - name: user_id
+        - name: userId
           in: query
           description: "User for which to perform the search"
           required: true

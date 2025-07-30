@@ -61,7 +61,7 @@ export default function makeRotaController(database) {
       let dayDuties = {date: dayEntry.date, hours: []};
 
       dayEntry.rota.forEach((timeSlot, index) => {
-        if (timeSlot.includes(value.user_id)){
+        if (timeSlot.includes(value.userId)){
           dayDuties.hours.push(index)
         }
       });
