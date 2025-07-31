@@ -1,7 +1,7 @@
 import { getDB } from '../database.js';
 import Joi from 'joi';
 import { formatInitData } from '../utils/helpers.js';
-import { validateInitData } from '../utils/responseValidation.js';
+import { validateInitData } from '../utils/initDataValidation.js';
 import settup from '../config/settup.json' with { type: 'json' };
 
 

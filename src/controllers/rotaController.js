@@ -1,7 +1,8 @@
 import Joi from 'joi';
 import { convertListRota } from '../utils/converters.js';
 import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
-import { validateBranch, validateUserId, validateInitData } from '../utils/responseValidation.js';
+import { validateInitData } from '../utils/initDataValidation.js';
+import { validateBranch, validateUserId } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
   const rota = async (req, res) => {
