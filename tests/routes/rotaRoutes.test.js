@@ -1,8 +1,14 @@
-import { beforeEach, describe, expect, jest } from '@jest/globals'
+import { beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import makeApp from '../../src/app.js';
 import { lastDayOfYear, format } from "date-fns";
 import settup from '../../src/config/settup.json' with { type: 'json' };
+
+jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
+  validateInitData: jest.fn()
+}))
+const {validateInitData} = await import('../../src/utils/initDataValidation.js');
+const makeApp = (await import('../../src/app.js')).default;
+
 
 const getRota = jest.fn();
 const getUserDuties = jest.fn();
