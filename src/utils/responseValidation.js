@@ -7,12 +7,22 @@ import joiDate from '@joi/date';
 const Joi = BaseJoi.extend(joiDate);
 
 
-// Simple Validation
 export const validateBranch = Joi.string().valid(...Object.keys(settup));
 export const validateUserId = Joi.number().integer().positive();
 export const validateColor = Joi.number().integer().min(0).max(6).default(0);
 
-// Complex Validation
+export const validateTimeRange = Joi.string()
+  .pattern(/^\d{2}:\d{2}-\d{2}:\d{2}$/)
+  .custom((value, helpers) => {
+    const hour1 = parseInt(value.slice(0, 2), 10);
+    if (hour1 >= 24) {
+      return helpers.message('Start hour must be less than 24')
+    }
+    else {
+      return value
+    };
+  })
+
 export const validateDateRange = Joi.array()
   .length(2)
   .items(

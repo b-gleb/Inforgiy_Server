@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { convertListRota } from '../utils/converters.js';
 import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
-import { validateBranch, validateUserId } from '../utils/responseValidation.js';
+import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
   const rota = async (req, res) => {
@@ -83,7 +83,7 @@ export default function makeRotaController(database) {
       type: Joi.string().valid('remove', 'add').required(),
       branch: validateBranch.required(),
       date: Joi.date().required(),
-      timeRange: Joi.string().required(),
+      timeRange: validateTimeRange.required(),
       modifyUserId: validateUserId.required(),
       initDataUnsafe: Joi.any().required()
     });
