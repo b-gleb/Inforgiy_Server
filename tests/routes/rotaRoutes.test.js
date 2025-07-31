@@ -59,12 +59,12 @@ describe('GET /api/rota', () => {
         {branch: Object.keys(settup)[0]},
         {date: format(lastDayOfYear(new Date()), 'yyyy-MM-dd')},
         {}
-      ]
+      ];
 
       for (const body of bodyData){
         const res = await request(app).get('/api/rota').query(body);
         expect(res.statusCode).toBe(400);
-      }
+      };
       
     });
   });
@@ -168,6 +168,9 @@ describe('GET /api/rota', () => {
 });
 
 
+
+
+
 describe('GET /api/userDuties', () => {
   beforeEach(() => {
     getUserDuties.mockReset();
@@ -181,12 +184,12 @@ describe('GET /api/userDuties', () => {
         {branch: Object.keys(settup)[0], userId: 1230, endDate: '2025-01-08'},
         {branch: Object.keys(settup)[0], userId: 1230, startDate: '2025-01-01'},
         {}
-      ]
+      ];
 
       for (const body of bodyData){
         const res = await request(app).get('/api/userDuties').query(body);
         expect(res.statusCode).toBe(400);
-      }
+      };
       
     });
 
