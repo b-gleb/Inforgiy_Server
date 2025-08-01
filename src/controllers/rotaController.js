@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import { convertListRota } from '../utils/converters.js';
-import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
+import { formatInitData, statistic } from '../utils/helpers.js';
+import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 

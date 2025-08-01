@@ -1,5 +1,6 @@
 import Joi from 'joi';
-import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
+import { formatInitData, statistic } from '../utils/helpers.js';
+import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 import { validateBranch, validateUserId, validateColor } from '../utils/responseValidation.js';
 import { validateInitData } from '../utils/initDataValidation.js';

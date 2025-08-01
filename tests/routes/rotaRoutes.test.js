@@ -5,10 +5,15 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
-}))
-const {validateInitData} = await import('../../src/utils/initDataValidation.js');
-const makeApp = (await import('../../src/app.js')).default;
+}));
+jest.unstable_mockModule('../src/utils/checkRotaAdmin.js', () => ({
+  isRotaAdmin: jest.fn()
+}));
 
+const {validateInitData} = await import('../../src/utils/initDataValidation.js');
+const {isRotaAdmin} = await import('../../src/utils/checkRotaAdmin.js');
+
+const makeApp = (await import('../../src/app.js')).default;
 
 const getRota = jest.fn();
 const getUserDuties = jest.fn();
