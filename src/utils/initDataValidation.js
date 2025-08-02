@@ -3,12 +3,11 @@ dotenv.config();
 import crypto from 'crypto';
 
 
-export const validateInitData = (res, initDataUnsafe) => {
+export const validateInitData = (initDataUnsafe) => {
   const unixTime = Math.floor(Date.now() / 1000);
 
   if (process.env.ENV === 'PROD' && (unixTime - 3600) > initDataUnsafe.auth_date){
-    res.status(401).send('Authorization expired')
-    return false
+    return false;
   }
 
   const { hash, ...rest } = initDataUnsafe;
@@ -29,9 +28,8 @@ export const validateInitData = (res, initDataUnsafe) => {
   const calculatedHash = crypto.createHmac("sha256", secret.digest()).update(dataCheckString).digest("hex");
   
   if (calculatedHash === hash){
-    return true
+    return true;
   } else {
-    res.status(401).send('Unable to verify hash')
-    return false
+    return false;
   }
 };

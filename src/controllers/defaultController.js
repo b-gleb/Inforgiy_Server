@@ -20,7 +20,10 @@ const auth = async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
-  if (! validateInitData(res, initDataUnsafe)){return}
+  if (!validateInitData(initDataUnsafe)) {
+    res.status(401).send('Unable to verify hash');
+    return;
+  };
 
 
   // Logic
