@@ -114,12 +114,12 @@ export default function makeRotaController(database) {
     if (value.type === 'remove'){
       // Only admins can remove users from rota
       if (! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
-        return res.status(403).send('You must be rota admin to remove users')
+        return res.status(403).send('You must be rota admin to remove users');
       };
 
       updatedDayEntry = await database.removeUserFromRota(
         value.branch,
-        value.date,
+        dayEntry._id,
         timeIndex,
         value.modifyUserId
       );
@@ -127,7 +127,7 @@ export default function makeRotaController(database) {
     } else if (value.type === 'add') {
       // Only admins can add someone else to rota
       if (value.modifyUserId != initDataUnsafe.user.id && ! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
-        return res.status(403).send('You must be rota admin to add someone else')
+        return res.status(403).send('You must be rota admin to add someone else');
       }
 
       const timeSlot = dayEntry.rota[timeIndex];

@@ -58,9 +58,9 @@ export async function addUserToRota(branch, _id, timeIndex, timeSlot) {
 };
 
 
-export async function removeUserFromRota(branch, date, timeIndex, modifyUserId) {
+export async function removeUserFromRota(branch, _id, timeIndex, modifyUserId) {
   const entry = await mongo_db.collection(`rota_${branch}`).findOneAndUpdate(
-    {date: date},
+    {_id: _id},
     {"$pull": {[`rota.${timeIndex}`]: modifyUserId}},
     {
       returnDocument: 'after'
