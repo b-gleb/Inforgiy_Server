@@ -303,3 +303,307 @@ describe('GET /api/userDuties', () => {
     });
   });
 });
+
+
+
+
+
+describe('POST /api/updateRota', () => {
+
+  describe('INVALID PARAMETERS POST /api/updateRota', () => {
+    it('should respond with status code 400 when any parameter is missing', async () => {
+      const bodyData = [
+        {branch: Object.keys(settup), date: format(new Date(), 'yyyy-MM-dd'), timeRange: '00:00-01:00', modifyUserId: 1230, initDataUnsafe: {}},
+        {type: 'add', date: format(new Date(), 'yyyy-MM-dd'), timeRange: '00:00-01:00', modifyUserId: 1230, initDataUnsafe: {}},
+        {type: 'add', branch: Object.keys(settup), timeRange: '00:00-01:00', modifyUserId: 1230, initDataUnsafe: {}},
+        {type: 'add', branch: Object.keys(settup), date: format(new Date(), 'yyyy-MM-dd'), modifyUserId: 1230, initDataUnsafe: {}},
+        {type: 'add', branch: Object.keys(settup), date: format(new Date(), 'yyyy-MM-dd'), timeRange: '00:00-01:00', initDataUnsafe: {}},
+        {type: 'add', branch: Object.keys(settup), date: format(new Date(), 'yyyy-MM-dd'), timeRange: '00:00-01:00', modifyUserId: 1230},
+        {}
+      ];
+
+      for (const body of bodyData){
+        const res = await request(app).post('/api/updateRota').send(body);
+        expect(res.statusCode).toBe(400);
+      };
+    });
+  });
+
+
+  describe('VALID PARAMETERS POST /api/updateRota', () => {
+    beforeEach(() => {
+      getRota.mockReset();
+      removeUserFromRota.mockReset();
+      addUserToRota.mockReset();
+      validateInitData.mockReset();
+      isRotaAdmin.mockReset();
+    });
+
+    describe.each(['add', 'remove'])('Using type "%s" to modify rota', (type) => {
+      it('should respond with status code 200', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(true);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: type,
+          branch: Object.keys(settup)[0],
+          date: format(new Date(), 'yyyy-MM-dd'),
+          modifyUserId: 1813610409,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(res.statusCode).toBe(200);
+      });
+
+      it('should respond with status code 401 if unable to verify hash', async () => {
+        validateInitData.mockReturnValue(false);
+        isRotaAdmin.mockReturnValue(true);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: type,
+          branch: Object.keys(settup)[0],
+          date: format(new Date(), 'yyyy-MM-dd'),
+          modifyUserId: 1230,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1230}}
+        });
+
+        expect(res.statusCode).toBe(401);
+      });
+
+      it('should respond with status code 404 if trying to modify date which does not exist', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(true);
+        getRota.mockResolvedValue(null);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: type,
+          branch: Object.keys(settup)[0],
+          date: '1990-01-01',
+          modifyUserId: 1230,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1230}}
+        });
+
+        expect(res.statusCode).toBe(404);
+      });
+
+      it('should specify json in the content type header', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(true);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: type,
+          branch: Object.keys(settup)[0],
+          date: format(new Date(), 'yyyy-MM-dd'),
+          modifyUserId: 1230,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1230}}
+        });
+
+        expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      });
+    });
+
+
+    describe('Adding a user to rota', () => {
+      it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(false);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: 'add',
+          branch: Object.keys(settup)[0],
+          date: format(new Date(), 'yyyy-MM-dd'),
+          modifyUserId: 1230,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(res.statusCode).toBe(403);
+      });
+
+      it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(false);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: 'add',
+          branch: Object.keys(settup)[0],
+          date: format(new Date(), 'yyyy-MM-dd'),
+          modifyUserId: 1813610409,
+          timeRange: '00:00-01:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(res.statusCode).toBe(200);
+      });
+
+      it('should call addUserToRota() when adding a user to rota', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(true);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: 'add',
+          branch: 'lns',
+          date: '2025-01-04',
+          modifyUserId: 1230,
+          timeRange: '05:00-06:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(addUserToRota.mock.calls.length).toBe(1);
+        expect(removeUserFromRota.mock.calls.length).toBe(0);
+        expect(addUserToRota.mock.calls[0][0]).toBe('lns');
+        expect(addUserToRota.mock.calls[0][1]).toBe('676d7f9f8300f637d426cee9');
+        expect(addUserToRota.mock.calls[0][2]).toBe(5);
+      });
+    });
+
+
+    describe('Removing a user from rota', () => {
+      it('should respond with status code 403 if non admin user tries to remove any user from rota', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(false);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: 'remove',
+          branch: 'lns',
+          date: '2025-01-04',
+          modifyUserId: 1813610409,
+          timeRange: '05:00-06:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(res.statusCode).toBe(403);
+      });
+
+      it('should call removeUserFromRota() when removing user from rota', async () => {
+        validateInitData.mockReturnValue(true);
+        isRotaAdmin.mockReturnValue(true);
+        getRota.mockResolvedValue(rotaDBEntry);
+        removeUserFromRota.mockResolvedValue(rotaDBEntry);
+        addUserToRota.mockResolvedValue(rotaDBEntry);
+
+        const res = await request(app).post('/api/updateRota').send({
+          type: 'remove',
+          branch: 'lns',
+          date: '2025-01-04',
+          modifyUserId: 1230,
+          timeRange: '05:00-06:00',
+          initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+        expect(removeUserFromRota.mock.calls.length).toBe(1);
+        expect(addUserToRota.mock.calls.length).toBe(0);
+        expect(removeUserFromRota.mock.calls[0][0]).toBe('lns');
+        expect(removeUserFromRota.mock.calls[0][1]).toBe('676d7f9f8300f637d426cee9');
+        expect(removeUserFromRota.mock.calls[0][2]).toBe(5);
+        expect(removeUserFromRota.mock.calls[0][3]).toBe(1230);
+      });
+    });
+  });
+
+
+  describe.each(['add', 'remove'])('RESPONSE VALIDATION POST /api/updateRota for type "%s"' , (type) => {
+    it('response should be an array of length 24', async () => {
+      validateInitData.mockReturnValue(true);
+      isRotaAdmin.mockReturnValue(true);
+      getRota.mockResolvedValue(rotaDBEntry);
+      removeUserFromRota.mockResolvedValue(rotaDBEntry);
+      addUserToRota.mockResolvedValue(rotaDBEntry);
+
+      const res = await request(app).post('/api/updateRota').send({
+        type: type,
+        branch: Object.keys(settup)[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
+        modifyUserId: 1813610409,
+        timeRange: '00:00-01:00',
+        initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body).toHaveLength(24);
+    });
+
+
+    it('array element should have properties "users" and "label"', async () => {
+      validateInitData.mockReturnValue(true);
+      isRotaAdmin.mockReturnValue(true);
+      getRota.mockResolvedValue(rotaDBEntry);
+      removeUserFromRota.mockResolvedValue(rotaDBEntry);
+      addUserToRota.mockResolvedValue(rotaDBEntry);
+
+      const res = await request(app).post('/api/updateRota').send({
+        type: type,
+        branch: Object.keys(settup)[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
+        modifyUserId: 1813610409,
+        timeRange: '00:00-01:00',
+        initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+      expect(res.body[0]).toHaveProperty('users');
+      expect(res.body[0]).toHaveProperty('label');
+    });
+
+
+    it('array element property "users" should be of type object', async () => {
+      validateInitData.mockReturnValue(true);
+      isRotaAdmin.mockReturnValue(true);
+      getRota.mockResolvedValue(rotaDBEntry);
+      removeUserFromRota.mockResolvedValue(rotaDBEntry);
+      addUserToRota.mockResolvedValue(rotaDBEntry);
+
+      const res = await request(app).post('/api/updateRota').send({
+        type: type,
+        branch: Object.keys(settup)[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
+        modifyUserId: 1813610409,
+        timeRange: '00:00-01:00',
+        initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+      expect(res.body[0]['users']).toBeInstanceOf(Object);
+    });
+
+
+    it('array element property "label" should be of type string', async () => {
+      validateInitData.mockReturnValue(true);
+      isRotaAdmin.mockReturnValue(true);
+      getRota.mockResolvedValue(rotaDBEntry);
+      removeUserFromRota.mockResolvedValue(rotaDBEntry);
+      addUserToRota.mockResolvedValue(rotaDBEntry);
+
+      const res = await request(app).post('/api/updateRota').send({
+        type: type,
+        branch: Object.keys(settup)[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
+        modifyUserId: 1813610409,
+        timeRange: '00:00-01:00',
+        initDataUnsafe: {user: {id: 1813610409}}
+        });
+
+      expect(typeof res.body[0]['label']).toBe('string');
+    });
+  });
+});
