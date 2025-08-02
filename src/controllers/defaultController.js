@@ -30,7 +30,7 @@ export default function makeDefaultController(database) {
     let userBranches = {};
     let hasRoles = false;
 
-    const userEntry = await database.getUserRoles(initDataUnsafe.user.id);
+    const userEntry = await database.getUser(initDataUnsafe.user.id);
 
     if (userEntry === null){
       res.status(404).send("User not found")

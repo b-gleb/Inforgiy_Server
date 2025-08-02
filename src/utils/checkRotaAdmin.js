@@ -1,7 +1,7 @@
 import database from "../database";
 
 export async function isRotaAdmin(branch, user_id) {
-  const userEntry = await database.getUserRoles(user_id)
+  const userEntry = await database.getUser(user_id)
 
   if (userEntry === null){
     return false
