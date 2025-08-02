@@ -1,19 +1,15 @@
-import { getDB } from '../database.js';
+import database from "../database";
 
 export async function isRotaAdmin(branch, user_id) {
-  const mongo_db = getDB();
-  const userEntry = await mongo_db.collection('users').findOne(
-    { telegram_id: user_id },
-    { projection: {roles: 1} }
-  );
+  const userEntry = await database.getUserRoles(user_id)
 
   if (userEntry === null){
     return false
-  }
+  };
 
   if (Object.hasOwn(userEntry.roles, `admin_rota_${branch}`)){
     return true;
   } else {
     return false;
-  }
+  };
 };
