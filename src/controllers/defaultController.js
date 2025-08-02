@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { formatInitData } from '../utils/helpers.js';
-import { validateInitData } from '../utils/responseValidation.js';
+import { validateInitData } from '../utils/initDataValidation.js';
 import settup from '../config/settup.json' with { type: 'json' };
 
 export default function makeDefaultController(database) {
@@ -18,8 +18,12 @@ export default function makeDefaultController(database) {
     const { error, value } = validationSchema.validate(req.query);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
-    if (! validateInitData(res, initDataUnsafe)){return}
+  const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
+  if (!validateInitData(initDataUnsafe)) {
+    res.status(401).send('Unable to verify hash');
+    return;
+  };
+
 
     // Logic
     let rotaAdmin = [];

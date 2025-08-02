@@ -1,7 +1,9 @@
 import Joi from 'joi';
 import { convertListRota } from '../utils/converters.js';
-import { formatInitData, isRotaAdmin, statistic } from '../utils/helpers.js';
-import { validateBranch, validateUserId, validateInitData } from '../utils/responseValidation.js';
+import { formatInitData, statistic } from '../utils/helpers.js';
+import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
+import { validateInitData } from '../utils/initDataValidation.js';
+import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
   const rota = async (req, res) => {
@@ -61,7 +63,7 @@ export default function makeRotaController(database) {
       let dayDuties = {date: dayEntry.date, hours: []};
 
       dayEntry.rota.forEach((timeSlot, index) => {
-        if (timeSlot.includes(value.user_id)){
+        if (timeSlot.includes(value.userId)){
           dayDuties.hours.push(index)
         }
       });
@@ -82,7 +84,7 @@ export default function makeRotaController(database) {
       type: Joi.string().valid('remove', 'add').required(),
       branch: validateBranch.required(),
       date: Joi.date().required(),
-      timeRange: Joi.string().required(),
+      timeRange: validateTimeRange.required(),
       modifyUserId: validateUserId.required(),
       initDataUnsafe: Joi.any().required()
     });
@@ -91,7 +93,10 @@ export default function makeRotaController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
-    if (! validateInitData(res, initDataUnsafe)){return};
+    if (!validateInitData(initDataUnsafe)) {
+      res.status(401).send('Unable to verify hash');
+      return;
+    };
 
     try {
       timeIndex = Number(value.timeRange.slice(0, 2));
@@ -102,16 +107,22 @@ export default function makeRotaController(database) {
 
     // Logic
     let updatedDayEntry;
+    let dayEntry = await database.getRota(value.branch, value.date);
+
+    if (dayEntry === null) {
+      res.status(404).send("Date not found");
+      return;
+    }
 
     if (value.type === 'remove'){
       // Only admins can remove users from rota
       if (! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
-        return res.status(403).send('You must be rota admin to remove users')
+        return res.status(403).send('You must be rota admin to remove users');
       };
 
       updatedDayEntry = await database.removeUserFromRota(
         value.branch,
-        value.date,
+        dayEntry._id,
         timeIndex,
         value.modifyUserId
       );
@@ -119,10 +130,9 @@ export default function makeRotaController(database) {
     } else if (value.type === 'add') {
       // Only admins can add someone else to rota
       if (value.modifyUserId != initDataUnsafe.user.id && ! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
-        return res.status(403).send('You must be rota admin to add someone else')
+        return res.status(403).send('You must be rota admin to add someone else');
       }
 
-      let dayEntry = await database.getRota(value.branch, value.date);
       const timeSlot = dayEntry.rota[timeIndex];
 
       if (!timeSlot.includes(value.modifyUserId)) {
@@ -137,15 +147,10 @@ export default function makeRotaController(database) {
       );
     };
 
-    if (updatedDayEntry === null){
-      // TODO: For adding user to rota, move the missing date check up into the if block
-      res.status(404).send("Date not found")
-      return
-    } else {
-      res.json(await convertListRota(value.branch, updatedDayEntry.rota))
-      await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId})
-      return
-    };
+    // FIXME: convertListRota causes the tests to hang. Should not be a problem since the function will be mocked as it has a database call 
+    res.json(await convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
+    await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId});
+    return;
   };
 
   return {
