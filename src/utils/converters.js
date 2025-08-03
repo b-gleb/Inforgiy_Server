@@ -31,7 +31,7 @@ export async function convertUserId(branch, user_id) {
   // Self-destructing cache
   setTimeout(() => {
     delete usersCache[branch][user_id];
-  }, usersCacheTTL);
+    }, usersCacheTTL).unref();
 
   const userObj = usersCache[branch][user_id];
   userObj.id = user_id;
