@@ -1,12 +1,13 @@
-import app from './app.js';
-import { initializeMongoDB } from './config/db.js';
+import makeApp from './app.js';
+import database from './database.js';
 
 let server;
 let mongoClient;
+const app = makeApp(database);
 
 async function startServer() {
   try {
-    mongoClient = await initializeMongoDB();
+    mongoClient = await database.initializeMongoDB();
 
     const PORT = process.env.PORT;
     server = app.listen(PORT, () => {
@@ -17,8 +18,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
-startServer();
 
 // Graceful shutdown
 async function shutdown() {
@@ -37,5 +36,6 @@ async function shutdown() {
   process.exit(0);
 }
 
+startServer();
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

@@ -1,5 +1,5 @@
 import settup from '../src/config/settup.json' with { type: 'json' };
-import { validateBranch, validateUserId, validateColor, validateDateRange } from '../src/utils/responseValidation.js';
+import { validateBranch, validateUserId, validateColor, validateDateRange, validateTimeRange } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
   it('should accept branches from settup keys', () => {
@@ -138,4 +138,33 @@ describe('validateDateRange', () => {
     const {error} = validateDateRange.validate(['some text', 'other text']);
     expect(error).toBeDefined();
   });
+});
+
+describe('validateTimeRange', () => {
+it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
+  const {error, value} = validateTimeRange.validate('00:00-01:00');
+  expect(error).toBeUndefined();
+  expect(value).toBeDefined();
+});
+
+it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
+  const {error, value} = validateTimeRange.validate('00:00 - 01:00');
+  expect(error).toBeUndefined();
+  expect(value).toBeDefined();
+});
+
+it('should reject a string of desired format if the first 2 digits >= 24', () => {
+  const {error} = validateTimeRange.validate('24:00-25:00');
+  expect(error).toBeDefined();
+});
+
+it('should reject an intiger', () => {
+  const {error} = validateTimeRange.validate(5);
+  expect(error).toBeDefined();
+});
+
+it('should reject a string not matching the format ', () => {
+  const {error} = validateTimeRange.validate('some string');
+  expect(error).toBeDefined();
+});
 });
