@@ -141,8 +141,14 @@ describe('validateDateRange', () => {
 });
 
 describe('validateTimeRange', () => {
-it('should accept a string of format ^\d{2}:\d{2}-\d{2}:\d{2}$', () => {
+it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
   const {error, value} = validateTimeRange.validate('00:00-01:00');
+  expect(error).toBeUndefined();
+  expect(value).toBeDefined();
+});
+
+it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
+  const {error, value} = validateTimeRange.validate('00:00 - 01:00');
   expect(error).toBeUndefined();
   expect(value).toBeDefined();
 });

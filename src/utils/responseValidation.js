@@ -12,7 +12,7 @@ export const validateUserId = Joi.number().integer().positive();
 export const validateColor = Joi.number().integer().min(0).max(6).default(0);
 
 export const validateTimeRange = Joi.string()
-  .pattern(/^\d{2}:\d{2}-\d{2}:\d{2}$/)
+  .pattern(/^\d{2}:\d{2}\s?-\s?\d{2}:\d{2}$/)
   .custom((value, helpers) => {
     const hour1 = parseInt(value.slice(0, 2), 10);
     if (hour1 >= 24) {
