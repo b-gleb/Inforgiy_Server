@@ -107,6 +107,16 @@ export async function getUser(userId) {
 };
 
 
+export async function getUserRegion(userId) {
+  const entry = await mongo_db.collection('users').findOne(
+    {telegram_id: userId},
+    {projection: {region: 1, _id: 0}}
+  );
+
+  return entry?.region ?? null;
+};
+
+
 export async function getUserCount(branch) {
   const query = branchUsersSearchQuery(branch);
   const count = await mongo_db.collection('users').countDocuments(query);
@@ -304,6 +314,12 @@ export async function getCummulativeStats(branch, userId, dateRange) {
 };
 
 
+export async function logUsageStatistics(entry) {
+  const insertedEntry = await mongo_db.collection('usageStatistics').insertOne(entry);
+  return insertedEntry;
+}
+
+
 // TODO: getDB to be removed after 
 export const getDB = () => {
   if (!mongo_db) {
@@ -322,6 +338,7 @@ export default {
   removeUserFromRota,
   // USERS
   getUser,
+  getUserRegion,
   getUserCount,
   getBranchUsers,
   addUserPermission,
@@ -329,5 +346,6 @@ export default {
   updateUser,
   // STATS
   getDateRangeStats,
-  getCummulativeStats
+  getCummulativeStats,
+  logUsageStatistics
 };

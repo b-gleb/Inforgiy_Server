@@ -1,10 +1,11 @@
 import Joi from 'joi'
 import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
 import makeCoverters from '../utils/converters.js';
-import { fillMissingDates } from '../utils/helpers.js';
+import makeHelpers from '../utils/helpers.js';
 
 export default function makeStatController(database) {
   const converters = makeCoverters(database);
+  const helpers = makeHelpers(database);
 
   const stats = async (req, res) => {
     // Validation
@@ -94,7 +95,7 @@ export default function makeStatController(database) {
         result.push({
           user_id: value.user_id,
           dateRange: dateRange,
-          data: fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
+          data: helpers.fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
         });
         
       }

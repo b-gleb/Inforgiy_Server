@@ -1,11 +1,13 @@
 import Joi from 'joi';
-import { formatInitData, statistic } from '../utils/helpers.js';
+import makeHelpers from '../utils/helpers.js';
 import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 import { validateBranch, validateUserId, validateColor } from '../utils/responseValidation.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 
 export default function makeUserController(database) {
+  const helpers = makeHelpers(database);
+
   const users = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -16,7 +18,7 @@ export default function makeUserController(database) {
     const { error, value } = validationSchema.validate(req.query);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = formatInitData(req.query.initDataUnsafe);
+    const initDataUnsafe = helpers.formatInitData(req.query.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
@@ -66,7 +68,7 @@ export default function makeUserController(database) {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
+    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
@@ -88,7 +90,7 @@ export default function makeUserController(database) {
 
     if (removedUser.matchedCount === 1){
       res.send('ok')
-      await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
+      await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
     } else {
       res.status(404).send("User not found")
     }
@@ -111,7 +113,7 @@ export default function makeUserController(database) {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
+    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
@@ -146,7 +148,7 @@ export default function makeUserController(database) {
 
     if (updatedUser !== null){
       res.send('ok')
-      await statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
+      await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
     } else {
       return res.status(404).send("User not found")
     }

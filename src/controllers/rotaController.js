@@ -1,12 +1,13 @@
 import Joi from 'joi';
 import makeCoverters from '../utils/converters.js';
-import { formatInitData, statistic } from '../utils/helpers.js';
+import makeHelpers from '../utils/helpers.js';
 import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
   const converters = makeCoverters(database);
+  const helpers = makeHelpers(database);
 
   const rota = async (req, res) => {
     // Validation
@@ -94,7 +95,7 @@ export default function makeRotaController(database) {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = formatInitData(req.body.initDataUnsafe);
+    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
@@ -150,7 +151,7 @@ export default function makeRotaController(database) {
     };
 
     res.json(await converters.convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
-    await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId});
+    await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId});
     return;
   };
 
