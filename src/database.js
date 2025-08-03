@@ -320,15 +320,6 @@ export async function logUsageStatistics(entry) {
 }
 
 
-// TODO: getDB to be removed after 
-export const getDB = () => {
-  if (!mongo_db) {
-    throw new Error('MongoDB not initialized. Call initializeMongoDB() first.');
-  }
-  return mongo_db;
-};
-
-
 export default {
   initializeMongoDB,
   // ROTA
