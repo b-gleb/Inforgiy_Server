@@ -19,12 +19,14 @@ const getRota = jest.fn();
 const getUserDuties = jest.fn();
 const removeUserFromRota = jest.fn();
 const addUserToRota = jest.fn();
+const getUser = jest.fn();
 
 const app = makeApp({
   getRota,
   getUserDuties,
   removeUserFromRota,
-  addUserToRota
+  addUserToRota,
+  getUser
 });
 
 const rotaDBEntry = {
@@ -338,6 +340,8 @@ describe('POST /api/updateRota', () => {
       validateInitData.mockReset();
       isRotaAdmin.mockReset();
     });
+
+    getUser.mockResolvedValue({'telegram': '@username', 'roles': []});
 
     describe.each(['add', 'remove'])('Using type "%s" to modify rota', (type) => {
       it('should respond with status code 200', async () => {
