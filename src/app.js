@@ -1,22 +1,23 @@
+import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// APP
-import express from 'express';
-import cors from 'cors';
-const app = express();
-app.use(cors());
-app.use(express.json());
-
 // ROUTES
-import defaultRoutes from './routes/defaultRoutes.js';
-import rotaRoutes from './routes/rotaRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import statRoutes from './routes/statRoutes.js';
+import makeDefaultRoutes from './routes/defaultRoutes.js';
+import makeRotaRoutes from './routes/rotaRoutes.js';
+import makeUserRoutes from './routes/userRoutes.js';
+import makeStatRoutes from './routes/statRoutes.js';
 
-app.use('/api', defaultRoutes);
-app.use('/api', rotaRoutes);
-app.use('/api', userRoutes);
-app.use('/api', statRoutes);
+export default function makeApp(database) {
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
 
-export default app;
+  app.use('/api', makeDefaultRoutes(database));
+  app.use('/api', makeRotaRoutes(database));
+  app.use('/api', makeUserRoutes(database));
+  app.use('/api', makeStatRoutes(database));
+
+  return app;
+};

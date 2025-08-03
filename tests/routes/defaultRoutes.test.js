@@ -1,5 +1,6 @@
 import request from 'supertest';
-import app from '../../src/app.js';
+import makeApp from '../../src/app.js';
+const app = makeApp();
 
 describe('GET /api/ping', () => {
   it('should return pong', async () => {

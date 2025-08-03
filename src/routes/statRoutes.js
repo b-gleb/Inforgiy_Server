@@ -1,8 +1,12 @@
 import express from 'express';
-const router = express.Router();
-import statController from '../controllers/statController.js';
+import makeStatController from '../controllers/statController.js';
 
-router.post('/stats', statController.stats);
-router.post('/stats/cumulative', statController.stats_cumulative);
+export default function makeStatRoutes(database) {
+    const router = express.Router();
+    const statController = makeStatController(database);
 
-export default router;
+    router.post('/stats', statController.stats);
+    router.post('/stats/cumulative', statController.stats_cumulative);
+
+    return router;
+};
