@@ -1,6 +1,5 @@
 import Joi from 'joi';
 import makeHelpers from '../utils/helpers.js';
-import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 import { validateBranch, validateUserId, validateColor } from '../utils/responseValidation.js';
 import { validateInitData } from '../utils/initDataValidation.js';
@@ -24,7 +23,7 @@ export default function makeUserController(database) {
       return;
     };
 
-    if (! await isRotaAdmin(value.branch, value.initDataUnsafe.user.id)) {
+    if (! await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id)) {
       return res.status(403).send('You must be a rota admin') 
     }
 
@@ -74,7 +73,7 @@ export default function makeUserController(database) {
       return;
     };
 
-    if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
+    if (! await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
       res.status(403).send('You must be a rota admin')
       return 
     }
@@ -119,7 +118,7 @@ export default function makeUserController(database) {
       return;
     };
 
-    if (! await isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
+    if (! await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
       res.status(403).send('You must be a rota admin')
       return 
     }

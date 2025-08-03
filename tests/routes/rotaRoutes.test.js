@@ -6,12 +6,7 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-jest.unstable_mockModule('../src/utils/checkRotaAdmin.js', () => ({
-  isRotaAdmin: jest.fn()
-}));
-
 const {validateInitData} = await import('../../src/utils/initDataValidation.js');
-const {isRotaAdmin} = await import('../../src/utils/checkRotaAdmin.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -338,22 +333,22 @@ describe('POST /api/updateRota', () => {
       removeUserFromRota.mockReset();
       addUserToRota.mockReset();
       validateInitData.mockReset();
-      isRotaAdmin.mockReset();
+      getUser.mockReset();
     });
-
-    getUser.mockResolvedValue({'telegram': '@username', 'roles': []});
 
     describe.each(['add', 'remove'])('Using type "%s" to modify rota', (type) => {
       it('should respond with status code 200', async () => {
+        const branch = Object.keys(settup)[0];
+
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
 
         const res = await request(app).post('/api/updateRota').send({
           type: type,
-          branch: Object.keys(settup)[0],
+          branch: branch,
           date: format(new Date(), 'yyyy-MM-dd'),
           modifyUserId: 1813610409,
           timeRange: '00:00-01:00',
@@ -363,13 +358,16 @@ describe('POST /api/updateRota', () => {
         expect(res.statusCode).toBe(200);
       });
 
+
       it('should respond with status code 401 if unable to verify hash', async () => {
+        const branch = Object.keys(settup)[0];
+
         validateInitData.mockReturnValue(false);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
 
         const res = await request(app).post('/api/updateRota').send({
           type: type,
-          branch: Object.keys(settup)[0],
+          branch: branch,
           date: format(new Date(), 'yyyy-MM-dd'),
           modifyUserId: 1230,
           timeRange: '00:00-01:00',
@@ -379,14 +377,17 @@ describe('POST /api/updateRota', () => {
         expect(res.statusCode).toBe(401);
       });
 
+
       it('should respond with status code 404 if trying to modify date which does not exist', async () => {
+        const branch = Object.keys(settup)[0];
+
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
         getRota.mockResolvedValue(null);
 
         const res = await request(app).post('/api/updateRota').send({
           type: type,
-          branch: Object.keys(settup)[0],
+          branch: branch,
           date: '1990-01-01',
           modifyUserId: 1230,
           timeRange: '00:00-01:00',
@@ -396,16 +397,19 @@ describe('POST /api/updateRota', () => {
         expect(res.statusCode).toBe(404);
       });
 
+
       it('should specify json in the content type header', async () => {
+        const branch = Object.keys(settup)[0];
+
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
 
         const res = await request(app).post('/api/updateRota').send({
           type: type,
-          branch: Object.keys(settup)[0],
+          branch: branch,
           date: format(new Date(), 'yyyy-MM-dd'),
           modifyUserId: 1230,
           timeRange: '00:00-01:00',
@@ -419,15 +423,17 @@ describe('POST /api/updateRota', () => {
 
     describe('Adding a user to rota', () => {
       it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
+        const branch = Object.keys(settup)[0];
+
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(false);
+        getUser.mockResolvedValue(null);
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
 
         const res = await request(app).post('/api/updateRota').send({
           type: 'add',
-          branch: Object.keys(settup)[0],
+          branch: branch,
           date: format(new Date(), 'yyyy-MM-dd'),
           modifyUserId: 1230,
           timeRange: '00:00-01:00',
@@ -435,11 +441,13 @@ describe('POST /api/updateRota', () => {
         });
 
         expect(res.statusCode).toBe(403);
+        expect(getUser.mock.calls.length).toBe(1);
       });
+
 
       it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(false);
+        getUser.mockResolvedValue({telegram: '@username', roles: {}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -456,16 +464,19 @@ describe('POST /api/updateRota', () => {
         expect(res.statusCode).toBe(200);
       });
 
+
       it('should call addUserToRota() when adding a user to rota', async () => {
+        const branch = 'lns';
+
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
 
         const res = await request(app).post('/api/updateRota').send({
           type: 'add',
-          branch: 'lns',
+          branch: branch,
           date: '2025-01-04',
           modifyUserId: 1230,
           timeRange: '05:00-06:00',
@@ -484,7 +495,7 @@ describe('POST /api/updateRota', () => {
     describe('Removing a user from rota', () => {
       it('should respond with status code 403 if non admin user tries to remove any user from rota', async () => {
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(false);
+        getUser.mockResolvedValue({telegram: '@username', roles: {}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -501,16 +512,18 @@ describe('POST /api/updateRota', () => {
         expect(res.statusCode).toBe(403);
       });
 
+
       it('should call removeUserFromRota() when removing user from rota', async () => {
+        const branch = 'lns';
         validateInitData.mockReturnValue(true);
-        isRotaAdmin.mockReturnValue(true);
+        getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
         getRota.mockResolvedValue(rotaDBEntry);
         removeUserFromRota.mockResolvedValue(rotaDBEntry);
         addUserToRota.mockResolvedValue(rotaDBEntry);
 
         const res = await request(app).post('/api/updateRota').send({
           type: 'remove',
-          branch: 'lns',
+          branch: branch,
           date: '2025-01-04',
           modifyUserId: 1230,
           timeRange: '05:00-06:00',
@@ -530,15 +543,17 @@ describe('POST /api/updateRota', () => {
 
   describe.each(['add', 'remove'])('RESPONSE VALIDATION POST /api/updateRota for type "%s"' , (type) => {
     it('response should be an array of length 24', async () => {
+      const branch = Object.keys(settup)[0];
+
       validateInitData.mockReturnValue(true);
-      isRotaAdmin.mockReturnValue(true);
+      getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
       getRota.mockResolvedValue(rotaDBEntry);
       removeUserFromRota.mockResolvedValue(rotaDBEntry);
       addUserToRota.mockResolvedValue(rotaDBEntry);
 
       const res = await request(app).post('/api/updateRota').send({
         type: type,
-        branch: Object.keys(settup)[0],
+        branch: branch,
         date: format(new Date(), 'yyyy-MM-dd'),
         modifyUserId: 1813610409,
         timeRange: '00:00-01:00',
@@ -551,15 +566,17 @@ describe('POST /api/updateRota', () => {
 
 
     it('array element should have properties "users" and "label"', async () => {
+      const branch = Object.keys(settup)[0];
+
       validateInitData.mockReturnValue(true);
-      isRotaAdmin.mockReturnValue(true);
+      getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
       getRota.mockResolvedValue(rotaDBEntry);
       removeUserFromRota.mockResolvedValue(rotaDBEntry);
       addUserToRota.mockResolvedValue(rotaDBEntry);
 
       const res = await request(app).post('/api/updateRota').send({
         type: type,
-        branch: Object.keys(settup)[0],
+        branch: branch,
         date: format(new Date(), 'yyyy-MM-dd'),
         modifyUserId: 1813610409,
         timeRange: '00:00-01:00',
@@ -572,15 +589,17 @@ describe('POST /api/updateRota', () => {
 
 
     it('array element property "users" should be of type object', async () => {
+      const branch = Object.keys(settup)[0];
+
       validateInitData.mockReturnValue(true);
-      isRotaAdmin.mockReturnValue(true);
+      getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
       getRota.mockResolvedValue(rotaDBEntry);
       removeUserFromRota.mockResolvedValue(rotaDBEntry);
       addUserToRota.mockResolvedValue(rotaDBEntry);
 
       const res = await request(app).post('/api/updateRota').send({
         type: type,
-        branch: Object.keys(settup)[0],
+        branch: branch,
         date: format(new Date(), 'yyyy-MM-dd'),
         modifyUserId: 1813610409,
         timeRange: '00:00-01:00',
@@ -592,15 +611,17 @@ describe('POST /api/updateRota', () => {
 
 
     it('array element property "label" should be of type string', async () => {
+      const branch = Object.keys(settup)[0];
+
       validateInitData.mockReturnValue(true);
-      isRotaAdmin.mockReturnValue(true);
+      getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
       getRota.mockResolvedValue(rotaDBEntry);
       removeUserFromRota.mockResolvedValue(rotaDBEntry);
       addUserToRota.mockResolvedValue(rotaDBEntry);
 
       const res = await request(app).post('/api/updateRota').send({
         type: type,
-        branch: Object.keys(settup)[0],
+        branch: branch,
         date: format(new Date(), 'yyyy-MM-dd'),
         modifyUserId: 1813610409,
         timeRange: '00:00-01:00',

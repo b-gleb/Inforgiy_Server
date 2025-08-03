@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
-import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 
@@ -117,9 +116,11 @@ export default function makeRotaController(database) {
       return;
     }
 
+    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
+
     if (value.type === 'remove'){
       // Only admins can remove users from rota
-      if (! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
+      if (! isAdmin){
         return res.status(403).send('You must be rota admin to remove users');
       };
 
@@ -132,7 +133,7 @@ export default function makeRotaController(database) {
 
     } else if (value.type === 'add') {
       // Only admins can add someone else to rota
-      if (value.modifyUserId != initDataUnsafe.user.id && ! isRotaAdmin(value.branch, initDataUnsafe.user.id)){
+      if (value.modifyUserId != initDataUnsafe.user.id && ! isAdmin){
         return res.status(403).send('You must be rota admin to add someone else');
       }
 

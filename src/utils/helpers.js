@@ -16,6 +16,21 @@ export default function makeHelpers(database) {
   };
 
 
+  const isRotaAdmin = async (branch, userId) => {
+    const userEntry = await database.getUser(userId);
+  
+    if (userEntry === null){
+      return false
+    };
+  
+    if (Object.hasOwn(userEntry.roles, `admin_rota_${branch}`)){
+      return true;
+    } else {
+      return false;
+    };
+  };
+
+
   const statistic = async (initDataUnsafe, action, sub_action = null, misc = null) => {
     if (process.env.ENV === 'TEST') {
       return
@@ -69,6 +84,7 @@ export default function makeHelpers(database) {
 
   return {
     formatInitData,
+    isRotaAdmin,
     statistic,
     fillMissingDates
   };
