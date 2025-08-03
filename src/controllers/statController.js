@@ -1,9 +1,11 @@
 import Joi from 'joi'
 import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
-import { convertUserId } from '../utils/converters.js';
+import makeCoverters from '../utils/converters.js';
 import { fillMissingDates } from '../utils/helpers.js';
 
 export default function makeStatController(database) {
+  const converters = makeCoverters(database);
+
   const stats = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -53,7 +55,7 @@ export default function makeStatController(database) {
     const allUserIds = Object.keys(stats);
     const convertedStats = await Promise.all(
       allUserIds.map( async (user_id) => {
-        const userObj = await convertUserId(value.branch, Number(user_id));
+        const userObj = await converters.convertUserId(value.branch, Number(user_id));
         if (userObj) {
           return [userObj.nick, stats[user_id]];
         } else {

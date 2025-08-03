@@ -1,11 +1,13 @@
 import Joi from 'joi';
-import { convertListRota } from '../utils/converters.js';
+import makeCoverters from '../utils/converters.js';
 import { formatInitData, statistic } from '../utils/helpers.js';
 import { isRotaAdmin } from '../utils/checkRotaAdmin.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import { validateBranch, validateUserId, validateTimeRange } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
+  const converters = makeCoverters(database);
+
   const rota = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -24,7 +26,7 @@ export default function makeRotaController(database) {
     };
 
     if (['lns', 'gp', 'di', 'orel', 'ryaz'].includes(value.branch)){
-        const result = await convertListRota(value.branch, dayEntry?.rota ?? {});
+        const result = await converters.convertListRota(value.branch, dayEntry?.rota ?? {});
         return res.json(result)
     } else {
         return res.json({})
@@ -147,8 +149,7 @@ export default function makeRotaController(database) {
       );
     };
 
-    // FIXME: convertListRota causes the tests to hang. Should not be a problem since the function will be mocked as it has a database call 
-    res.json(await convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
+    res.json(await converters.convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
     await statistic(initDataUnsafe, value.branch.toUpperCase(), `rota-${value.type}`, {date: value.date, time: value.timeRange, modify: value.modifyUserId});
     return;
   };
