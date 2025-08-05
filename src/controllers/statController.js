@@ -53,19 +53,25 @@ export default function makeStatController(database) {
 
     // Conver userIds to nick names
     const allUserIds = Object.keys(stats);
-    const convertedStats = await Promise.all(
-      allUserIds.map( async (user_id) => {
-        const userObj = await converters.convertUserId(value.branch, Number(user_id));
-        if (userObj) {
-          return [userObj.nick, stats[user_id]];
-        } else {
-          return res.status(404).send("User not found")
-        }
-      })
-    );
+    const convertedStats = [];
 
-    res.json(Object.fromEntries(convertedStats));
-  }
+    for (const userId of allUserIds) {
+      const userObj = await converters.convertUserId(value.branch, Number(userId));
+
+      if (!userObj) {
+        return res.status(404).send(`User not found (ID: ${userId})`);
+      }
+      else {
+        const {id, nick, color} = userObj;
+        convertedStats.push({
+          user: {id, nick, color},
+          data: stats[userId]
+        })
+      };
+    };
+
+    res.json(convertedStats);
+  };
 
 
   const stats_cumulative = async (req, res) => {
