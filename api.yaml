@@ -470,13 +470,13 @@ paths:
               type: object
               required:
                 - branch
-                - user_ids
+                - userIds
                 - dateRanges
               properties:
                 branch:
                   description: "Branch for which to perform the operation"
                   $ref: '#/components/schemas/Branch'
-                user_ids:
+                userIds:
                   type: array
                   minItems: 1
                   items:
