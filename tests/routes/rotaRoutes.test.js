@@ -137,7 +137,7 @@ describe('GET /api/rota', () => {
     });
 
 
-    it('array element should have properties "users" and "label"', async () => {
+    it('array elements should have properties "users" and "label"', async () => {
       getRota.mockResolvedValue({});
 
       const res = await request(app).get('/api/rota').query({
@@ -145,8 +145,13 @@ describe('GET /api/rota', () => {
         date: format(lastDayOfYear(new Date()), 'yyyy-MM-dd')
       });
 
-      expect(res.body[0]).toHaveProperty('users');
-      expect(res.body[0]).toHaveProperty('label');
+      const expectedProps = ['users', 'label'];
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+      });
+
+      expect(allHaveExpectedProps).toBe(true);
     });
 
 
@@ -262,8 +267,10 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(res.body[0]).toHaveProperty('date');
-      expect(res.body[0]).toHaveProperty('hours');
+      const expectedProps = ['date', 'hours'];
+      const actualProps = Object.keys(res.body[0]);
+
+      expect(actualProps.sort()).toEqual(expectedProps.sort());
     });
 
 
@@ -292,7 +299,7 @@ describe('GET /api/userDuties', () => {
     });
 
 
-    it('array element property "hours" should contain numbers', async () => {
+    it('array element property "hours" should contain integers', async () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
@@ -306,7 +313,6 @@ describe('GET /api/userDuties', () => {
 
 
 describe('POST /api/updateRota', () => {
-
   describe('INVALID PARAMETERS POST /api/updateRota', () => {
     it('should respond with status code 400 when any parameter is missing', async () => {
       const bodyData = [
@@ -565,7 +571,7 @@ describe('POST /api/updateRota', () => {
     });
 
 
-    it('array element should have properties "users" and "label"', async () => {
+    it('array elements should have properties "users" and "label"', async () => {
       const branch = Object.keys(settup)[0];
 
       validateInitData.mockReturnValue(true);
@@ -583,8 +589,10 @@ describe('POST /api/updateRota', () => {
         initDataUnsafe: {user: {id: 1813610409}}
         });
 
-      expect(res.body[0]).toHaveProperty('users');
-      expect(res.body[0]).toHaveProperty('label');
+      const expectedProps = ['users', 'label'];
+      const actualProps = Object.keys(res.body[0]);
+
+      expect(actualProps.sort()).toEqual(expectedProps.sort());
     });
 
 
