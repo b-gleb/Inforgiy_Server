@@ -190,7 +190,7 @@ describe('POST /api/stats', () => {
     });
 
 
-    it('array element should have properties "user" and "data"', async () => {
+    it('array elements should have properties "user" and "data"', async () => {
       getUser.mockResolvedValue(generateUser(branch, 1230));
       getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
 
@@ -200,7 +200,7 @@ describe('POST /api/stats', () => {
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
         return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
-      }) 
+      });
 
       expect(allHaveExpectedProps).toBe(true);
     });
