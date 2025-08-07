@@ -155,7 +155,7 @@ describe('GET /api/rota', () => {
     });
 
 
-    it('array element property "users" should be of type object', async () => {
+    it('array element "users" should be of type object', async () => {
       getRota.mockResolvedValue({});
 
       const res = await request(app).get('/api/rota').query({
@@ -163,7 +163,7 @@ describe('GET /api/rota', () => {
         date: format(lastDayOfYear(new Date()), 'yyyy-MM-dd')
       });
 
-      expect(res.body[0]['users']).toBeInstanceOf(Object);
+      expect(res.body.every(item => typeof item.users === 'object' && item.users != null)).toBe(true);
     });
 
 
@@ -175,7 +175,7 @@ describe('GET /api/rota', () => {
         date: format(lastDayOfYear(new Date()), 'yyyy-MM-dd')
       });
 
-      expect(typeof res.body[0]['label']).toBe('string');
+      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
     });
   });
 });
@@ -259,7 +259,7 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(res.body[0]).toBeInstanceOf(Object);
+      expect(res.body.every(item => typeof item === 'object' && item != null));
     });
 
 
@@ -268,9 +268,12 @@ describe('GET /api/userDuties', () => {
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
       const expectedProps = ['date', 'hours'];
-      const actualProps = Object.keys(res.body[0]);
-
-      expect(actualProps.sort()).toEqual(expectedProps.sort());
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+      });
+      
+      expect(allHaveExpectedProps).toBe(true);
     });
 
 
@@ -278,8 +281,12 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(typeof res.body[0]['date']).toBe('string');
-      expect(res.body[0]['date']).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/);
+      const allDatesMatchFormat = res.body.every(item =>
+        /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(item.date)
+      );
+      
+      expect(res.body.every(item => typeof item.date === 'string')).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
     });
 
 
@@ -287,7 +294,7 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(res.body[0]['hours']).toBeInstanceOf(Array);
+      expect(res.body.every(item => Array.isArray(item.hours))).toBe(true);
     });
 
 
@@ -295,7 +302,7 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(res.body[0]['hours']).not.toHaveLength(0);
+      expect(res.body.every(item => item.hours.length != 0)).toBe(true);
     });
 
 
@@ -303,7 +310,11 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([rotaDBEntry]);
       const res = await request(app).get('/api/userDuties').query({branch: Object.keys(settup)[0], userId: 1813610409, startDate: '2025-01-01', endDate: '2025-01-08'});
 
-      expect(Number.isInteger(res.body[0]['hours'][0])).toBe(true);
+      expect(res.body.every(item => 
+        item.hours.every(hour => 
+          Number.isInteger(hour)
+        )
+      )).toBe(true);
     });
   });
 });
@@ -587,16 +598,19 @@ describe('POST /api/updateRota', () => {
         modifyUserId: 1813610409,
         timeRange: '00:00-01:00',
         initDataUnsafe: {user: {id: 1813610409}}
-        });
+      });
 
       const expectedProps = ['users', 'label'];
-      const actualProps = Object.keys(res.body[0]);
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+      });
 
-      expect(actualProps.sort()).toEqual(expectedProps.sort());
+      expect(allHaveExpectedProps).toBe(true);
     });
 
 
-    it('array element property "users" should be of type object', async () => {
+    it('array element "users" should be of type object', async () => {
       const branch = Object.keys(settup)[0];
 
       validateInitData.mockReturnValue(true);
@@ -614,7 +628,7 @@ describe('POST /api/updateRota', () => {
         initDataUnsafe: {user: {id: 1813610409}}
         });
 
-      expect(res.body[0]['users']).toBeInstanceOf(Object);
+      expect(res.body.every(item => typeof item.users === 'object' && item.users != null)).toBe(true);
     });
 
 
@@ -636,7 +650,7 @@ describe('POST /api/updateRota', () => {
         initDataUnsafe: {user: {id: 1813610409}}
         });
 
-      expect(typeof res.body[0]['label']).toBe('string');
+      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
     });
   });
 });
