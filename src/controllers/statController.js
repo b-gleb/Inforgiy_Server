@@ -11,8 +11,7 @@ export default function makeStatController(database) {
     // Validation
     const validationSchema = Joi.object({
       branch: validateBranch.required(),
-      // TODO: change user_ids to userIds (may require client side change)
-      user_ids: Joi.array().min(1).items(validateUserId).required(),
+      userIds: Joi.array().min(1).items(validateUserId).required(),
       dateRanges: Joi.array().min(1).items(validateDateRange).required()
     });
 
@@ -25,7 +24,7 @@ export default function makeStatController(database) {
     for (const dateRange of value.dateRanges){
       const pipeline_output = await database.getDateRangeStats(
         value.branch,
-        value.user_ids,
+        value.userIds,
         dateRange
       );
 
@@ -42,31 +41,37 @@ export default function makeStatController(database) {
         returnedUserIds.push(document._id);
       };
 
-      // Identify user_ids not returned and fill them with zero
-      const notReturnedUserIds = value.user_ids.filter(user_id => !returnedUserIds.includes(user_id));
-      for (const user_id of notReturnedUserIds) {
-        (stats[user_id] ??= []).push({
+      // Identify userIds not returned and fill them with zero
+      const notReturnedUserIds = value.userIds.filter(userId => !returnedUserIds.includes(userId));
+      for (const userId of notReturnedUserIds) {
+        (stats[userId] ??= []).push({
           dateRange: dateRange,
           count: 0
         })
       }
     };
 
-    // Conver user ids to nick names
+    // Conver userIds to nick names
     const allUserIds = Object.keys(stats);
-    const convertedStats = await Promise.all(
-      allUserIds.map( async (user_id) => {
-        const userObj = await converters.convertUserId(value.branch, Number(user_id));
-        if (userObj) {
-          return [userObj.nick, stats[user_id]];
-        } else {
-          return res.status(404).send("User not found")
-        }
-      })
-    );
+    const convertedStats = [];
 
-    res.json(Object.fromEntries(convertedStats));
-  }
+    for (const userId of allUserIds) {
+      const userObj = await converters.convertUserId(value.branch, Number(userId));
+
+      if (!userObj) {
+        return res.status(404).send(`User not found (ID: ${userId})`);
+      }
+      else {
+        const {id, nick, color} = userObj;
+        convertedStats.push({
+          user: {id, nick, color},
+          data: stats[userId]
+        })
+      };
+    };
+
+    res.json(convertedStats);
+  };
 
 
   const stats_cumulative = async (req, res) => {
