@@ -48,7 +48,7 @@ export default function makeUserController(database) {
 
         setTimeout(() => {
           delete usersCache[value.branch][user.telegram_id];
-        }, usersCacheTTL);
+        }, usersCacheTTL).unref();
       }
     }
 
