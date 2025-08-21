@@ -488,13 +488,7 @@ paths:
                   type: array
                   description: "An array of date ranges (inclusive) for which to calculate the statistics"
                   items:
-                    type: array
-                    minItems: 2
-                    maxItems: 2
-                    items:
-                      type: string
-                      format: "YYYY-MM-DD"
-                  example: [["2025-01-01", "2025-01-31"]]
+                    $ref: '#/components/schemas/dateRange'
         required: true
       responses:
         '200':
@@ -532,14 +526,7 @@ paths:
                         type: object
                         properties:
                           dateRange:
-                            type: array
-                            minItems: 2
-                            maxItems: 2
-                            items:
-                              type: string
-                              format: date-time
-                            description: "Start and end of the date range"
-                            example: ["2025-01-01T00:00:00.000Z", "2025-01-31T00:00:00.000Z"]
+                            $ref: '#/components/schemas/dateRange'
                           count:
                             type: integer
                             description: "Count for that date range"
@@ -597,13 +584,7 @@ paths:
                   type: array
                   description: "An array of arrays of dates (inclusive) for which to calculate the statistics"
                   items:
-                    type: array
-                    items:
-                      type: string
-                      format: "YYYY-MM-DD"
-                      minItems: 2
-                      maxItems: 2
-                  example: [["2025-01-01", "2025-01-02"]]
+                    $ref: '#/components/schemas/dateRange'
       responses:
         '200':
           description: JSON object with cummulative statistics
@@ -619,13 +600,7 @@ paths:
                       format: int64
                       example: 123456789
                     dateRange:
-                      type: array
-                      minItems: 2
-                      maxItems: 2
-                      items:
-                        type: string
-                        format: date
-                      example: ["2025-01-01", "2025-01-02"]
+                      $ref: '#/components/schemas/dateRange'
                     data:
                       type: array
                       items:
@@ -669,13 +644,7 @@ paths:
                   type: array
                   description: "An array of arrays of dates (inclusive) for which to calculate the statistic"
                   items:
-                    type: array
-                    items:
-                      type: string
-                      format: "YYYY-MM-DD"
-                      minItems: 2
-                      maxItems: 2
-                  example: [["2025-01-01", "2025-01-31"]]
+                    $ref: '#/components/schemas/dateRange'
       responses:
         '200':
           description: "JSON object with empty duties statistics"
@@ -687,13 +656,7 @@ paths:
                   type: object
                   properties:
                     dateRange:
-                      type: array
-                      minItems: 2
-                      maxItems: 2
-                      items:
-                        type: string
-                        format: date
-                      example: ["2025-01-01", "2025-01-31"]
+                      $ref: '#/components/schemas/dateRange'
                     count:
                       type: integer
                       example: 9
@@ -727,13 +690,7 @@ paths:
                   type: array
                   description: "An array of arrays of dates (inclusive) for which to calculate the statistic"
                   items:
-                    type: array
-                    items:
-                      type: string
-                      format: "YYYY-MM-DD"
-                      minItems: 2
-                      maxItems: 2
-                  example: [["2025-01-01", "2025-01-31"]]
+                    $ref: '#/components/schemas/dateRange'
       responses:
         '200':
           description: "JSON object with the number of duty-person slots for the requested dateRanges"
@@ -745,13 +702,7 @@ paths:
                   type: object
                   properties:
                     dateRange:
-                      type: array
-                      minItems: 2
-                      maxItems: 2
-                      items:
-                        type: string
-                        format: date
-                      example: ["2025-01-01", "2025-01-31"]
+                      $ref: '#/components/schemas/dateRange'
                     count:
                       type: integer
                       example: 15
@@ -786,13 +737,7 @@ paths:
                   type: array
                   description: "An array of arrays of dates (inclusive) for which to calculate the statistic"
                   items:
-                    type: array
-                    items:
-                      type: string
-                      format: "YYYY-MM-DD"
-                      minItems: 2
-                      maxItems: 2
-                  example: [["2025-01-01", "2025-01-31"]]
+                    $ref: '#/components/schemas/dateRange'
       responses:
         '200':
           description: "JSON object with unique users statistics"
@@ -804,13 +749,7 @@ paths:
                   type: object
                   properties:
                     dateRange:
-                      type: array
-                      minItems: 2
-                      maxItems: 2
-                      items:
-                        type: string
-                        format: date
-                      example: ["2025-01-01", "2025-01-31"]
+                      $ref: '#/components/schemas/dateRange'
                     count:
                       type: integer
                       example: 32
@@ -880,6 +819,16 @@ components:
           label:
             type: string
             example: "00:00-01:00"
+
+
+    dateRange:
+      type: array
+      minItems: 2
+      maxItems: 2
+      items:
+        type: string
+        format: "date"
+      example: ["2025-01-01", "2025-01-31"]
 
 
     WebAppInitData:
