@@ -336,7 +336,7 @@ describe('POST /api/updateRota', () => {
         {}
       ];
 
-      for (const body of bodyData){
+      for (const body of bodyData) {
         const res = await request(app).post('/api/updateRota').send(body);
         expect(res.statusCode).toBe(400);
       };
