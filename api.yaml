@@ -763,6 +763,65 @@ paths:
                 type: string
                 example: "Validation error message"
 
+  /stats/uniqueUsers:
+    post:
+      tags:
+        - Statistics
+      summary: "Number of unique users in rota"
+      description: "Number of unique users in rota across several date ranges"
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - dateRanges
+              properties:
+                branch:
+                  description: "Branch for which to get the number of unique users"
+                  $ref: '#/components/schemas/Branch'
+                dateRanges:
+                  type: array
+                  description: "An array of arrays of dates (inclusive) for which to calculate the statistic"
+                  items:
+                    type: array
+                    items:
+                      type: string
+                      format: "YYYY-MM-DD"
+                      minItems: 2
+                      maxItems: 2
+                  example: [["2025-01-01", "2025-01-31"]]
+      responses:
+        '200':
+          description: "JSON object with unique users statistics"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    dateRange:
+                      type: array
+                      minItems: 2
+                      maxItems: 2
+                      items:
+                        type: string
+                        format: date
+                      example: ["2025-01-01", "2025-01-31"]
+                    count:
+                      type: integer
+                      example: 32
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+
 
 components:
   schemas:
