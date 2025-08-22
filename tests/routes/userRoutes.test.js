@@ -145,7 +145,7 @@ describe('GET /api/users', () => {
     });
 
 
-    it('should not call getBranchUsers() once if userCount does not match cache', async () => {
+    it('should not call getBranchUsers() when userCount matches cache', async () => {
       const branch = Object.keys(settup)[0];
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
@@ -158,7 +158,7 @@ describe('GET /api/users', () => {
     });
 
 
-    it('should call getBranchUsers() once if userCount does not match cache', async () => {
+    it('should call getBranchUsers() once when userCount differs from cache', async () => {
       const branch = Object.keys(settup)[0];
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
@@ -222,7 +222,7 @@ describe('GET /api/users', () => {
     });
 
 
-    it('respons object property "username" should be a string beginning with @', async () => {
+    it('response object property "username" should be a string beginning with @', async () => {
       const res = await request(app).get('/api/users').query(body);
 
       expect(res.body.every(item => typeof item.username === 'string' && item.username.startsWith('@'))).toBe(true);
