@@ -63,68 +63,61 @@ describe('GET /api/users', () => {
 
 
   describe('VALID PARAMETERS GET /api/users', () => {
-    beforeEach(() => {
-      validateInitData.mockReset();
-      getUser.mockReset();
-      getUserCount.mockReset();
-      getBranchUsers.mockReset();
-    });
+    let branch;
+    let body;
 
-    it('should respond with status code 200', async () => {
-      const branch = Object.keys(settup)[0];
+    beforeAll(() => {
+      branch = Object.keys(settup)[0];
+      body = {branch, initDataUnsafe: {user: {id: 1230}}};
+
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
       getUserCount.mockResolvedValue(0);
       getBranchUsers.mockResolvedValue([]);
+    });
 
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+
+    beforeEach(() => {
+      validateInitData.mockClear();
+      getUser.mockClear();
+      getUserCount.mockClear();
+      getBranchUsers.mockClear();
+    });
+
+    it('should respond with status code 200', async () => {
+      const res = await request(app).get('/api/users').query(body);
       
       expect(res.statusCode).toBe(200);
     });
 
 
     it('should respond with status code 401 if unable to verify hash', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(false);
+      validateInitData.mockReturnValueOnce(false);
 
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(res.statusCode).toBe(401);
     });
 
 
     it('should respond with status code 403 if non admin user requests operation', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateUser(branch, 1230));
+      getUser.mockResolvedValueOnce(generateUser(branch, 1230));
 
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(res.statusCode).toBe(403);
     });
 
 
     it('should specify json in the content type header', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(0);
-      getBranchUsers.mockResolvedValue([]);
-
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
 
     it('should call isRotaAdmin() once', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(0);
-      getBranchUsers.mockResolvedValue([]);
-
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(getUser).toBeCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
@@ -132,13 +125,7 @@ describe('GET /api/users', () => {
 
 
     it('should call getUserCount() once', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(0);
-      getBranchUsers.mockResolvedValue([]);
-
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
       
       expect(getUserCount).toBeCalledTimes(1);
       expect(getUserCount).toHaveBeenCalledWith(branch);
@@ -146,26 +133,16 @@ describe('GET /api/users', () => {
 
 
     it('should not call getBranchUsers() when userCount matches cache', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(0);
-      getBranchUsers.mockResolvedValue([]);
-
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(getBranchUsers).toBeCalledTimes(0);
     });
 
 
     it('should call getBranchUsers() once when userCount differs from cache', async () => {
-      const branch = Object.keys(settup)[0];
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(1);
-      getBranchUsers.mockResolvedValue([]);
+      getUserCount.mockResolvedValueOnce(1);
 
-      const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
+      const res = await request(app).get('/api/users').query(body);
 
       expect(getBranchUsers).toBeCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch)
