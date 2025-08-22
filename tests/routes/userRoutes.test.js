@@ -126,8 +126,8 @@ describe('GET /api/users', () => {
 
       const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
 
-      expect(getUser.mock.calls.length).toBe(1);
-      expect(getUser.mock.calls[0][0]).toBe(1230);
+      expect(getUser).toBeCalledTimes(1);
+      expect(getUser).toHaveBeenCalledWith(1230);
     });
 
 
@@ -140,8 +140,8 @@ describe('GET /api/users', () => {
 
       const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
       
-      expect(getUserCount.mock.calls.length).toBe(1);
-      expect(getUserCount.mock.calls[0][0]).toBe(branch);
+      expect(getUserCount).toBeCalledTimes(1);
+      expect(getUserCount).toHaveBeenCalledWith(branch);
     });
 
 
@@ -154,7 +154,7 @@ describe('GET /api/users', () => {
 
       const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
 
-      expect(getBranchUsers.mock.calls.length).toBe(0);
+      expect(getBranchUsers).toBeCalledTimes(0);
     });
 
 
@@ -167,8 +167,8 @@ describe('GET /api/users', () => {
 
       const res = await request(app).get('/api/users').query({branch, initDataUnsafe: {user: {id: 1230}}});
 
-      expect(getBranchUsers.mock.calls.length).toBe(1);
-      expect(getBranchUsers.mock.calls[0][0]).toBe(branch);
+      expect(getBranchUsers).toBeCalledTimes(1);
+      expect(getBranchUsers).toHaveBeenCalledWith(branch)
     });
   });
 
