@@ -145,20 +145,24 @@ export default function makeUserController(database) {
       );
     };
 
+    let userObj;
+
     if (updatedUser !== null){
-      res.send('ok')
+      userObj = {
+        id: updatedUser.telegram_id,
+        username: updatedUser.telegram,
+        nick: updatedUser.roles[`rota_${value.branch}`]?.nick ?? updatedUser.telegram,
+        color: updatedUser.roles[`rota_${value.branch}`]?.c ?? 0
+      }
+
+      res.json(userObj);
       await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
     } else {
       return res.status(404).send("User not found")
     }
 
     // Update cache
-    usersCache[value.branch][updatedUser.telegram_id] = {
-      id: updatedUser.telegram_id,
-      username: updatedUser.telegram,
-      nick: updatedUser.roles[`rota_${value.branch}`]?.nick ?? updatedUser.telegram,
-      color: updatedUser.roles[`rota_${value.branch}`]?.c ?? 0
-    }
+    usersCache[value.branch][updatedUser.telegram_id] = userObj
   };
 
   return {
