@@ -86,39 +86,32 @@ describe('GET /api/users', () => {
 
     it('should respond with status code 200', async () => {
       const res = await request(app).get('/api/users').query(body);
-      
       expect(res.statusCode).toBe(200);
     });
 
 
     it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
-
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.statusCode).toBe(401);
     });
 
 
     it('should respond with status code 403 if non admin user requests operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.statusCode).toBe(403);
     });
 
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
 
     it('should call isRotaAdmin() once', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(getUser).toBeCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
@@ -126,7 +119,6 @@ describe('GET /api/users', () => {
 
     it('should call getUserCount() once', async () => {
       const res = await request(app).get('/api/users').query(body);
-      
       expect(getUserCount).toBeCalledTimes(1);
       expect(getUserCount).toHaveBeenCalledWith(branch);
     });
@@ -134,16 +126,13 @@ describe('GET /api/users', () => {
 
     it('should not call getBranchUsers() when userCount matches cache', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(getBranchUsers).toBeCalledTimes(0);
     });
 
 
     it('should call getBranchUsers() once when userCount differs from cache', async () => {
       getUserCount.mockResolvedValueOnce(1);
-
       const res = await request(app).get('/api/users').query(body);
-
       expect(getBranchUsers).toBeCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch)
     });
@@ -173,7 +162,6 @@ describe('GET /api/users', () => {
 
     it('response should be an array of objects', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.body).toBeInstanceOf(Array);
       expect(res.body.every(item => typeof item === 'object' && item != null)).toBe(true);
     });
@@ -194,28 +182,24 @@ describe('GET /api/users', () => {
 
     it('response object property "id" should be an integer', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.body.every(item => Number.isInteger(item.id))).toBe(true);
     });
 
 
     it('response object property "username" should be a string beginning with @', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.body.every(item => typeof item.username === 'string' && item.username.startsWith('@'))).toBe(true);
     });
 
 
     it('response object property "nick" should be a string', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.body.every(item => typeof item.nick === 'string')).toBe(true);
     });
 
 
     it('response object property "color" should be an integer', async () => {
       const res = await request(app).get('/api/users').query(body);
-
       expect(res.body.every(item => Number.isInteger(item.color))).toBe(true);
     });
   });
