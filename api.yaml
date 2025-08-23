@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.2.0
+  version: 1.2.1
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 paths:
