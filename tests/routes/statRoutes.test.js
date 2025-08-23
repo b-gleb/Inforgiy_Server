@@ -148,7 +148,7 @@ describe('POST /api/stats', () => {
 
         const res = await request(app).post('/api/stats').send(body);
 
-        expect(getDateRangeStats.mock.calls.length).toBe(body['dateRanges'].length);
+        expect(getDateRangeStats).toHaveBeenCalledTimes(body['dateRanges'].length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
         expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
       };

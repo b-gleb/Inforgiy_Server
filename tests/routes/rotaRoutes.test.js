@@ -116,9 +116,8 @@ describe('GET /api/rota', () => {
         date: '2025-01-01'
       });
 
-      expect(getRota.mock.calls.length).toBe(1);
-      expect(getRota.mock.calls[0][0]).toBe('lns');
-      expect(getRota.mock.calls[0][1].toISOString()).toBe('2025-01-01T00:00:00.000Z');
+      expect(getRota).toHaveBeenCalledTimes(1);
+      expect(getRota).toHaveBeenCalledWith('lns', new Date('2025-01-01'));
     });
   });
 
@@ -236,11 +235,8 @@ describe('GET /api/userDuties', () => {
       getUserDuties.mockResolvedValue([]);
       const res = await request(app).get('/api/userDuties').query({branch: 'di', userId: 12345, startDate: '2026-01-01', endDate: '2026-01-08'});
 
-      expect(getUserDuties.mock.calls.length).toBe(1);
-      expect(getUserDuties.mock.calls[0][0]).toBe('di');
-      expect(getUserDuties.mock.calls[0][1]).toBe(12345);
-      expect(getUserDuties.mock.calls[0][2].toISOString()).toBe('2026-01-01T00:00:00.000Z');
-      expect(getUserDuties.mock.calls[0][3].toISOString()).toBe('2026-01-08T00:00:00.000Z');
+      expect(getUserDuties).toHaveBeenCalledTimes(1);
+      expect(getUserDuties).toHaveBeenCalledWith('di', 12345, new Date('2026-01-01'), new Date('2026-01-08'));
     });
   });
 
@@ -458,7 +454,7 @@ describe('POST /api/updateRota', () => {
         });
 
         expect(res.statusCode).toBe(403);
-        expect(getUser.mock.calls.length).toBe(1);
+        expect(getUser).toHaveBeenCalledTimes(1);
       });
 
 
@@ -500,11 +496,9 @@ describe('POST /api/updateRota', () => {
           initDataUnsafe: {user: {id: 1813610409}}
         });
 
-        expect(addUserToRota.mock.calls.length).toBe(1);
-        expect(removeUserFromRota.mock.calls.length).toBe(0);
-        expect(addUserToRota.mock.calls[0][0]).toBe('lns');
-        expect(addUserToRota.mock.calls[0][1]).toBe('676d7f9f8300f637d426cee9');
-        expect(addUserToRota.mock.calls[0][2]).toBe(5);
+        expect(addUserToRota).toHaveBeenCalledTimes(1);
+        expect(removeUserFromRota).toHaveBeenCalledTimes(0);
+        expect(addUserToRota).toHaveBeenCalledWith('lns', '676d7f9f8300f637d426cee9', 5, [1230]);
       });
     });
 
@@ -547,12 +541,9 @@ describe('POST /api/updateRota', () => {
           initDataUnsafe: {user: {id: 1813610409}}
         });
 
-        expect(removeUserFromRota.mock.calls.length).toBe(1);
-        expect(addUserToRota.mock.calls.length).toBe(0);
-        expect(removeUserFromRota.mock.calls[0][0]).toBe('lns');
-        expect(removeUserFromRota.mock.calls[0][1]).toBe('676d7f9f8300f637d426cee9');
-        expect(removeUserFromRota.mock.calls[0][2]).toBe(5);
-        expect(removeUserFromRota.mock.calls[0][3]).toBe(1230);
+        expect(removeUserFromRota).toHaveBeenCalledTimes(1);
+        expect(addUserToRota).toHaveBeenCalledTimes(0);
+        expect(removeUserFromRota).toHaveBeenCalledWith('lns', '676d7f9f8300f637d426cee9', 5, 1230);
       });
     });
   });
