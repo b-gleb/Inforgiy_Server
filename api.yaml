@@ -365,10 +365,9 @@ paths:
         '200':
           description: "User role updated successfully."
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "ok"
+                $ref: '#/components/schemas/userObj'
         '400':
           description: "Bad Request - Invalid input data."
           content:
