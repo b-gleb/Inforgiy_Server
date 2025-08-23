@@ -440,6 +440,13 @@ paths:
               schema:
                 type: string
                 example: "Validation error message"
+        '401':
+            description: "Unauthorized - Unable to verify hash."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Unable to verify hash"
         '403':
           description: "Forbidden - User is not authorized to perform this action."
           content:
