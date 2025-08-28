@@ -237,7 +237,7 @@ export async function getDateRangeStats(branch, userIds, dateRange) {
 };
 
 
-export async function getCummulativeStats(branch, userId, dateRange) {
+export async function getCumulativeStats(branch, userId, dateRange) {
   const pipeline = [
     {
       $match:
@@ -291,7 +291,7 @@ export async function getCummulativeStats(branch, userId, dateRange) {
           _id: 1
         },
         output: {
-          cumulativeCount: {
+          count: {
             $sum: "$dailyCount",
             window: {
               documents: ["unbounded", "current"]
@@ -303,7 +303,7 @@ export async function getCummulativeStats(branch, userId, dateRange) {
     {
       $project: {
         date: "$_id",
-        cumulativeCount: 1,
+        count: 1,
         _id: 0
       }
     }
@@ -337,6 +337,6 @@ export default {
   updateUser,
   // STATS
   getDateRangeStats,
-  getCummulativeStats,
+  getCumulativeStats,
   logUsageStatistics
 };

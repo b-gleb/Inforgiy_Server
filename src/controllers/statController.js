@@ -75,37 +75,34 @@ export default function makeStatController(database) {
 
 
   const stats_cumulative = async (req, res) => {
-    // TODO: Account for user not found
     // Validation
-      const validationSchema = Joi.object({
-        branch: validateBranch.required(),
-        // TODO: change user_ids to userIds (may require client side change)
-        user_id: validateUserId.required(),
-        dateRanges: Joi.array().min(1).items(validateDateRange).required()
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      userId: validateUserId.required(),
+      dateRanges: Joi.array().min(1).items(validateDateRange).required()
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    // Logic
+    const result = [];
+
+    for (const dateRange of value.dateRanges) {
+      const pipeline_output = await database.getCumulativeStats(
+        value.branch,
+        value.userId,
+        dateRange
+      );
+
+      result.push({
+        userId: value.userId,
+        dateRange: dateRange,
+        data: helpers.fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
       });
+    }
 
-      const { error, value } = validationSchema.validate(req.body);
-      if (error) return res.status(400).send(error.details[0].message);
-
-      // Logic
-      const result = [];
-
-      for (const dateRange of value.dateRanges){
-        const pipeline_output = await database.getCummulativeStats(
-          value.branch,
-          value.user_id,
-          dateRange
-        );
-
-        result.push({
-          user_id: value.user_id,
-          dateRange: dateRange,
-          data: helpers.fillMissingDates(pipeline_output, dateRange[0], dateRange[1])
-        });
-        
-      }
-
-      res.json(result);
+    res.json(result);
   };
 
 
