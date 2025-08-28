@@ -126,7 +126,7 @@ describe('POST /api/stats', () => {
 
         const res = await request(app).post('/api/stats').send(body);
 
-        expect(getDateRangeStats).toHaveBeenCalledTimes(body['dateRanges'].length);
+        expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
         expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
       };
@@ -179,29 +179,29 @@ describe('POST /api/stats', () => {
     it('array element "user" should have properties "id", "nick", "color"', async () => {
       const res = await request(app).post('/api/stats').send(validBody);
 
-      const expectedProps = ['id', 'nick', 'color'];
+      const expectedProps = ['id', 'nick', 'color'].sort();
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item.user).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       }) 
 
       expect(allHaveExpectedProps).toBe(true);
     });
 
 
-    it('property "id" of type "user" object should be of a positive integer', async () => {
+    it('property "id" of object "user" object should be of a positive integer', async () => {
       const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => Number.isInteger(item.user.id) && item.user.id > 0)).toBe(true);
     });
 
 
-    it('property "nick" of type "user" object should be a string', async () => {
+    it('property "nick" of object "user" object should be a string', async () => {
       const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(true);
     });
 
 
-    it('property "color" of type "user" object should be a positive integer or zero', async () => {
+    it('property "color" of object "user" object should be a positive integer or zero', async () => {
       const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => Number.isInteger(item.user.color) && item.user.color >= 0)).toBe(true);
     });
@@ -241,11 +241,11 @@ describe('POST /api/stats', () => {
     it('"data" array element should have properties "dateRange" and "count"', async () => {
       const res = await request(app).post('/api/stats').send(validBody);
 
-      const expectedProps = ['dateRange', 'count'];
+      const expectedProps = ['dateRange', 'count'].sort();
       const allHaveExpectedProps = res.body.every(
         item => item.data.every(subitem => {
           const actualProps = Object.keys(subitem).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       }));
 
       expect(allHaveExpectedProps).toBe(true);
@@ -260,6 +260,26 @@ describe('POST /api/stats', () => {
           subitem => Array.isArray(subitem.dateRange) && subitem.dateRange.length == 2
         )
       )).toBe(true);
+    });
+    
+
+    it('"dateRange" elements should be date strings', async () => {
+      const res = await request(app).post('/api/stats').send(validBody);
+      
+      const allDatesMatchFormat = res.body.every(
+        item => item.data.every(
+          subitem => subitem.dateRange.every(
+            range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range)
+        ))
+      );
+
+      expect(res.body.every(
+        item => item.data.every(
+          subitem => subitem.dateRange.every(
+            range => typeof range === 'string'
+        ))
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
     });
 
 
