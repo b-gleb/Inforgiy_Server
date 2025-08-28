@@ -24,6 +24,16 @@ function generateUser (branch, id) {
   });
 };
 
+function generateCumulativeStats(dateRanges) {
+  return dateRanges.reduce((acc, range, idx) => {
+    acc[`range_${idx}`] = [{
+      count: Math.floor(Math.random() * 30) + 1,
+      date: new Date(range[0])
+    }];
+    return acc;
+  }, {});
+}
+
 
 const getDateRangeStats = jest.fn();
 const getCumulativeStats = jest.fn();
@@ -292,7 +302,7 @@ describe('POST /api/stats/cumulative', () => {
     dateRanges = [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']];
     validBody = {branch, userId, dateRanges};
 
-    getCumulativeStats.mockResolvedValue([{date: new Date(), count: 3}, {date: addDays(new Date(), 1), count: 5}]);
+    getCumulativeStats.mockResolvedValue(generateCumulativeStats(dateRanges));
   });
 
   beforeEach(() => {
@@ -335,7 +345,7 @@ describe('POST /api/stats/cumulative', () => {
     });
 
 
-    it('should call getcumulativeStats() the same number of times as length of "dateRanges"', async () => {
+    it('should call getcumulativeStats() once', async () => {
       const bodyData = [
         {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
         {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
@@ -344,11 +354,11 @@ describe('POST /api/stats/cumulative', () => {
 
       for (const body of bodyData) {
         getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce([{date: new Date(), count: 3}, {date: addDays(new Date()), count: 5}]);
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
 
         const res = await request(app).post('/api/stats/cumulative').send(body);
 
-        expect(getCumulativeStats).toHaveBeenCalledTimes(body.dateRanges.length);
+        expect(getCumulativeStats).toHaveBeenCalledTimes(1);
         expect(getCumulativeStats.mock.calls[0][0]).toBe(branch);
         expect(getCumulativeStats.mock.calls[0][1]).toBe(body.userId);
       };
@@ -373,6 +383,7 @@ describe('POST /api/stats/cumulative', () => {
 
       for (const body of bodyData) {
         getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
         
         const res = await request(app).post('/api/stats/cumulative').send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
