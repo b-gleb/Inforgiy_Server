@@ -574,12 +574,12 @@ paths:
                 example: "User not found"
 
 
-  /stats/cummulative:
+  /stats/cumulative:
     post:
       tags:
         - Statistics
-      summary: "Cummulative sum of hours for user"
-      description: "Cummulative sum of hours across a date range"
+      summary: "Cumulative sum of hours for user"
+      description: "Cumulative sum of hours across a date range"
       requestBody:
         required: True
         content:
@@ -588,13 +588,13 @@ paths:
               type: object
               required:
                 - branch
-                - user_id
+                - userId
                 - dateRanges
               properties:
                 branch:
                     description: "Branch for which to perform the operation"
                     $ref: '#/components/schemas/Branch'
-                user_id:
+                userId:
                     type: integer
                     format: int64
                     description: "The ID of the user to calculate the stats for"
@@ -612,7 +612,7 @@ paths:
                   example: [["2025-01-01", "2025-01-02"]]
       responses:
         '200':
-          description: JSON object with cummulative statistics
+          description: JSON object with cumulative statistics
           content:
             application/json:
               schema:
@@ -620,7 +620,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    user_id:
+                    userId:
                       type: integer
                       format: int64
                       example: 123456789
@@ -641,7 +641,7 @@ paths:
                             type: string
                             format: "YYYY-MM-DD"
                             example: "2025-01-01"
-                          cumulativeCount:
+                          count:
                             type: integer
                             example: 5
         '400':

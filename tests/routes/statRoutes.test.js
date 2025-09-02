@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import {addDays} from 'date-fns';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 const makeApp = (await import('../../src/app.js')).default;
@@ -23,12 +24,24 @@ function generateUser (branch, id) {
   });
 };
 
+function generateCumulativeStats(dateRanges) {
+  return dateRanges.reduce((acc, range, idx) => {
+    acc[`range_${idx}`] = [{
+      count: Math.floor(Math.random() * 30) + 1,
+      date: new Date(range[0])
+    }];
+    return acc;
+  }, {});
+}
+
 
 const getDateRangeStats = jest.fn();
+const getCumulativeStats = jest.fn();
 const getUser = jest.fn();
 
 const app = makeApp({
   getDateRangeStats,
+  getCumulativeStats,
   getUser
 });
 
@@ -289,6 +302,202 @@ describe('POST /api/stats', () => {
       expect(res.body.every(
         item => item.data.every(
           subitem => typeof Number.isInteger(subitem.count) && subitem.count >= 0
+        )
+      )).toBe(true);
+    });
+  });
+});
+
+
+
+describe('POST /api/stats/cumulative', () => {
+  let branch;
+  let userId;
+  let dateRanges;
+  let validBody;
+
+  beforeAll(() => {
+    branch = Object.keys(settup)[0];
+    userId = 1230;
+    dateRanges = [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']];
+    validBody = {branch, userId, dateRanges};
+
+    getCumulativeStats.mockResolvedValue(generateCumulativeStats(dateRanges));
+  });
+
+  beforeEach(() => {
+    getCumulativeStats.mockClear();
+  });
+
+  describe('INVALID PARAMETERS POST /api/stats/cumulative', () => {
+    it('should respond with status code 400 if any of the parameters are missing', async () => {
+      const bodyData = [
+        {userId, dateRanges},
+        {branch, dateRanges},
+        {branch, userId},
+        {}
+      ];
+
+      for (const body of bodyData) {
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+        expect(res.statusCode).toBe(400);
+      };
+    });
+
+  
+    it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send({...validBody, dateRanges: ['2025-01-01', '2025-01-31']});
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+
+  describe('VALID PARAMETERS POST /api/stats/cumulative', () => {
+    it('should return status code 200', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.statusCode).toBe(200);
+    });
+
+
+    it('should specify json in the content type header', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+    });
+
+
+    it('should call getcumulativeStats() once', async () => {
+      const bodyData = [
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+      ];
+
+      for (const body of bodyData) {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+
+        expect(getCumulativeStats).toHaveBeenCalledTimes(1);
+        expect(getCumulativeStats.mock.calls[0][0]).toBe(branch);
+        expect(getCumulativeStats.mock.calls[0][1]).toBe(body.userId);
+      };
+    });
+  });
+
+
+  describe('RESPONSE VALIDATION POST /api/stats/cumulative', () => {
+    it('should return an array of objects', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(true);
+    });
+
+  
+    it('length of the array should be equal to length of "dateRanges"', async () => {
+      const bodyData = [
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+      ];
+
+      for (const body of bodyData) {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+        
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+        expect(res.body.length).toBe(body.dateRanges.length);
+      };
+    });
+
+  
+    it('array object should have properties "userId", "dateRange" and "data"', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const expectedProps = ['userId', 'dateRange', 'data'].sort();
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      });
+
+      expect(allHaveExpectedProps).toBe(true);
+    });
+
+  
+    it('property "userId" should be of type integer', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => Number.isInteger(item.userId))).toBe(true);
+    });
+
+  
+    it('property "dateRange" should be of type array of length 2', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => Array.isArray(item.dateRange) && item.dateRange.length === 2)).toBe(true);
+    });
+
+  
+    it('property "dateRange" elements should be date strings', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      
+      const allDatesMatchFormat = res.body.every(
+        item => item.dateRange.every(
+          range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range)
+        )
+      );
+
+      expect(res.body.every(
+        item => item.dateRange.every(
+          range => typeof range === 'string'
+        )
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
+    });
+
+  
+    it('property "data" should be an array of objects', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => typeof item.data === 'object' && item.data !== null));
+    });
+
+  
+    it('elements of "data" array should have properties "date", "count"', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const expectedProps = ['date', 'count'].sort();
+      const allHaveExpectedProps = res.body.every(
+        item => item.data.every(subitem => {
+          const actualProps = Object.keys(subitem).sort();
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+        })
+      );
+
+      expect(allHaveExpectedProps).toBe(true);
+    });
+
+  
+    it('property "date" should be a date string', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const allDatesMatchFormat = res.body.every(
+        item => item.data.every(
+          entry => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(entry.date)
+        )
+      );
+
+      expect(res.body.every(
+        item => item.data.every(
+          entry => typeof entry.date === 'string'
+        )
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
+    });
+
+  
+    it('property "count" should be a positive integer', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(
+        item => item.data.every(
+          subitem => Number.isInteger(subitem.count)
         )
       )).toBe(true);
     });

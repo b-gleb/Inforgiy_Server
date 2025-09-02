@@ -61,7 +61,7 @@ export default function makeHelpers(database) {
 
     // Fill missing dates before the first data point with zero
     while (isBefore(startDate, firstDataDate)) {
-        result.push({ date: formatISO(startDate, { representation: 'complete' }), cumulativeCount: 0 });
+        result.push({ date: formatISO(startDate, { representation: 'complete' }), count: 0 });
         startDate = addDays(startDate, 1);
     }
 
@@ -69,11 +69,11 @@ export default function makeHelpers(database) {
         let dateStr = formatISO(startDate, { representation: 'complete' });
 
         if (index < data.length && isEqual(data[index].date, startDate)) {
-            lastKnownCount = data[index].cumulativeCount;
-            result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+            lastKnownCount = data[index].count;
+            result.push({ date: dateStr, count: lastKnownCount });
             index++;
         } else {
-            result.push({ date: dateStr, cumulativeCount: lastKnownCount });
+            result.push({ date: dateStr, count: lastKnownCount });
         }
         
         startDate = addDays(startDate, 1);
