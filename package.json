@@ -1,6 +1,6 @@
 {
   "name": "inforgiy-server",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "",
   "type": "module",
   "main": "src/server.js",
@@ -20,7 +20,7 @@
     "dotenv": "^17.2.1",
     "express": "^4.21.1",
     "joi": "^18.0.1",
-    "mongodb": "^6.18.0"
+    "mongodb": "^6.19.0"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^5.1.0",
