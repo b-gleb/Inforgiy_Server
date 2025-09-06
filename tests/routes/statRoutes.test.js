@@ -1,9 +1,19 @@
-import { beforeAll, beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import {addDays} from 'date-fns';
+import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 const makeApp = (await import('../../src/app.js')).default;
 
+function generateUser (branch, id) {
+  return ({
+    telegram: `@username_${id}`,
+    roles: {
+      [`rota_${branch}`]: {
+        nick: `Nick_${id}`,
+        c: 0
+      }
+    }
+  });
+};
 
 function generateDateRangeStats (userIds) {
   return userIds.map(id => ({
@@ -11,6 +21,16 @@ function generateDateRangeStats (userIds) {
     count: Math.floor(Math.random() * 30) + 1
   }));
 };
+
+function generateCumulativeStats(dateRanges) {
+  return dateRanges.reduce((acc, range, idx) => {
+    acc[`range_${idx}`] = [{
+      count: Math.floor(Math.random() * 30) + 1,
+      date: new Date(range[0])
+    }];
+    return acc;
+  }, {});
+}
 
 function generateEmptyDutiesStats (dateRanges) {
   return dateRanges.reduce((acc, range, idx) => {
@@ -38,28 +58,6 @@ function generateUniqueUsersStats (dateRanges) {
     return acc;
   }, {});
 };
-
-function generateUser (branch, id) {
-  return ({
-    telegram: `@username_${id}`,
-    roles: {
-      [`rota_${branch}`]: {
-        nick: `Nick_${id}`,
-        c: 0
-      }
-    }
-  });
-};
-
-function generateCumulativeStats(dateRanges) {
-  return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = [{
-      count: Math.floor(Math.random() * 30) + 1,
-      date: new Date(range[0])
-    }];
-    return acc;
-  }, {});
-}
 
 const getUser = jest.fn();
 const getDateRangeStats = jest.fn();
