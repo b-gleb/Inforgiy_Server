@@ -448,8 +448,12 @@ describe('POST /api/stats/emptyDuties', () => {
 
         const res = await request(app).post('/api/stats/emptyDuties').send(body);
 
+        const expectedDateRanges = body.dateRanges.map(
+          ([start, end]) => [new Date(start), new Date(end)]
+        );
+
         expect(getEmptyDuties).toHaveBeenCalledTimes(1);
-        expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, body.dateRanges);
+        expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
       };
     });
   });
@@ -592,8 +596,12 @@ describe('POST /api/stats/takenDuties', () => {
 
         const res = await request(app).post('/api/stats/takenDuties').send(body);
 
+        const expectedDateRanges = body.dateRanges.map(
+          ([start, end]) => [new Date(start), new Date(end)]
+        );
+
         expect(getTakenDuties).toHaveBeenCalledTimes(1);
-        expect(getTakenDuties).toHaveBeenCalledWith(body.branch, body.dateRanges);
+        expect(getTakenDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
       };
     });
   });
@@ -736,8 +744,12 @@ describe('POST /api/stats/uniqueUsers', () => {
 
         const res = await request(app).post('/api/stats/uniqueUsers').send(body);
 
+        const expectedDateRanges = body.dateRanges.map(
+          ([start, end]) => [new Date(start), new Date(end)]
+        );
+
         expect(getUniqueUsers).toHaveBeenCalledTimes(1);
-        expect(getUniqueUsers).toHaveBeenCalledWith(body.branch, body.dateRanges);
+        expect(getUniqueUsers).toHaveBeenCalledWith(body.branch, expectedDateRanges);
       };
     });
   });
