@@ -109,8 +109,32 @@ export default function makeStatController(database) {
   };
 
 
+  const emptyDuties = async (req, res) => {
+    // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      dateRanges: Joi.array().min(1).items(validateDateRange).required()
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    // Logic
+    const pipeline_output = await database.getEmptyDuties(value.branch, value.dateRanges);
+    console.log(pipeline_output)
+  
+    const result = value.dateRanges.map((range, idx) => ({
+      dateRange: range,
+      count: pipeline_output[`range_${idx}`][0].count
+    }));
+
+    res.json(result);
+  };
+
+
   return {
     stats,
-    stats_cumulative
+    stats_cumulative,
+    emptyDuties,
   };
 };

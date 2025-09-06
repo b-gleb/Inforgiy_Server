@@ -314,6 +314,28 @@ export async function getCummulativeStats(branch, userId, dateRange) {
 };
 
 
+export async function getEmptyDuties(branch, dateRanges) {
+  const facets = {};
+
+  dateRanges.forEach((dateRange, idx) => {
+    facets[`range_${idx}`] = [
+      { $match: { $and: [
+        { date: { $gte: dateRange[0] } },
+        { date: { $lte: dateRange[1] } }
+      ]}},
+      { $unwind: { path: "$rota" } },
+      { $match: { rota: [] } },
+      { $group: { _id: "$rota", count: { $sum: 1 } } },
+      { $project: { _id: 0 } }
+    ];
+  });
+
+  const pipeline = [{ $facet: facets }];
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput[0];
+};
+
+
 export async function logUsageStatistics(entry) {
   const insertedEntry = await mongo_db.collection('usageStatistics').insertOne(entry);
   return insertedEntry;
@@ -338,5 +360,6 @@ export default {
   // STATS
   getDateRangeStats,
   getCummulativeStats,
+  getEmptyDuties,
   logUsageStatistics
 };
