@@ -408,9 +408,12 @@ describe('POST /api/stats/cumulative', () => {
 
         const res = await request(app).post('/api/stats/cumulative').send(body);
 
+        const expectedDateRanges = body.dateRanges.map(
+          ([start, end]) => [new Date(start), new Date(end)]
+        );
+
         expect(getCumulativeStats).toHaveBeenCalledTimes(1);
-        expect(getCumulativeStats.mock.calls[0][0]).toBe(branch);
-        expect(getCumulativeStats.mock.calls[0][1]).toBe(body.userId);
+        expect(getCumulativeStats).toHaveBeenCalledWith(branch, body.userId, expectedDateRanges);
       };
     });
   });
