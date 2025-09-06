@@ -7,33 +7,33 @@ const makeApp = (await import('../../src/app.js')).default;
 function generateDateRangeStats (userIds) {
   return userIds.map(id => ({
     _id: id,
-    count: Math.floor(Math.random() * 30) + 1 // random int between 1 and 30
+    count: Math.floor(Math.random() * 30) + 1
   }));
 };
 
 function generateEmptyDutiesStats (dateRanges) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = {
+    acc[`range_${idx}`] = [{
       count: Math.floor(Math.random() * 30) + 1,
-    };
+    }];
     return acc;
   }, {});
 };
 
 function generateTakenDutiesStats (dateRanges) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = {
+    acc[`range_${idx}`] = [{
       count: Math.floor(Math.random() * 30) + 1,
-    };
+    }];
     return acc;
   }, {});
 };
 
 function generateUniqueUsersStats (dateRanges) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = {
+    acc[`range_${idx}`] = [{
       count: Math.floor(Math.random() * 30) + 1,
-    };
+    }];
     return acc;
   }, {});
 };
