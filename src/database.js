@@ -237,80 +237,150 @@ export async function getDateRangeStats(branch, userIds, dateRange) {
 };
 
 
-export async function getCummulativeStats(branch, userId, dateRange) {
-  const pipeline = [
-    {
-      $match:
-        {
-          $and: [
-            {
-              date: {
-                $gte: dateRange[0]
+export async function getCumulativeStats(branch, userId, dateRanges) {
+  const facets = {};
+
+  dateRanges.forEach((dateRange, idx) => {
+    facets[`range_${idx}`] = [
+      {
+        $match:
+          {
+            $and: [
+              {
+                date: {
+                  $gte: dateRange[0]
+                }
+              },
+              {
+                date: {
+                  $lte: dateRange[1]
+                }
               }
-            },
-            {
-              date: {
-                $lte: dateRange[1]
-              }
-            }
-          ]
+            ]
+          }
+      },
+      {
+        $unwind: {
+          path: "$rota"
         }
-    },
-    {
-      $unwind: {
-        path: "$rota"
-      }
-    },
-    {
-      $unwind: {
-        path: "$rota"
-      }
-    },
-    {
-      $match:
-        {
-          rota: userId
+      },
+      {
+        $unwind: {
+          path: "$rota"
         }
-    },
-    {
-      $group: {
-        _id: "$date",
-        dailyCount: {
-          $sum: 1
+      },
+      {
+        $match:
+          {
+            rota: userId
+          }
+      },
+      {
+        $group: {
+          _id: "$date",
+          dailyCount: {
+            $sum: 1
+          }
         }
-      }
-    },
-    {
-      $sort: {
-        _id: 1
-      }
-    },
-    {
-      $setWindowFields: {
-        sortBy: {
+      },
+      {
+        $sort: {
           _id: 1
-        },
-        output: {
-          cumulativeCount: {
-            $sum: "$dailyCount",
-            window: {
-              documents: ["unbounded", "current"]
+        }
+      },
+      {
+        $setWindowFields: {
+          sortBy: {
+            _id: 1
+          },
+          output: {
+            count: {
+              $sum: "$dailyCount",
+              window: {
+                documents: ["unbounded", "current"]
+              }
             }
           }
         }
+      },
+      {
+        $project: {
+          date: "$_id",
+          count: 1,
+          _id: 0
+        }
       }
-    },
-    {
-      $project: {
-        date: "$_id",
-        cumulativeCount: 1,
-        _id: 0
-      }
-    }
-  ];
+    ];
+  });
 
+  const pipeline = [{ $facet: facets }];
   const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
-  return pipelineOutput;
+  return pipelineOutput[0];
+};
+
+
+export async function getEmptyDuties(branch, dateRanges) {
+  const facets = {};
+
+  dateRanges.forEach((dateRange, idx) => {
+    facets[`range_${idx}`] = [
+      { $match: { $and: [
+        { date: { $gte: dateRange[0] } },
+        { date: { $lte: dateRange[1] } }
+      ]}},
+      { $unwind: { path: "$rota" } },
+      { $match: { rota: [] } },
+      { $group: { _id: "$rota", count: { $sum: 1 } } },
+      { $project: { _id: 0 } }
+    ];
+  });
+
+  const pipeline = [{ $facet: facets }];
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput[0];
+};
+
+
+export async function getTakenDuties(branch, dateRanges) {
+  const facets = {};
+
+  dateRanges.forEach((dateRange, idx) => {
+    facets[`range_${idx}`] = [
+      { $match: { $and: [
+        { date: { $gte: dateRange[0] } },
+        { date: { $lte: dateRange[1] } }
+      ]}},
+      { $unwind: { path: "$rota", preserveNullAndEmptyArrays: false } },
+      { $unwind: { path: "$rota", preserveNullAndEmptyArrays: false } },
+      { $count: "count" }
+    ];
+  });
+
+  const pipeline = [{ $facet: facets }];
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput[0];
+};
+
+
+export async function getUniqueUsers(branch, dateRanges) {
+  const facets = {};
+
+  dateRanges.forEach((dateRange, idx) => {
+    facets[`range_${idx}`] = [
+      { $match: { $and: [
+        { date: { $gte: dateRange[0] } },
+        { date: { $lte: dateRange[1] } }
+      ]}},
+      { $unwind: { path: "$rota", preserveNullAndEmptyArrays: false } },
+      { $unwind: { path: "$rota", preserveNullAndEmptyArrays: false } },
+      { $group: { _id: "$rota" } },
+      { $count: "count" }
+    ];
+  });
+
+  const pipeline = [{ $facet: facets }];
+  const pipelineOutput = await mongo_db.collection(`rota_${branch}`).aggregate(pipeline).toArray();
+  return pipelineOutput[0];
 };
 
 
@@ -402,7 +472,7 @@ export default {
   updateUser,
   // STATS
   getDateRangeStats,
-  getCummulativeStats,
+  getCumulativeStats,
   getEmptyDuties,
   getTakenDuties,
   getUniqueUsers,

@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.0.8
+  version: 1.2.1
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 paths:
@@ -365,10 +365,9 @@ paths:
         '200':
           description: "User role updated successfully."
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "ok"
+                $ref: '#/components/schemas/userObj'
         '400':
           description: "Bad Request - Invalid input data."
           content:
@@ -441,6 +440,13 @@ paths:
               schema:
                 type: string
                 example: "Validation error message"
+        '401':
+            description: "Unauthorized - Unable to verify hash."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "Unable to verify hash"
         '403':
           description: "Forbidden - User is not authorized to perform this action."
           content:
@@ -555,12 +561,12 @@ paths:
                 example: "User not found"
 
 
-  /stats/cummulative:
+  /stats/cumulative:
     post:
       tags:
         - Statistics
-      summary: "Cummulative sum of hours for user"
-      description: "Cummulative sum of hours across a date range"
+      summary: "Cumulative sum of hours for user"
+      description: "Cumulative sum of hours across a date range"
       requestBody:
         required: True
         content:
@@ -569,13 +575,13 @@ paths:
               type: object
               required:
                 - branch
-                - user_id
+                - userId
                 - dateRanges
               properties:
                 branch:
                     description: "Branch for which to perform the operation"
                     $ref: '#/components/schemas/Branch'
-                user_id:
+                userId:
                     type: integer
                     format: int64
                     description: "The ID of the user to calculate the stats for"
@@ -587,7 +593,7 @@ paths:
                     $ref: '#/components/schemas/dateRange'
       responses:
         '200':
-          description: JSON object with cummulative statistics
+          description: JSON object with cumulative statistics
           content:
             application/json:
               schema:
@@ -595,7 +601,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    user_id:
+                    userId:
                       type: integer
                       format: int64
                       example: 123456789
@@ -610,7 +616,7 @@ paths:
                             type: string
                             format: "YYYY-MM-DD"
                             example: "2025-01-01"
-                          cumulativeCount:
+                          count:
                             type: integer
                             example: 5
         '400':

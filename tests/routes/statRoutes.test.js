@@ -1,4 +1,5 @@
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { beforeAll, beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import {addDays} from 'date-fns';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 const makeApp = (await import('../../src/app.js')).default;
@@ -50,15 +51,27 @@ function generateUser (branch, id) {
   });
 };
 
+function generateCumulativeStats(dateRanges) {
+  return dateRanges.reduce((acc, range, idx) => {
+    acc[`range_${idx}`] = [{
+      count: Math.floor(Math.random() * 30) + 1,
+      date: new Date(range[0])
+    }];
+    return acc;
+  }, {});
+}
+
+const getUser = jest.fn();
+const getDateRangeStats = jest.fn();
+const getCumulativeStats = jest.fn();
 const getEmptyDuties = jest.fn();
 const getTakenDuties = jest.fn();
 const getUniqueUsers = jest.fn();
-const getDateRangeStats = jest.fn();
-const getUser = jest.fn();
 
 const app = makeApp({
-  getDateRangeStats,
   getUser,
+  getDateRangeStats,
+  getCumulativeStats,
   getEmptyDuties,
   getTakenDuties,
   getUniqueUsers,
@@ -66,17 +79,32 @@ const app = makeApp({
 
 
 describe('POST /api/stats', () => {
+  let branch;
+  let userIds;
+  let dateRanges;
+  let validBody;
+
+  beforeAll(() => {
+    branch = Object.keys(settup)[0];
+    userIds = [1230, 4560];
+    dateRanges = [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']];
+    validBody = {branch, userIds, dateRanges};
+
+    getUser.mockResolvedValue(generateUser(branch, 1230));
+    getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
+  });
+
   beforeEach(() => {
-    getDateRangeStats.mockReset();
-    getUser.mockReset();
+    getDateRangeStats.mockClear();
+    getUser.mockClear();
   });
 
   describe('INVALID PARAMETERS POST /api/stats', () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
-        {userIds: [1230], dateRanges: [['2025-01-01', '2025-01-31']]},
-        {branch: Object.keys(settup)[0], dateRanges: [['2025-01-01', '2025-01-31']]},
-        {branch: Object.keys(settup)[0], userIds: [1230]},
+        {userIds, dateRanges},
+        {branch, dateRanges},
+        {branch, userIds},
         {}
       ];
 
@@ -88,23 +116,13 @@ describe('POST /api/stats', () => {
 
 
     it('should respond with status code 400 if userIds is a valid id (not array of ids)', async () => {
-      const res = await request(app).post('/api/stats').send({
-        branch: Object.keys(settup)[0],
-        userIds: 1230,
-        dateRanges: [['2025-01-01', '2025-01-31']]
-      });
-      
+      const res = await request(app).post('/api/stats').send({branch, userIds: 1230, dateRanges});
       expect(res.statusCode).toBe(400);
     });
 
 
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
-      const res = await request(app).post('/api/stats').send({
-        branch: Object.keys(settup)[0],
-        userIds: [1230],
-        dateRanges: ['2025-01-01', '2025-01-31']
-      });
-      
+      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges: ['2025-01-01', '2025-01-31']});
       expect(res.statusCode).toBe(400);
     });
   });
@@ -112,32 +130,19 @@ describe('POST /api/stats', () => {
 
   describe('VALID PARAMETERS POST /api/stats', () => {
     it('should return status code 200', async () => {
-      const branch = Object.keys(settup)[0];
-      const userIds = [1230, 4560];
-
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({
-        branch,
-        userIds,
-        dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]
-      });
-
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
 
     it('should return status code 404 when requested user does not exist', async () => {
-      const branch = Object.keys(settup)[0];
-
-      getUser.mockResolvedValue(null);
-      getDateRangeStats.mockResolvedValue([]);
+      getUser.mockResolvedValueOnce(null);
+      getDateRangeStats.mockResolvedValueOnce([]);
 
       const res = await request(app).post('/api/stats').send({
         branch,
         userIds: [1],
-        dateRanges: [['2025-01-01', '2025-01-31']]
+        dateRanges
       });
 
       expect(res.statusCode).toBe(404);
@@ -145,26 +150,12 @@ describe('POST /api/stats', () => {
 
 
     it('should specify json in the content type header', async () => {
-      const branch = Object.keys(settup)[0];
-      const userIds = [1230, 4560];
-
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({
-        branch,
-        userIds,
-        dateRanges: [['2025-01-01', '2025-01-31']]
-      });
-
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
 
     it('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async () => {
-      const branch = Object.keys(settup)[0];
-      const userIds = [1230, 4560];
-
       const bodyData = [
         {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']]},
         {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
@@ -172,15 +163,15 @@ describe('POST /api/stats', () => {
       ];
 
       for (const body of bodyData) {
-        getUser.mockReset();
-        getDateRangeStats.mockReset();
+        getUser.mockClear();
+        getDateRangeStats.mockClear();
 
-        getUser.mockResolvedValue(generateUser(branch, 1230));
-        getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
+        getUser.mockResolvedValueOnce(generateUser(branch, 1230));
+        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
 
         const res = await request(app).post('/api/stats').send(body);
 
-        expect(getDateRangeStats.mock.calls.length).toBe(body['dateRanges'].length);
+        expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
         expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
       };
@@ -189,24 +180,14 @@ describe('POST /api/stats', () => {
 
 
   describe('RESPONSE VALIDATION POST /api/stats', () => {
-    const branch = Object.keys(settup)[0]
-    const userIds = [1230, 4560]
-    const dateRanges = [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]
-
     it('should return an array of objects', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body).toBeInstanceOf(Array);
       expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(true);
     });
 
 
     it('length of array should be the length of requested `userIds`', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-
       const bodyData = [
         {branch, dateRanges, userIds: [1230]},
         {branch, dateRanges, userIds: [1230, 4560]},
@@ -214,19 +195,15 @@ describe('POST /api/stats', () => {
       ];
 
       for (const body of bodyData) {
-        getDateRangeStats.mockResolvedValue(generateDateRangeStats(body['userIds']));
-
+        getDateRangeStats.mockResolvedValue(generateDateRangeStats(body.userIds));
         const res = await request(app).post('/api/stats').send(body);
-        expect(res.body.length).toBe(body['userIds'].length);
+        expect(res.body.length).toBe(body.userIds.length);
       };
     });
 
 
     it('array elements should have properties "user" and "data"', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
+      const res = await request(app).post('/api/stats').send(validBody);
 
       const expectedProps = ['user', 'data'];
       const allHaveExpectedProps = res.body.every(item => {
@@ -239,75 +216,49 @@ describe('POST /api/stats', () => {
 
 
     it('array element "user" should be of type object', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => typeof item.user === 'object' && item.user != null)).toBe(true);
     });
 
 
     it('array element "user" should have properties "id", "nick", "color"', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
+      const res = await request(app).post('/api/stats').send(validBody);
 
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
-      const expectedProps = ['id', 'nick', 'color'];
+      const expectedProps = ['id', 'nick', 'color'].sort();
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item.user).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       }) 
 
       expect(allHaveExpectedProps).toBe(true);
     });
 
 
-    it('property "id" of type "user" object should be of a positive integer', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+    it('property "id" of object "user" object should be of a positive integer', async () => {
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => Number.isInteger(item.user.id) && item.user.id > 0)).toBe(true);
     });
 
 
-    it('property "nick" of type "user" object should be a string', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+    it('property "nick" of object "user" object should be a string', async () => {
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(true);
     });
 
 
-    it('property "color" of type "user" object should be a positive integer or zero', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+    it('property "color" of object "user" object should be a positive integer or zero', async () => {
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => Number.isInteger(item.user.color) && item.user.color >= 0)).toBe(true);
     });
 
 
     it('array element "data" should be of type array', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
+      const res = await request(app).post('/api/stats').send(validBody);
       expect(res.body.every(item => Array.isArray(item.data))).toBe(true);
     });
 
 
     it('array element "data" should have be the length of requested `dataRanges`', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
       const bodyData = [
         {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']]},
         {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
@@ -322,10 +273,7 @@ describe('POST /api/stats', () => {
 
 
     it('"data" array element should be of type object', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
+      const res = await request(app).post('/api/stats').send(validBody);
 
       expect(res.body.every(
         item => item.data.every(
@@ -336,16 +284,13 @@ describe('POST /api/stats', () => {
 
 
     it('"data" array element should have properties "dateRange" and "count"', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
+      const res = await request(app).post('/api/stats').send(validBody);
 
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
-
-      const expectedProps = ['dateRange', 'count'];
+      const expectedProps = ['dateRange', 'count'].sort();
       const allHaveExpectedProps = res.body.every(
         item => item.data.every(subitem => {
           const actualProps = Object.keys(subitem).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       }));
 
       expect(allHaveExpectedProps).toBe(true);
@@ -353,10 +298,7 @@ describe('POST /api/stats', () => {
 
 
     it('"dateRange" property to be of type array of length 2', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
+      const res = await request(app).post('/api/stats').send(validBody);
 
       expect(res.body.every(
         item => item.data.every(
@@ -364,13 +306,30 @@ describe('POST /api/stats', () => {
         )
       )).toBe(true);
     });
+    
+
+    it('"dateRange" elements should be date strings', async () => {
+      const res = await request(app).post('/api/stats').send(validBody);
+      
+      const allDatesMatchFormat = res.body.every(
+        item => item.data.every(
+          subitem => subitem.dateRange.every(
+            range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range)
+        ))
+      );
+
+      expect(res.body.every(
+        item => item.data.every(
+          subitem => subitem.dateRange.every(
+            range => typeof range === 'string'
+        ))
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
+    });
 
 
     it('"count" property to be of type integer', async () => {
-      getUser.mockResolvedValue(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
-
-      const res = await request(app).post('/api/stats').send({branch, userIds, dateRanges});
+      const res = await request(app).post('/api/stats').send(validBody);
 
       expect(res.body.every(
         item => item.data.every(
@@ -381,6 +340,201 @@ describe('POST /api/stats', () => {
   });
 });
 
+
+
+describe('POST /api/stats/cumulative', () => {
+  let branch;
+  let userId;
+  let dateRanges;
+  let validBody;
+
+  beforeAll(() => {
+    branch = Object.keys(settup)[0];
+    userId = 1230;
+    dateRanges = [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']];
+    validBody = {branch, userId, dateRanges};
+
+    getCumulativeStats.mockResolvedValue(generateCumulativeStats(dateRanges));
+  });
+
+  beforeEach(() => {
+    getCumulativeStats.mockClear();
+  });
+
+  describe('INVALID PARAMETERS POST /api/stats/cumulative', () => {
+    it('should respond with status code 400 if any of the parameters are missing', async () => {
+      const bodyData = [
+        {userId, dateRanges},
+        {branch, dateRanges},
+        {branch, userId},
+        {}
+      ];
+
+      for (const body of bodyData) {
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+        expect(res.statusCode).toBe(400);
+      };
+    });
+
+  
+    it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send({...validBody, dateRanges: ['2025-01-01', '2025-01-31']});
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+
+  describe('VALID PARAMETERS POST /api/stats/cumulative', () => {
+    it('should return status code 200', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.statusCode).toBe(200);
+    });
+
+
+    it('should specify json in the content type header', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+    });
+
+
+    it('should call getcumulativeStats() once', async () => {
+      const bodyData = [
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+      ];
+
+      for (const body of bodyData) {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+
+        expect(getCumulativeStats).toHaveBeenCalledTimes(1);
+        expect(getCumulativeStats.mock.calls[0][0]).toBe(branch);
+        expect(getCumulativeStats.mock.calls[0][1]).toBe(body.userId);
+      };
+    });
+  });
+
+
+  describe('RESPONSE VALIDATION POST /api/stats/cumulative', () => {
+    it('should return an array of objects', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(true);
+    });
+
+  
+    it('length of the array should be equal to length of "dateRanges"', async () => {
+      const bodyData = [
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
+        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+      ];
+
+      for (const body of bodyData) {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+        
+        const res = await request(app).post('/api/stats/cumulative').send(body);
+        expect(res.body.length).toBe(body.dateRanges.length);
+      };
+    });
+
+  
+    it('array object should have properties "userId", "dateRange" and "data"', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const expectedProps = ['userId', 'dateRange', 'data'].sort();
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      });
+
+      expect(allHaveExpectedProps).toBe(true);
+    });
+
+  
+    it('property "userId" should be of type integer', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => Number.isInteger(item.userId))).toBe(true);
+    });
+
+  
+    it('property "dateRange" should be of type array of length 2', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => Array.isArray(item.dateRange) && item.dateRange.length === 2)).toBe(true);
+    });
+
+  
+    it('property "dateRange" elements should be date strings', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      
+      const allDatesMatchFormat = res.body.every(
+        item => item.dateRange.every(
+          range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range)
+        )
+      );
+
+      expect(res.body.every(
+        item => item.dateRange.every(
+          range => typeof range === 'string'
+        )
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
+    });
+
+  
+    it('property "data" should be an array of objects', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(item => typeof item.data === 'object' && item.data !== null));
+    });
+
+  
+    it('elements of "data" array should have properties "date", "count"', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const expectedProps = ['date', 'count'].sort();
+      const allHaveExpectedProps = res.body.every(
+        item => item.data.every(subitem => {
+          const actualProps = Object.keys(subitem).sort();
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+        })
+      );
+
+      expect(allHaveExpectedProps).toBe(true);
+    });
+
+  
+    it('property "date" should be a date string', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+
+      const allDatesMatchFormat = res.body.every(
+        item => item.data.every(
+          entry => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(entry.date)
+        )
+      );
+
+      expect(res.body.every(
+        item => item.data.every(
+          entry => typeof entry.date === 'string'
+        )
+      )).toBe(true);
+      expect(allDatesMatchFormat).toBe(true);
+    });
+
+  
+    it('property "count" should be a positive integer', async () => {
+      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      expect(res.body.every(
+        item => item.data.every(
+          subitem => Number.isInteger(subitem.count)
+        )
+      )).toBe(true);
+    });
+  });
+});
 
 describe('POST /api/stats/emptyDuties', () => {
   let branch;
