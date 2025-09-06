@@ -7,6 +7,9 @@ export default function makeStatRoutes(database) {
 
     router.post('/stats', statController.stats);
     router.post('/stats/cumulative', statController.stats_cumulative);
+    router.post('/stats/emptyDuties', statController.emptyDuties);
+    router.post('/stats/takenDuties', statController.takenDuties);
+    router.post('/stats/uniqueUsers', statController.uniqueUsers);
 
     return router;
 };
