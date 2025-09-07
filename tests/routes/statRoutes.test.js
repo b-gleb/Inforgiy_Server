@@ -32,29 +32,23 @@ function generateCumulativeStats(dateRanges) {
   }, {});
 }
 
-function generateEmptyDutiesStats (dateRanges) {
+function generateEmptyDutiesStats (dateRanges, count = 10) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = [{
-      count: Math.floor(Math.random() * 30) + 1,
-    }];
+    acc[`range_${idx}`] = count === 0 ? [] : [{count}];
     return acc;
   }, {});
 };
 
-function generateTakenDutiesStats (dateRanges) {
+function generateTakenDutiesStats (dateRanges, count = 10) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = [{
-      count: Math.floor(Math.random() * 30) + 1,
-    }];
+    acc[`range_${idx}`] = count === 0 ? [] : [{count}];
     return acc;
   }, {});
 };
 
-function generateUniqueUsersStats (dateRanges) {
+function generateUniqueUsersStats (dateRanges, count = 10) {
   return dateRanges.reduce((acc, range, idx) => {
-    acc[`range_${idx}`] = [{
-      count: Math.floor(Math.random() * 30) + 1,
-    }];
+    acc[`range_${idx}`] = count === 0 ? [] : [{count}];
     return acc;
   }, {});
 };
@@ -614,8 +608,13 @@ describe('POST /api/stats/emptyDuties', () => {
   });
 
 
+  // count = undefined: a non empty pipeline output
+  // count = 0: no documents returned by the pipeline
+  describe.each([undefined, 0])('RESPONSE VALIDATION POST /api/stats/emptyDuties, count is %s', (count) => {
+    beforeAll(() => {
+      getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges, count));
+    });
 
-  describe('RESPONSE VALIDATION POST /api/stats/emptyDuties', () => {
     it('should return an array of objects', async () => {
       const res = await request(app).post('/api/stats/emptyDuties').send(validBody);
       expect(res.body).toBeInstanceOf(Array);
@@ -632,7 +631,7 @@ describe('POST /api/stats/emptyDuties', () => {
 
       for (const body of bodyData) {
         getEmptyDuties.mockClear();
-        getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
+        getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges, count));
 
         const res = await request(app).post('/api/stats/emptyDuties').send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
@@ -762,8 +761,13 @@ describe('POST /api/stats/takenDuties', () => {
   });
 
 
+  // count = undefined: a non empty pipeline output
+  // count = 0: no documents returned by the pipeline
+  describe.each([undefined, 0])('RESPONSE VALIDATION POST /api/stats/takenDuties, count is %s', (count) => {
+    beforeAll(() => {
+      getTakenDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges, count));
+    });
 
-  describe('RESPONSE VALIDATION POST /api/stats/takenDuties', () => {
     it('should return an array of objects', async () => {
       const res = await request(app).post('/api/stats/takenDuties').send(validBody);
       expect(res.body).toBeInstanceOf(Array);
@@ -780,7 +784,7 @@ describe('POST /api/stats/takenDuties', () => {
 
       for (const body of bodyData) {
         getTakenDuties.mockClear();
-        getTakenDuties.mockResolvedValueOnce(generateTakenDutiesStats(body.dateRanges));
+        getTakenDuties.mockResolvedValueOnce(generateTakenDutiesStats(body.dateRanges, count));
 
         const res = await request(app).post('/api/stats/takenDuties').send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
@@ -910,8 +914,13 @@ describe('POST /api/stats/uniqueUsers', () => {
   });
 
 
+  // count = undefined: a non empty pipeline output
+  // count = 0: no documents returned by the pipeline
+  describe.each([undefined, 0])('RESPONSE VALIDATION POST /api/stats/uniqueUsers, count is %s', (count) => {
+    beforeAll(() => {
+      getUniqueUsers.mockResolvedValue(generateEmptyDutiesStats(dateRanges, count));
+    });
 
-  describe('RESPONSE VALIDATION POST /api/stats/uniqueUsers', () => {
     it('should return an array of objects', async () => {
       const res = await request(app).post('/api/stats/uniqueUsers').send(validBody);
       expect(res.body).toBeInstanceOf(Array);
@@ -928,7 +937,7 @@ describe('POST /api/stats/uniqueUsers', () => {
 
       for (const body of bodyData) {
         getUniqueUsers.mockClear();
-        getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges));
+        getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges, count));
 
         const res = await request(app).post('/api/stats/uniqueUsers').send(body);
         expect(res.body.length).toBe(body.dateRanges.length);

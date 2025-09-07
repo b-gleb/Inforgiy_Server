@@ -117,7 +117,7 @@ export default function makeStatController(database) {
   
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,
-      count: pipeline_output[`range_${idx}`][0].count
+      count: pipeline_output[`range_${idx}`][0]?.count ?? 0
     }));
 
     res.json(result);
@@ -139,7 +139,7 @@ export default function makeStatController(database) {
   
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,
-      count: pipeline_output[`range_${idx}`][0].count
+      count: pipeline_output[`range_${idx}`][0]?.count ?? 0
     }));
 
     res.json(result);
@@ -161,7 +161,7 @@ export default function makeStatController(database) {
   
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,
-      count: pipeline_output[`range_${idx}`][0].count
+      count: pipeline_output[`range_${idx}`][0]?.count ?? 0
     }));
 
     res.json(result);
