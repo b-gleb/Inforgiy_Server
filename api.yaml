@@ -426,13 +426,8 @@ paths:
                   $ref: '#/components/schemas/WebAppInitData'
         required: true
       responses:
-        '200':
-          description: "User role removed successfully."
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "ok"
+        '204':
+          description: "User role removed successfully (no content)"
         '400':
           description: "Bad Request - Invalid input data."
           content:
