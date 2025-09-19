@@ -272,35 +272,35 @@ describe('POST /api/updateUser', () => {
 
 
   describe('VALID PARAMETERS POST /api/updateUser', () => {
-    it('should return status code 200', async () => {
+    it('should respond with status code 200', async () => {
       updateUser.mockResolvedValueOnce(generateUser(branch, 1230));
       const res = await request(app).post('/api/updateUser').send(updateUserBody);
       expect(res.statusCode).toBe(200);
     });
 
 
-    it('should return status code 401 if unable to verify hash', async () => {
+    it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
       const res = await request(app).post('/api/updateUser').send(updateUserBody);
       expect(res.statusCode).toBe(401);
     });
 
 
-    it('should return status code 403 if non admin attempts to perform operation', async () => {
+    it('should respond with status code 403 if non admin attempts to perform operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 4560));
       const res = await request(app).post('/api/updateUser').send(updateUserBody);
       expect(res.statusCode).toBe(403);
     });
 
 
-    it('should return status code 404 if user to modify does not exist', async () => {
+    it('should respond with status code 404 if user to modify does not exist', async () => {
       updateUser.mockResolvedValueOnce(null);
       const res = await request(app).post('/api/updateUser').send(updateUserBody);
       expect(res.statusCode).toBe(404);
     });
 
 
-    it('should return status code 404 if user to add permissions does not exist', async () => {
+    it('should respond with status code 404 if user to add permissions does not exist', async () => {
       addUserPermission.mockResolvedValueOnce(null);
       const res = await request(app).post('/api/updateUser').send(addUserBody);
       expect(res.statusCode).toBe(404);
@@ -450,21 +450,21 @@ describe('POST /api/removeUser', () => {
     });
 
 
-    it('should return status code 401 if unable to verify hash', async () => {
+    it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
       const res = await request(app).post('/api/removeUser').send(validBody);
       expect(res.statusCode).toBe(401);
     });
 
 
-    it('should return status code 403 if non admin performs the operation', async () => {
+    it('should respond with status code 403 if non admin performs the operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 1230));
       const res = await request(app).post('/api/removeUser').send(validBody);
       expect(res.statusCode).toBe(403);
     });
 
 
-    it('should return status code 404 if user to modify is not found', async () => {
+    it('should respond with status code 404 if user to modify is not found', async () => {
       removeUserPermission.mockResolvedValueOnce({matchedCount: 0});
       const res = await request(app).post('/api/removeUser').send(validBody);
       expect(res.statusCode).toBe(404);
