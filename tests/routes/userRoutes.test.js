@@ -452,7 +452,8 @@ describe('POST /api/removeUser', () => {
 
     it('should respond with no content', async () => {
       const res = await request(app).post('/api/removeUser').send(validBody);
-      expect(res.body).toBeUndefined();
+      expect(res.body).toEqual({});
+      expect(res.text).toBe("");
     });
 
 
