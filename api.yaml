@@ -22,15 +22,20 @@ paths:
 
 
   /auth:
-    get:
-      summary: "Get information needed for app launch"
-      description: "Get information needed for app launch, validate initDataUnsafe"
-      parameters:
-        - name: initDataUnsafe
-          in: query
+    post:
+      summary: "Authorise user on ther server"
+      description: "Authorise user on the server, validate initDataUnsafe and get the information needed for app launch."
+      requestBody:
           required: true
-          schema:
-            $ref: '#/components/schemas/WebAppInitData'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - initDataUnsafe
+                properties:
+                  initDataUnsafe:
+                    $ref: '#/components/schemas/WebAppInitData'
       responses:
         '200':
           description: "Returns a JSON object of user permissions including admin permissions"
