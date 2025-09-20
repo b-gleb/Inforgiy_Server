@@ -45,8 +45,8 @@ const app = makeApp({
   getUser
 });
 
-describe('GET /api/users', () => {
-  describe('INVALID PARAMETERS GET /api/users', () => {
+describe('POST /api/users', () => {
+  describe('INVALID PARAMETERS POST /api/users', () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
         {branch: Object.keys(settup)[0]},
@@ -55,20 +55,20 @@ describe('GET /api/users', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).get('/api/users').query(body);
+        const res = await request(app).post('/api/users').post(body);
         expect(res.statusCode).toBe(400);
       };
     });
   });
 
 
-  describe('VALID PARAMETERS GET /api/users', () => {
+  describe('VALID PARAMETERS POST /api/users', () => {
     let branch;
-    let body;
+    let validBody;
 
     beforeAll(() => {
       branch = Object.keys(settup)[0];
-      body = {branch, initDataUnsafe: {user: {id: 1230}}};
+      validBody = {branch, initDataUnsafe: {user: {id: 1230}}};
 
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
@@ -85,67 +85,67 @@ describe('GET /api/users', () => {
     });
 
     it('should respond with status code 200', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
 
     it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').send(validBody);
       expect(res.statusCode).toBe(401);
     });
 
 
     it('should respond with status code 403 if non admin user requests operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.statusCode).toBe(403);
     });
 
 
     it('should specify json in the content type header', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
 
     it('should call isRotaAdmin() once', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(getUser).toBeCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
 
     it('should call getUserCount() once', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(getUserCount).toBeCalledTimes(1);
       expect(getUserCount).toHaveBeenCalledWith(branch);
     });
 
 
     it('should not call getBranchUsers() when userCount matches cache', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(getBranchUsers).toBeCalledTimes(0);
     });
 
 
     it('should call getBranchUsers() once when userCount differs from cache', async () => {
       getUserCount.mockResolvedValueOnce(1);
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(getBranchUsers).toBeCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch)
     });
   });
 
 
-  describe('RESPONSE VALIDATION GET /api/users', () => {
+  describe('RESPONSE VALIDATION POST /api/users', () => {
     let branch;
-    let body;
+    let validBody;
 
     beforeAll(() => {
       branch = Object.keys(settup)[0];
-      body = {branch, initDataUnsafe: {user: {id: 1230}}};
+      validBody = {branch, initDataUnsafe: {user: {id: 1230}}};
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
       getUserCount.mockResolvedValue(1);
@@ -161,14 +161,14 @@ describe('GET /api/users', () => {
     });
 
     it('response should be an array of objects', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.body).toBeInstanceOf(Array);
       expect(res.body.every(item => typeof item === 'object' && item != null)).toBe(true);
     });
 
 
     it('response object should only have properties: "id", "username", "nick", "color"', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       
       const expectedProps = ['id', 'username', 'nick', 'color'];
       const allHaveExpectedProps = res.body.every(item => {
@@ -181,25 +181,25 @@ describe('GET /api/users', () => {
 
 
     it('response object property "id" should be an integer', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.body.every(item => Number.isInteger(item.id))).toBe(true);
     });
 
 
     it('response object property "username" should be a string beginning with @', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.body.every(item => typeof item.username === 'string' && item.username.startsWith('@'))).toBe(true);
     });
 
 
     it('response object property "nick" should be a string', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.body.every(item => typeof item.nick === 'string')).toBe(true);
     });
 
 
     it('response object property "color" should be an integer', async () => {
-      const res = await request(app).get('/api/users').query(body);
+      const res = await request(app).post('/api/users').post(validBody);
       expect(res.body.every(item => Number.isInteger(item.color))).toBe(true);
     });
   });
