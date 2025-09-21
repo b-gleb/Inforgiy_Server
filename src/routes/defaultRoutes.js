@@ -6,7 +6,7 @@ export default function makeDefaultRoutes(database) {
   const defaultController = makeDefaultController(database);
 
   router.get('/ping', defaultController.ping);
-  router.get('/auth', defaultController.auth);
+  router.post('/auth', defaultController.auth);
 
   return router;
 };
