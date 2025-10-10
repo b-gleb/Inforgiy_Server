@@ -46,7 +46,7 @@ export default function makeDefaultController(database) {
       // Check for rota keys and add to userBranches if present
       if (userEntry.roles[rotaKey] !== undefined) {
         userBranches[branch] = {
-          color: userEntry.roles[rotaKey],
+          color: userEntry.roles[rotaKey]?.c ?? 0,
           maxDuties: settup[branch].maxDuties
         };
 
