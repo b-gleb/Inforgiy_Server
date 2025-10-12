@@ -1,17 +1,17 @@
 {
-    "lns": {
-        "maxDuties": 7
-    },
-    "gp": {
-        "maxDuties": 2
-    },
-    "di": {
-        "maxDuties": 4
-    },
-    "ryaz": {
-        "maxDuties": 3
-    },
-    "orel": {
-        "maxDuties": 3
-    }
+  "lns": {
+    "maxDuties": 7
+  },
+  "gp": {
+    "maxDuties": 2
+  },
+  "di": {
+    "maxDuties": 4
+  },
+  "ryaz": {
+    "maxDuties": 3
+  },
+  "orel": {
+    "maxDuties": 3
+  }
 }

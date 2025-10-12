@@ -9,4 +9,4 @@ export default function makeDefaultRoutes(database) {
   router.post('/auth', defaultController.auth);
 
   return router;
-};
+}

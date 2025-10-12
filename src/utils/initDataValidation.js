@@ -2,11 +2,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 import crypto from 'crypto';
 
-
-export const validateInitData = (initDataUnsafe) => {
+export const validateInitData = initDataUnsafe => {
   const unixTime = Math.floor(Date.now() / 1000);
 
-  if (process.env.ENV === 'PROD' && (unixTime - 3600) > initDataUnsafe.auth_date){
+  if (
+    process.env.ENV === 'PROD' &&
+    unixTime - 3600 > initDataUnsafe.auth_date
+  ) {
     return false;
   }
 

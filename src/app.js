@@ -17,7 +17,7 @@ export default function makeApp(database) {
 
   const limiterConfig = {
     standardHeaders: 'draft-8',
-    legacyHeaders: false,
+    legacyHeaders: false
   };
 
   const perMinuteLimiter = rateLimit({
@@ -30,7 +30,7 @@ export default function makeApp(database) {
     windowMs: 60 * 60 * 1000,
     limit: 1000,
     ...limiterConfig
-  })
+  });
 
   app.use('/api', perMinuteLimiter, perHourLimiter);
   app.use('/api', makeDefaultRoutes(database));
@@ -39,4 +39,4 @@ export default function makeApp(database) {
   app.use('/api', makeStatRoutes(database));
 
   return app;
-};
+}

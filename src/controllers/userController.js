@@ -1,8 +1,12 @@
 import Joi from 'joi';
 import makeHelpers from '../utils/helpers.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
-import { validateBranch, validateUserId, validateColor } from '../utils/responseValidation.js';
 import { validateInitData } from '../utils/initDataValidation.js';
+import {
+  validateBranch,
+  validateUserId,
+  validateColor
+} from '../utils/responseValidation.js';
 
 export default function makeUserController(database) {
   const helpers = makeHelpers(database);
@@ -21,10 +25,12 @@ export default function makeUserController(database) {
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
-    };
+    }
 
-    if (! await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id)) {
-      return res.status(403).send('You must be a rota admin') 
+    if (
+      !(await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id))
+    ) {
+      return res.status(403).send('You must be a rota admin');
     }
 
     // Logic
@@ -43,7 +49,7 @@ export default function makeUserController(database) {
           id: user.telegram_id,
           username: user.telegram,
           nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
-          color: user?.roles[`rota_${value.branch}`]?.c ?? null,
+          color: user?.roles[`rota_${value.branch}`]?.c ?? null
         };
 
         setTimeout(() => {
@@ -52,7 +58,7 @@ export default function makeUserController(database) {
       }
     }
 
-    res.json(Object.values(usersCache[value.branch]))
+    res.json(Object.values(usersCache[value.branch]));
   };
 
 
@@ -71,27 +77,32 @@ export default function makeUserController(database) {
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
-    };
+    }
 
-    if (! await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
-      res.status(403).send('You must be a rota admin')
-      return 
+    if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
+      res.status(403).send('You must be a rota admin');
+      return;
     }
 
     // Logic
     const removedUser = await database.removeUserPermission(
       value.branch,
       value.modifyUserId
-    )
+    );
 
     // Update cache
-    delete usersCache[value.branch][value.modifyUserId]
+    delete usersCache[value.branch][value.modifyUserId];
 
-    if (removedUser.matchedCount === 1){
+    if (removedUser.matchedCount === 1) {
       res.sendStatus(204);
-      await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
+      await helpers.statistic(
+        initDataUnsafe,
+        value.branch.toUpperCase(),
+        'rota-remove-user',
+        { modify: value.modifyUserId }
+      );
     } else {
-      res.status(404).send("User not found");
+      res.status(404).send('User not found');
     }
   };
 
@@ -105,7 +116,9 @@ export default function makeUserController(database) {
         username: Joi.string(),
         nick: Joi.string().required(),
         color: validateColor
-      }).or('id', 'username').required(),
+      })
+        .or('id', 'username')
+        .required(),
       initDataUnsafe: Joi.any().required()
     });
 
@@ -116,11 +129,11 @@ export default function makeUserController(database) {
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
-    };
+    }
 
-    if (! await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id)) {
-      res.status(403).send('You must be a rota admin')
-      return 
+    if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
+      res.status(403).send('You must be a rota admin');
+      return;
     }
 
     // Logic
@@ -143,26 +156,33 @@ export default function makeUserController(database) {
         value.userObj.nick,
         value.userObj.color
       );
-    };
+    }
 
     let userObj;
 
-    if (updatedUser !== null){
+    if (updatedUser !== null) {
       userObj = {
         id: updatedUser.telegram_id,
         username: updatedUser.telegram,
-        nick: updatedUser.roles[`rota_${value.branch}`]?.nick ?? updatedUser.telegram,
+        nick:
+          updatedUser.roles[`rota_${value.branch}`]?.nick ??
+          updatedUser.telegram,
         color: updatedUser.roles[`rota_${value.branch}`]?.c ?? 0
-      }
+      };
 
       res.json(userObj);
-      await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-update-user', value.userObj)
+      await helpers.statistic(
+        initDataUnsafe,
+        value.branch.toUpperCase(),
+        'rota-update-user',
+        value.userObj
+      );
     } else {
-      return res.status(404).send("User not found")
+      return res.status(404).send('User not found');
     }
 
     // Update cache
-    usersCache[value.branch][updatedUser.telegram_id] = userObj
+    usersCache[value.branch][updatedUser.telegram_id] = userObj;
   };
 
   return {
@@ -170,4 +190,4 @@ export default function makeUserController(database) {
     removeUser,
     updateUser
   };
-};
+}

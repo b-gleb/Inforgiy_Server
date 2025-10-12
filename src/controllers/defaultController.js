@@ -6,11 +6,17 @@ import settup from '../config/settup.json' with { type: 'json' };
 export default function makeDefaultController(database) {
   const helpers = makeHelpers(database);
 
+  /**
+    To check if the server is working
+  */
   const ping = async (req, res) => {
-    res.send('pong')
+    res.send('pong');
   };
 
-
+  /**
+    Authenticate user on the server
+    Provide client with parameters important for better UI display
+  */
   const auth = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -24,8 +30,7 @@ export default function makeDefaultController(database) {
     if (!validateInitData(initDataUnsafe)) {
       res.status(401).send('Unable to verify hash');
       return;
-    };
-
+    }
 
     // Logic
     let rotaAdmin = [];
@@ -34,9 +39,9 @@ export default function makeDefaultController(database) {
 
     const userEntry = await database.getUser(initDataUnsafe.user.id);
 
-    if (userEntry === null){
-      res.status(404).send("User not found")
-      return
+    if (userEntry === null) {
+      res.status(404).send('User not found');
+      return;
     }
 
     Object.keys(settup).forEach(branch => {
@@ -59,17 +64,15 @@ export default function makeDefaultController(database) {
       }
     });
 
-
-    if (! hasRoles){
-      res.status(403).send("Forbidden")
+    if (!hasRoles) {
+      res.status(403).send('Forbidden');
     } else {
-      res.json({branches: userBranches, rotaAdmin})
+      res.json({ branches: userBranches, rotaAdmin });
     }
-
   };
 
   return {
     ping,
     auth
   };
-};
+}

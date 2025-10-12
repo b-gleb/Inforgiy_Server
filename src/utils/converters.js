@@ -1,9 +1,12 @@
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
 
 export default function makeCoverters(database) {
-  const convertUserId = async (branch, user_id) => {  
+  /**
+    Converts userId into username. Checks cache values first
+  */
+  const convertUserId = async (branch, user_id) => {
     // Check cache
-    if (usersCache[branch][user_id]){
+    if (usersCache[branch][user_id]) {
       return usersCache[branch][user_id];
     }
 
@@ -12,14 +15,14 @@ export default function makeCoverters(database) {
 
     if (userEntry === null) {
       return null;
-    };
+    }
 
     // Save information to cache
     usersCache[branch][user_id] = {
       username: userEntry.telegram,
       nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
-      color: userEntry?.roles[`rota_${branch}`]?.c ?? null,
-    }
+      color: userEntry?.roles[`rota_${branch}`]?.c ?? null
+    };
 
     // Self-destructing cache
     setTimeout(() => {
@@ -32,7 +35,9 @@ export default function makeCoverters(database) {
     return userObj;
   };
 
-
+  /**
+    Converts rota from DB by adding hour ranges and converting userIds into usernames
+  */
   const convertListRota = async (branch, data) => {
     const result = [];
 
@@ -46,8 +51,8 @@ export default function makeCoverters(database) {
         // Process user_ids asynchronously and convert them to usernames
         const userArray = [];
         await Promise.all(
-          data[index].map(async (userId) => {
-            const userObj = await convertUserId(branch, userId)
+          data[index].map(async userId => {
+            const userObj = await convertUserId(branch, userId);
             userArray.push(userObj);
           })
         );
@@ -72,4 +77,4 @@ export default function makeCoverters(database) {
     convertUserId,
     convertListRota
   };
-};
+}

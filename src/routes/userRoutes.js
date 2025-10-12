@@ -1,5 +1,5 @@
-import express from'express';
-import makeUserController from'../controllers/userController.js';
+import express from 'express';
+import makeUserController from '../controllers/userController.js';
 
 export default function makeUserRoutes(database) {
   const router = express.Router();
@@ -10,4 +10,4 @@ export default function makeUserRoutes(database) {
   router.post('/removeUser', userController.removeUser);
 
   return router;
-};
+}

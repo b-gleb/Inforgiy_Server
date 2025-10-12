@@ -6,7 +6,6 @@ import BaseJoi from 'joi';
 import joiDate from '@joi/date';
 const Joi = BaseJoi.extend(joiDate);
 
-
 export const validateBranch = Joi.string().valid(...Object.keys(settup));
 export const validateUserId = Joi.number().integer().positive();
 export const validateColor = Joi.number().integer().min(0).max(6).default(0);
@@ -16,12 +15,11 @@ export const validateTimeRange = Joi.string()
   .custom((value, helpers) => {
     const hour1 = parseInt(value.slice(0, 2), 10);
     if (hour1 >= 24) {
-      return helpers.message('Start hour must be less than 24')
+      return helpers.message('Start hour must be less than 24');
+    } else {
+      return value;
     }
-    else {
-      return value
-    };
-  })
+  });
 
 export const validateDateRange = Joi.array()
   .length(2)

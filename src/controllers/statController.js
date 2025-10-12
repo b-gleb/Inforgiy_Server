@@ -1,7 +1,11 @@
-import Joi from 'joi'
-import { validateBranch, validateUserId, validateDateRange } from '../utils/responseValidation.js';
+import Joi from 'joi';
 import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
+import {
+  validateBranch,
+  validateUserId,
+  validateDateRange
+} from '../utils/responseValidation.js';
 
 export default function makeStatController(database) {
   const converters = makeCoverters(database);
@@ -21,7 +25,7 @@ export default function makeStatController(database) {
     // Logic
     const stats = {};
 
-    for (const dateRange of value.dateRanges){
+    for (const dateRange of value.dateRanges) {
       const pipeline_output = await database.getDateRangeStats(
         value.branch,
         value.userIds,
@@ -39,36 +43,41 @@ export default function makeStatController(database) {
         });
 
         returnedUserIds.push(document._id);
-      };
+      }
 
       // Identify userIds not returned and fill them with zero
-      const notReturnedUserIds = value.userIds.filter(userId => !returnedUserIds.includes(userId));
+      const notReturnedUserIds = value.userIds.filter(
+        userId => !returnedUserIds.includes(userId)
+      );
+
       for (const userId of notReturnedUserIds) {
         (stats[userId] ??= []).push({
           dateRange: dateRange,
           count: 0
-        })
+        });
       }
-    };
+    }
 
     // Conver userIds to nick names
     const allUserIds = Object.keys(stats);
     const convertedStats = [];
 
     for (const userId of allUserIds) {
-      const userObj = await converters.convertUserId(value.branch, Number(userId));
+      const userObj = await converters.convertUserId(
+        value.branch,
+        Number(userId)
+      );
 
       if (!userObj) {
         return res.status(404).send(`User not found (ID: ${userId})`);
-      }
-      else {
-        const {id, nick, color} = userObj;
+      } else {
+        const { id, nick, color } = userObj;
         convertedStats.push({
-          user: {id, nick, color},
+          user: { id, nick, color },
           data: stats[userId]
-        })
-      };
-    };
+        });
+      }
+    }
 
     res.json(convertedStats);
   };
@@ -87,7 +96,7 @@ export default function makeStatController(database) {
 
     // Logic
     const pipeline_output = await database.getCumulativeStats(
-      value.branch, 
+      value.branch,
       value.userId,
       value.dateRanges
     );
@@ -167,7 +176,6 @@ export default function makeStatController(database) {
     res.json(result);
   };
 
-
   return {
     stats,
     stats_cumulative,
@@ -175,4 +183,4 @@ export default function makeStatController(database) {
     takenDuties,
     uniqueUsers
   };
-};
+}

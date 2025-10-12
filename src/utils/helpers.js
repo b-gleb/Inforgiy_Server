@@ -1,4 +1,4 @@
-import { isBefore, formatISO, addDays, isAfter, isEqual } from "date-fns";
+import { isBefore, formatISO, addDays, isAfter, isEqual } from 'date-fns';
 
 export default function makeHelpers(database) {
   const formatInitData = (initDataUnsafe) => {
@@ -12,28 +12,33 @@ export default function makeHelpers(database) {
 
     if (initDataUnsafe.can_send_after){initDataUnsafe.can_send_after = parseInt(initDataUnsafe?.can_send_after, 10)}
 
-    return initDataUnsafe
+    return initDataUnsafe;
   };
 
 
   const isRotaAdmin = async (branch, userId) => {
     const userEntry = await database.getUser(userId);
-  
-    if (userEntry === null){
-      return false
-    };
-  
-    if (Object.hasOwn(userEntry.roles, `admin_rota_${branch}`)){
+
+    if (userEntry === null) {
+      return false;
+    }
+
+    if (Object.hasOwn(userEntry.roles, `admin_rota_${branch}`)) {
       return true;
     } else {
       return false;
-    };
+    }
   };
 
 
-  const statistic = async (initDataUnsafe, action, sub_action = null, misc = null) => {
+  const statistic = async (
+    initDataUnsafe,
+    action,
+    sub_action = null,
+    misc = null
+  ) => {
     if (process.env.ENV === 'TEST') {
-      return
+      return;
     }
 
     const userRegion = await database.getUserRegion(initDataUnsafe.user.id);
@@ -45,12 +50,12 @@ export default function makeHelpers(database) {
       misc: misc,
       user_id: initDataUnsafe.user.id,
       username: initDataUnsafe.user.username,
-      user_region: userRegion,
+      user_region: userRegion
     };
 
     console.log(newEntry);
     await database.logUsageStatistics(newEntry);
-  }
+  };
 
 
   const fillMissingDates = (data, startDate, endDate) => {
@@ -88,4 +93,4 @@ export default function makeHelpers(database) {
     statistic,
     fillMissingDates
   };
-};
+}
