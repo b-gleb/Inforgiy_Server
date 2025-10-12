@@ -88,10 +88,10 @@ export default function makeUserController(database) {
     delete usersCache[value.branch][value.modifyUserId]
 
     if (removedUser.matchedCount === 1){
-      res.send('ok')
+      res.sendStatus(204);
       await helpers.statistic(initDataUnsafe, value.branch.toUpperCase(), 'rota-remove-user', {modify: value.modifyUserId})
     } else {
-      res.status(404).send("User not found")
+      res.status(404).send("User not found");
     }
   };
 

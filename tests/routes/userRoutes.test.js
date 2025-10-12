@@ -444,9 +444,16 @@ describe('POST /api/removeUser', () => {
 
 
   describe('VALID PARAMETERS POST /api/removeUser', () => {
-    it('should return status code 200', async () => {
+    it('should respond with status code 204', async () => {
       const res = await request(app).post('/api/removeUser').send(validBody);
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(204);
+    });
+
+
+    it('should respond with no content', async () => {
+      const res = await request(app).post('/api/removeUser').send(validBody);
+      expect(res.body).toEqual({});
+      expect(res.text).toBe("");
     });
 
 

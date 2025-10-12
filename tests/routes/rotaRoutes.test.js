@@ -133,10 +133,10 @@ describe('GET /api/rota', () => {
     it('array elements should have properties "users" and "label"', async () => {
       const res = await request(app).get('/api/rota').query(validBody);
 
-      const expectedProps = ['users', 'label'];
+      const expectedProps = ['users', 'label'].sort();
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       });
 
       expect(allHaveExpectedProps).toBe(true);

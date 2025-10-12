@@ -3,7 +3,7 @@ info:
   title: Inforgiy Web (server)
   description: |-
     Inforgiy Server API documentation.
-  version: 1.3.0
+  version: 1.3.1
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 paths:
@@ -143,7 +143,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "Date not found"
+                example: "Day not found"
 
 
   /userDuties:
@@ -432,13 +432,8 @@ paths:
                   $ref: '#/components/schemas/WebAppInitData'
         required: true
       responses:
-        '200':
-          description: "User role removed successfully."
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "ok"
+        '204':
+          description: "User role removed successfully (no content)"
         '400':
           description: "Bad Request - Invalid input data."
           content:
