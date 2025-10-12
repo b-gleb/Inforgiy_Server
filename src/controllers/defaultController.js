@@ -17,14 +17,14 @@ export default function makeDefaultController(database) {
       initDataUnsafe: Joi.any().required()
     });
 
-    const { error, value } = validationSchema.validate(req.query);
+    const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-  const initDataUnsafe = helpers.formatInitData(req.query.initDataUnsafe);
-  if (!validateInitData(initDataUnsafe)) {
-    res.status(401).send('Unable to verify hash');
-    return;
-  };
+    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
+    if (!validateInitData(initDataUnsafe)) {
+      res.status(401).send('Unable to verify hash');
+      return;
+    };
 
 
     // Logic
@@ -63,7 +63,7 @@ export default function makeDefaultController(database) {
     if (! hasRoles){
       res.status(403).send("Forbidden")
     } else {
-      res.json({branches: userBranches, rotaAdmin: rotaAdmin})
+      res.json({branches: userBranches, rotaAdmin})
     }
 
   };

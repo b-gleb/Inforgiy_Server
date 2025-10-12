@@ -22,15 +22,20 @@ paths:
 
 
   /auth:
-    get:
-      summary: "Get information needed for app launch"
-      description: "Get information needed for app launch, validate initDataUnsafe"
-      parameters:
-        - name: initDataUnsafe
-          in: query
+    post:
+      summary: "Authorise user on ther server"
+      description: "Authorise user on the server, validate initDataUnsafe and get the information needed for app launch."
+      requestBody:
           required: true
-          schema:
-            $ref: '#/components/schemas/WebAppInitData'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - initDataUnsafe
+                properties:
+                  initDataUnsafe:
+                    $ref: '#/components/schemas/WebAppInitData'
       responses:
         '200':
           description: "Returns a JSON object of user permissions including admin permissions"
@@ -288,24 +293,25 @@ paths:
                   example: "Date not found"
 
   /users:
-    get:
+    post:
       tags:
         - Users
       summary: "All users of a branch"
       description: "Returns all users for a specified branch"
-      parameters:
-        - name: branch
-          in: query
-          description: "Branch for which to return all users"
-          required: true
-          schema:
-            $ref: '#/components/schemas/Branch'
-        - name: initDataUnsafe
-          in: query
-          description: "Data provided by the Telegram script to authenticate and validate the user"
-          required: true
-          schema:
-            $ref: '#/components/schemas/WebAppInitData'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - initDataUnsafe
+              properties:
+                branch:
+                  $ref: '#/components/schemas/Branch'
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
       responses:
         '200':
           description: "Returns all users who have the branch's rota permission"
