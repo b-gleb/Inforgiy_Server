@@ -13,23 +13,31 @@ export const validateInitData = initDataUnsafe => {
   }
 
   const { hash, ...rest } = initDataUnsafe;
-
-  const dataCheckString = Object.entries(rest).sort().map(([k, v]) => {
-      if (typeof v === "object" && v !== null) {
-          v = JSON.stringify(v);
+  const dataCheckString = Object.entries(rest)
+    .sort()
+    .map(([k, v]) => {
+      if (typeof v === 'object' && v !== null) {
+        v = JSON.stringify(v);
       }
 
-      if (typeof v === "string" && /(https?:\/\/[^\s]+)/.test(v)) {
-          v = v.replace(/\//g, "\\/");
+      if (typeof v === 'string' && /(https?:\/\/[^\s]+)/.test(v)) {
+        v = v.replace(/\//g, '\\/');
       }
-      
+
       return `${k}=${v}`;
-  }).join("\n");
+    })
+    .join('\n');
 
-  const secret = crypto.createHmac("sha256", "WebAppData").update(process.env.TOKEN);
-  const calculatedHash = crypto.createHmac("sha256", secret.digest()).update(dataCheckString).digest("hex");
-  
-  if (calculatedHash === hash){
+  const secret = crypto
+    .createHmac('sha256', 'WebAppData')
+    .update(process.env.TOKEN);
+
+  const calculatedHash = crypto
+    .createHmac('sha256', secret.digest())
+    .update(dataCheckString)
+    .digest('hex');
+
+  if (calculatedHash === hash) {
     return true;
   } else {
     return false;

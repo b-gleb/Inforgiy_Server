@@ -105,7 +105,10 @@ describe('validateColor', () => {
 
 describe('validateDateRange', () => {
   it('should accept an array of 2 dates in format YYYY-MM-DD', () => {
-    const { error, value } = validateDateRange.validate(['2025-01-01', '2025-01-31']);
+    const { error, value } = validateDateRange.validate([
+      '2025-01-01',
+      '2025-01-31'
+    ]);
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
@@ -121,7 +124,11 @@ describe('validateDateRange', () => {
   });
 
   it('should reject an array of 3 dates in format YYYY-MM-DD', () => {
-    const { error } = validateDateRange.validate(['2025-01-01', '2025-02-01', '2025-03-01']);
+    const { error } = validateDateRange.validate([
+      '2025-01-01',
+      '2025-02-01',
+      '2025-03-01'
+    ]);
     expect(error).toBeDefined();
   });
 

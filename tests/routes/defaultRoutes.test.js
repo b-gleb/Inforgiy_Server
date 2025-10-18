@@ -5,12 +5,13 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const {validateInitData} = await import('../../src/utils/initDataValidation.js');
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 const makeApp = (await import('../../src/app.js')).default;
 
-
-function generateUser (branch, id) {
-  return ({
+function generateUser(branch, id) {
+  return {
     telegram: `@username_${id}`,
     roles: {
       [`rota_${branch}`]: {
@@ -18,8 +19,8 @@ function generateUser (branch, id) {
         c: 0
       }
     }
-  });
-};
+  };
+}
 
 const getUser = jest.fn();
 
@@ -29,8 +30,7 @@ const app = makeApp({
 
 describe('GET /api/ping', () => {
   it('should return pong', async () => {
-    const res = await request(app)
-      .get('/api/ping');
+    const res = await request(app).get('/api/ping');
 
     expect(res.status).toBe(200);
     expect(res.text).toBe('pong');
@@ -43,8 +43,8 @@ describe('POST /api/auth', () => {
   let validBody;
 
   beforeAll(() => {
-    initDataUnsafe = {user: {id: 1230}};
-    validBody = {initDataUnsafe};
+    initDataUnsafe = { user: { id: 1230 } };
+    validBody = { initDataUnsafe };
 
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
@@ -97,7 +97,9 @@ describe('POST /api/auth', () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post('/api/auth').send(validBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
 
@@ -136,7 +138,9 @@ describe('POST /api/auth', () => {
       const expectedProps = ['branches', 'rotaAdmin'].sort();
       const actualProps = Object.keys(res.body).sort();
 
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(
+        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      ).toBe(true);
     });
 
 
@@ -144,9 +148,9 @@ describe('POST /api/auth', () => {
       const userData = { nick: 'nick', c: 0 };
 
       const userPermissions = [
-        { telegram: '@username', roles: { 'rota_lns': userData } },
-        { telegram: '@username', roles: { 'rota_lns': userData, 'rota_di': userData } },
-        { telegram: '@username', roles: { 'rota_lns': userData, 'rota_di': userData, 'rota_gp': userData } },
+        { telegram: '@username', roles: { rota_lns: userData } },
+        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData } },
+        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, rota_gp: userData } }
       ];
 
       for (const permission of userPermissions) {
@@ -154,9 +158,11 @@ describe('POST /api/auth', () => {
         getUser.mockResolvedValueOnce(permission);
 
         const res = await request(app).post('/api/auth').send(validBody);
-        expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(true);
+        expect(
+          typeof res.body.branches === 'object' && res.body.branches !== null
+        ).toBe(true);
         expect(res.body.branches.length === permission.roles.length);
-      };
+      }
     });
 
 
@@ -164,10 +170,12 @@ describe('POST /api/auth', () => {
       const res = await request(app).post('/api/auth').send(validBody);
 
       const expectedProps = ['color', 'maxDuties'].sort();
-      const allHaveExpectedProps = Object.values(res.body.branches).every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
+      const allHaveExpectedProps = Object.values(res.body.branches).every(
+        item => {
+          const actualProps = Object.keys(item).sort();
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+        }
+      );
 
       expect(allHaveExpectedProps).toBe(true);
     });
@@ -175,13 +183,21 @@ describe('POST /api/auth', () => {
 
     it('property "color" of subobject "branches" should be an integer', async () => {
       const res = await request(app).post('/api/auth').send(validBody);
-      expect(Object.values(res.body.branches).every(item => Number.isInteger(item.color))).toBe(true);
+      expect(
+        Object.values(res.body.branches).every(item =>
+          Number.isInteger(item.color)
+        )
+      ).toBe(true);
     });
 
 
     it('property "maxDuties" of subobject "branches" should be an integer', async () => {
       const res = await request(app).post('/api/auth').send(validBody);
-      expect(Object.values(res.body.branches).every(item => Number.isInteger(item.maxDuties))).toBe(true);
+      expect(
+        Object.values(res.body.branches).every(item =>
+          Number.isInteger(item.maxDuties)
+        )
+      ).toBe(true);
     });
 
 
@@ -189,9 +205,9 @@ describe('POST /api/auth', () => {
       const userData = { nick: 'nick', c: 0 };
 
       const userPermissions = [
-        { telegram: '@username', roles: { 'rota_lns': userData , 'admin_rota_lns': null} },
-        { telegram: '@username', roles: { 'rota_lns': userData, 'rota_di': userData , 'admin_rota_lns': null, 'admin_rota_di': null } },
-        { telegram: '@username', roles: { 'rota_lns': userData, 'rota_di': userData, 'rota_gp': userData, 'admin_rota_lns': null, 'admin_rota_di': null, 'admin_rota_gp': null } }
+        { telegram: '@username', roles: { rota_lns: userData, admin_rota_lns: null } },
+        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, admin_rota_lns: null, admin_rota_di: null } },
+        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, rota_gp: userData, admin_rota_lns: null, admin_rota_di: null, admin_rota_gp: null } }
       ];
 
       for (const permission of userPermissions) {
@@ -201,7 +217,7 @@ describe('POST /api/auth', () => {
         const res = await request(app).post('/api/auth').send(validBody);
         expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
         expect(res.body.rotaAdmin.length === permission.roles.length);
-      };
+      }
     });
   });
 });

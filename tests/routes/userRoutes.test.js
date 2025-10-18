@@ -5,12 +5,14 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const {validateInitData} = await import('../../src/utils/initDataValidation.js');
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 
 const makeApp = (await import('../../src/app.js')).default;
 
-function generateUser (branch, id) {
-  return ({
+function generateUser(branch, id) {
+  return {
     telegram: `@username_${id}`,
     telegram_id: id,
     roles: {
@@ -19,14 +21,14 @@ function generateUser (branch, id) {
         c: 0
       }
     }
-  });
-};
+  };
+}
 
-function generateAdmin (branch, id) {
+function generateAdmin(branch, id) {
   const user = generateUser(branch, id);
   user.roles[`admin_rota_${branch}`] = null;
   return user;
-};
+}
 
 
 const getUser = jest.fn();
@@ -49,18 +51,17 @@ describe('POST /api/users', () => {
   describe('INVALID PARAMETERS POST /api/users', () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
-        {branch: Object.keys(settup)[0]},
-        {initDataUnsafe: {user: {id: 1230}}},
+        { branch: Object.keys(settup)[0] },
+        { initDataUnsafe: { user: { id: 1230 } } },
         {}
       ];
 
       for (const body of bodyData) {
         const res = await request(app).post('/api/users').send(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
   });
-
 
   describe('VALID PARAMETERS POST /api/users', () => {
     let branch;
@@ -68,7 +69,7 @@ describe('POST /api/users', () => {
 
     beforeAll(() => {
       branch = Object.keys(settup)[0];
-      validBody = {branch, initDataUnsafe: {user: {id: 1230}}};
+      validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
 
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
@@ -106,7 +107,9 @@ describe('POST /api/users', () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post('/api/users').send(validBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
 
@@ -134,7 +137,7 @@ describe('POST /api/users', () => {
       getUserCount.mockResolvedValueOnce(1);
       const res = await request(app).post('/api/users').send(validBody);
       expect(getBranchUsers).toBeCalledTimes(1);
-      expect(getBranchUsers).toHaveBeenCalledWith(branch)
+      expect(getBranchUsers).toHaveBeenCalledWith(branch);
     });
   });
 
@@ -145,11 +148,14 @@ describe('POST /api/users', () => {
 
     beforeAll(() => {
       branch = Object.keys(settup)[0];
-      validBody = {branch, initDataUnsafe: {user: {id: 1230}}};
+      validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
       validateInitData.mockReturnValue(true);
       getUser.mockResolvedValue(generateAdmin(branch, 1230));
       getUserCount.mockResolvedValue(1);
-      getBranchUsers.mockResolvedValue([generateUser(branch, 4567), generateAdmin(branch, 1230)]);
+      getBranchUsers.mockResolvedValue([
+        generateUser(branch, 4567),
+        generateAdmin(branch, 1230)
+      ]);
     });
 
 
@@ -163,17 +169,21 @@ describe('POST /api/users', () => {
     it('response should be an array of objects', async () => {
       const res = await request(app).post('/api/users').send(validBody);
       expect(res.body).toBeInstanceOf(Array);
-      expect(res.body.every(item => typeof item === 'object' && item != null)).toBe(true);
+      expect(
+        res.body.every(item => typeof item === 'object' && item != null)
+      ).toBe(true);
     });
 
 
     it('response object should only have properties: "id", "username", "nick", "color"', async () => {
       const res = await request(app).post('/api/users').send(validBody);
-      
+
       const expectedProps = ['id', 'username', 'nick', 'color'];
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        return (
+          JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort())
+        );
       });
 
       expect(allHaveExpectedProps).toBe(true);
@@ -188,7 +198,12 @@ describe('POST /api/users', () => {
 
     it('response object property "username" should be a string beginning with @', async () => {
       const res = await request(app).post('/api/users').send(validBody);
-      expect(res.body.every(item => typeof item.username === 'string' && item.username.startsWith('@'))).toBe(true);
+      expect(
+        res.body.every(
+          item =>
+            typeof item.username === 'string' && item.username.startsWith('@')
+        )
+      ).toBe(true);
     });
 
 
@@ -219,18 +234,27 @@ describe('POST /api/updateUser', () => {
     existingUserObject = {
       id: 1230,
       username: '@username',
-      nick: "Nick",
+      nick: 'Nick',
       color: 0
     };
 
     newUserObject = {
       username: '@username',
-      nick: "Nick",
+      nick: 'Nick',
       color: 0
     };
 
-    updateUserBody = {branch, userObj: existingUserObject, initDataUnsafe: {user: {id: 4560}}};
-    addUserBody = {branch, userObj: newUserObject, initDataUnsafe: {user: {id: 4560}}};
+    updateUserBody = {
+      branch,
+      userObj: existingUserObject,
+      initDataUnsafe: { user: { id: 4560 } }
+    };
+
+    addUserBody = {
+      branch,
+      userObj: newUserObject,
+      initDataUnsafe: { user: { id: 4560 } }
+    };
 
     getUser.mockResolvedValue(generateAdmin(branch, 4560));
     updateUser.mockResolvedValue(generateUser(branch, 1230));
@@ -250,22 +274,22 @@ describe('POST /api/updateUser', () => {
       const validUserObj = {
         id: 1230,
         username: '@username',
-        nick: "Nick",
+        nick: 'Nick',
         color: 0
       };
 
       const bodyData = [
-        {userObj: validUserObj, initDataUnsafe: {user: {id: 1230}}},
-        {branch, initDataUnsafe: {user: {id: 1230}}},
-        {branch, userObj: validUserObj},
-        {branch, userObj: {nick: 'Nick', color: 0}, initDataUnsafe: {user: {id: 1230}}},
+        { userObj: validUserObj, initDataUnsafe: { user: { id: 1230 } } },
+        { branch, initDataUnsafe: { user: { id: 1230 } } },
+        { branch, userObj: validUserObj },
+        { branch, userObj: { nick: 'Nick', color: 0 }, initDataUnsafe: { user: { id: 1230 } } },
         {}
       ];
 
       for (const body of bodyData) {
         const res = await request(app).post('/api/updateUser').send(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
   });
 
@@ -309,7 +333,9 @@ describe('POST /api/updateUser', () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post('/api/updateUser').send(updateUserBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
 
@@ -369,7 +395,9 @@ describe('POST /api/updateUser', () => {
         const actualProps = Object.keys(res.body).sort();
 
         expect(res.body).toBeInstanceOf(Object);
-        expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+        expect(
+          JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+        ).toBe(true);
       });
 
 
@@ -381,7 +409,10 @@ describe('POST /api/updateUser', () => {
 
       it('object property "username" should be a string beginning with @', async () => {
         const res = await request(app).post('/api/updateUser').send(body());
-        expect(typeof res.body.username === 'string' && res.body.username.startsWith('@')).toBe(true);
+        expect(
+          typeof res.body.username === 'string' &&
+            res.body.username.startsWith('@')
+        ).toBe(true);
       });
 
 
@@ -411,12 +442,12 @@ describe('POST /api/removeUser', () => {
     validBody = {
       branch,
       modifyUserId: 4560,
-      initDataUnsafe: {user: {id: 1230}}
+      initDataUnsafe: { user: { id: 1230 } }
     };
 
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateAdmin(branch, 1230));
-    removeUserPermission.mockResolvedValue({matchedCount: 1});
+    removeUserPermission.mockResolvedValue({ matchedCount: 1 });
   });
 
   beforeEach(() => {
@@ -429,16 +460,16 @@ describe('POST /api/removeUser', () => {
   describe('INVALID PARAMETERS POST /api/removeUser', () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
-        {modifyUserId: 4560, initDataUnsafe: {user: {id: 1230}}},
-        {branch, initDataUnsafe: {user: {id: 1230}}},
-        {branch, modifyUserId: 4560},
+        { modifyUserId: 4560, initDataUnsafe: { user: { id: 1230 } } },
+        { branch, initDataUnsafe: { user: { id: 1230 } } },
+        { branch, modifyUserId: 4560 },
         {}
       ];
 
       for (const body of bodyData) {
         const res = await request(app).post('/api/removeUser').send(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
   });
 
@@ -453,7 +484,7 @@ describe('POST /api/removeUser', () => {
     it('should respond with no content', async () => {
       const res = await request(app).post('/api/removeUser').send(validBody);
       expect(res.body).toEqual({});
-      expect(res.text).toBe("");
+      expect(res.text).toBe('');
     });
 
 
@@ -472,7 +503,7 @@ describe('POST /api/removeUser', () => {
 
 
     it('should respond with status code 404 if user to modify is not found', async () => {
-      removeUserPermission.mockResolvedValueOnce({matchedCount: 0});
+      removeUserPermission.mockResolvedValueOnce({ matchedCount: 0 });
       const res = await request(app).post('/api/removeUser').send(validBody);
       expect(res.statusCode).toBe(404);
     });

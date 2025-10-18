@@ -1,12 +1,14 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import { lastDayOfYear, format } from "date-fns";
+import { lastDayOfYear, format } from 'date-fns';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const {validateInitData} = await import('../../src/utils/initDataValidation.js');
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -25,9 +27,9 @@ const app = makeApp({
 });
 
 const rotaDBEntry = {
-  "_id": "676d7f9f8300f637d426cee9",
-  "date": new Date(2025, 2, 9),
-  "rota": [
+  _id: '676d7f9f8300f637d426cee9',
+  date: new Date(2025, 2, 9),
+  rota: [
     [],
     [],
     [],
@@ -53,8 +55,7 @@ const rotaDBEntry = {
     [573769247],
     [573769247]
   ]
-}
-
+};
 
 describe('GET /api/rota', () => {
   let branch;
@@ -64,11 +65,10 @@ describe('GET /api/rota', () => {
   beforeAll(() => {
     branch = Object.keys(settup)[0];
     date = format(lastDayOfYear(new Date()), 'yyyy-MM-dd');
-    validBody = {branch, date};
+    validBody = { branch, date };
 
     getRota.mockResolvedValue({});
   });
-
 
   beforeEach(() => {
     getRota.mockClear();
@@ -82,10 +82,10 @@ describe('GET /api/rota', () => {
         {}
       ];
 
-      for (const body of bodyData){
+      for (const body of bodyData) {
         const res = await request(app).get('/api/rota').query(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
   });
 
@@ -110,10 +110,12 @@ describe('GET /api/rota', () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).get('/api/rota').query(validBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
-  
+
     it('should query the database for day rota', async () => {
       const res = await request(app).get('/api/rota').query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
@@ -122,38 +124,47 @@ describe('GET /api/rota', () => {
   });
 
 
-  describe.each(Object.keys(settup))('RESPONSE VALIDATION GET /api/rota for branch %s', (branch) => {
-    it('response should be an array of length 24', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
-      expect(res.body).toBeInstanceOf(Array);
-      expect(res.body).toHaveLength(24);
-    });
-
-
-    it('array elements should have properties "users" and "label"', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
-
-      const expectedProps = ['users', 'label'].sort();
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+  describe.each(Object.keys(settup))(
+    'RESPONSE VALIDATION GET /api/rota for branch %s',
+    branch => {
+      it('response should be an array of length 24', async () => {
+        const res = await request(app).get('/api/rota').query(validBody);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body).toHaveLength(24);
       });
 
-      expect(allHaveExpectedProps).toBe(true);
-    });
+
+      it('array elements should have properties "users" and "label"', async () => {
+        const res = await request(app).get('/api/rota').query(validBody);
+
+        const expectedProps = ['users', 'label'].sort();
+        const allHaveExpectedProps = res.body.every(item => {
+          const actualProps = Object.keys(item).sort();
+          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+        });
+
+        expect(allHaveExpectedProps).toBe(true);
+      });
 
 
-    it('array element "users" should be of type object', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
-      expect(res.body.every(item => typeof item.users === 'object' && item.users != null)).toBe(true);
-    });
+      it('array element "users" should be of type object', async () => {
+        const res = await request(app).get('/api/rota').query(validBody);
+        expect(
+          res.body.every(
+            item => typeof item.users === 'object' && item.users != null
+          )
+        ).toBe(true);
+      });
 
 
-    it('array element property "label" should be of type string', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
-      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
-    });
-  });
+      it('array element property "label" should be of type string', async () => {
+        const res = await request(app).get('/api/rota').query(validBody);
+        expect(
+          res.body.every(item => typeof item.label === 'string')
+        ).toBe(true);
+      });
+    }
+  );
 });
 
 
@@ -183,22 +194,30 @@ describe('GET /api/userDuties', () => {
   describe('INVALID PARAMETRS GET /api/userDuties', () => {
     it('should respond with a status code 400 when any parameter is missing', async () => {
       const bodyData = [
-        {userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08'},
-        {branch, startDate: '2025-01-01', endDate: '2025-01-08'},
-        {branch, userId: 1230, endDate: '2025-01-08'},
-        {branch, userId: 1230, startDate: '2025-01-01'},
+        { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
+        { branch, startDate: '2025-01-01', endDate: '2025-01-08' },
+        { branch, userId: 1230, endDate: '2025-01-08' },
+        { branch, userId: 1230, startDate: '2025-01-01' },
         {}
       ];
 
-      for (const body of bodyData){
+      for (const body of bodyData) {
         const res = await request(app).get('/api/userDuties').query(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
 
 
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
-      const res = await request(app).get('/api/userDuties').query({branch, userId: 1230, startDate: '2025-01-08', endDate: '2025-01-01'});
+      const res = await request(app)
+        .get('/api/userDuties')
+        .query({
+          branch,
+          userId: 1230,
+          startDate: '2025-01-08',
+          endDate: '2025-01-01'
+        });
+
       expect(res.statusCode).toBe(400);
     });
   });
@@ -213,14 +232,29 @@ describe('GET /api/userDuties', () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).get('/api/userDuties').query(validBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
   
     it('should query the database for user duties', async () => {
-      const res = await request(app).get('/api/userDuties').query({branch: 'di', userId: 12345, startDate: '2026-01-01', endDate: '2026-01-08'});
+      const res = await request(app)
+        .get('/api/userDuties')
+        .query({
+          branch: 'di',
+          userId: 12345,
+          startDate: '2026-01-01',
+          endDate: '2026-01-08'
+        });
+
       expect(getUserDuties).toHaveBeenCalledTimes(1);
-      expect(getUserDuties).toHaveBeenCalledWith('di', 12345, new Date('2026-01-01'), new Date('2026-01-08'));
+      expect(getUserDuties).toHaveBeenCalledWith(
+        'di',
+        12345,
+        new Date('2026-01-01'),
+        new Date('2026-01-08')
+      );
     });
   });
 
@@ -246,9 +280,11 @@ describe('GET /api/userDuties', () => {
       const expectedProps = ['date', 'hours'];
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        return (
+          JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort())
+        );
       });
-      
+
       expect(allHaveExpectedProps).toBe(true);
     });
 
@@ -259,7 +295,7 @@ describe('GET /api/userDuties', () => {
       const allDatesMatchFormat = res.body.every(item =>
         /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(item.date)
       );
-      
+
       expect(res.body.every(item => typeof item.date === 'string')).toBe(true);
       expect(allDatesMatchFormat).toBe(true);
     });
@@ -280,11 +316,9 @@ describe('GET /api/userDuties', () => {
     it('array element property "hours" should contain integers', async () => {
       const res = await request(app).get('/api/userDuties').query(validBody);
 
-      expect(res.body.every(item => 
-        item.hours.every(hour => 
-          Number.isInteger(hour)
-        )
-      )).toBe(true);
+      expect(
+        res.body.every(item => item.hours.every(hour => Number.isInteger(hour)))
+      ).toBe(true);
     });
   });
 });
@@ -302,7 +336,7 @@ describe('POST /api/updateRota', () => {
   beforeAll(() => {
     branch = Object.keys(settup)[0];
     date = format(new Date(), 'yyyy-MM-dd');
-    initDataUnsafe = {user: {id: 1813610409}};
+    initDataUnsafe = { user: { id: 1813610409 } };
     validBody = {
       branch,
       date,
@@ -312,7 +346,10 @@ describe('POST /api/updateRota', () => {
     };
 
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue({telegram: '@username', roles: {[`admin_rota_${branch}`]: null}});
+    getUser.mockResolvedValue({
+      telegram: '@username',
+      roles: { [`admin_rota_${branch}`]: null }
+    });
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -341,36 +378,48 @@ describe('POST /api/updateRota', () => {
       for (const body of bodyData) {
         const res = await request(app).post('/api/updateRota').send(body);
         expect(res.statusCode).toBe(400);
-      };
+      }
     });
   });
 
 
   describe('VALID PARAMETERS POST /api/updateRota', () => {
-    describe.each(['add', 'remove'])('Using type "%s" to modify rota', (type) => {
+    describe.each(['add', 'remove'])('Using type "%s" to modify rota', type => {
       it('should respond with status code 200', async () => {
-        const res = await request(app).post('/api/updateRota').send({type, ...validBody});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
+
         expect(res.statusCode).toBe(200);
       });
 
 
       it('should respond with status code 401 if unable to verify hash', async () => {
         validateInitData.mockReturnValueOnce(false);
-        const res = await request(app).post('/api/updateRota').send({type, ...validBody});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
         expect(res.statusCode).toBe(401);
       });
 
 
       it('should respond with status code 404 if trying to modify date which does not exist', async () => {
         getRota.mockResolvedValueOnce(null);
-        const res = await request(app).post('/api/updateRota').send({type, ...validBody});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
         expect(res.statusCode).toBe(404);
       });
 
 
       it('should specify json in the content type header', async () => {
-        const res = await request(app).post('/api/updateRota').send({type, ...validBody});
-        expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
+
+        expect(res.headers['content-type']).toEqual(
+          expect.stringContaining('json')
+        );
       });
     });
 
@@ -378,21 +427,30 @@ describe('POST /api/updateRota', () => {
     describe('Adding a user to rota', () => {
       it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
         getUser.mockResolvedValueOnce(null);
-        const res = await request(app).post('/api/updateRota').send({...validBody, type: 'add', modifyUserId: 1230});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ ...validBody, type: 'add', modifyUserId: 1230 });
+
         expect(res.statusCode).toBe(403);
         expect(getUser).toHaveBeenCalledTimes(1);
       });
 
 
       it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
-        getUser.mockResolvedValueOnce({telegram: '@username', roles: {}});
-        const res = await request(app).post('/api/updateRota').send({type: 'add', ...validBody});
+        getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type: 'add', ...validBody });
+
         expect(res.statusCode).toBe(200);
       });
 
 
       it('should call addUserToRota() when adding a user to rota', async () => {
-        const res = await request(app).post('/api/updateRota').send({type: 'add', ...validBody});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type: 'add', ...validBody });
+
         expect(addUserToRota).toHaveBeenCalledTimes(1);
         expect(removeUserFromRota).toHaveBeenCalledTimes(0);
         expect(addUserToRota).toHaveBeenCalledWith(branch, '676d7f9f8300f637d426cee9', 5, [1813610409]);
@@ -402,14 +460,20 @@ describe('POST /api/updateRota', () => {
 
     describe('Removing a user from rota', () => {
       it('should respond with status code 403 if non admin user tries to remove any user from rota', async () => {
-        getUser.mockResolvedValueOnce({telegram: '@username', roles: {}});
-        const res = await request(app).post('/api/updateRota').send({type: 'remove', ...validBody});
+        getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type: 'remove', ...validBody });
+
         expect(res.statusCode).toBe(403);
       });
 
 
       it('should call removeUserFromRota() when removing user from rota', async () => {
-        const res = await request(app).post('/api/updateRota').send({type: 'remove', ...validBody});
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type: 'remove', ...validBody });
+
         expect(removeUserFromRota).toHaveBeenCalledTimes(1);
         expect(addUserToRota).toHaveBeenCalledTimes(0);
         expect(removeUserFromRota).toHaveBeenCalledWith(branch, '676d7f9f8300f637d426cee9', 5, 1813610409);
@@ -417,37 +481,58 @@ describe('POST /api/updateRota', () => {
     });
   });
 
+  describe.each(['add', 'remove'])(
+    'RESPONSE VALIDATION POST /api/updateRota for type "%s"',
+    type => {
+      it('response should be an array of length 24', async () => {
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
 
-  describe.each(['add', 'remove'])('RESPONSE VALIDATION POST /api/updateRota for type "%s"' , (type) => {
-    it('response should be an array of length 24', async () => {
-      const res = await request(app).post('/api/updateRota').send({type, ...validBody});
-      expect(res.body).toBeInstanceOf(Array);
-      expect(res.body).toHaveLength(24);
-    });
-
-
-    it('array elements should have properties "users" and "label"', async () => {
-      const res = await request(app).post('/api/updateRota').send({type, ...validBody});
-
-      const expectedProps = ['users', 'label'];
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body).toHaveLength(24);
       });
 
-      expect(allHaveExpectedProps).toBe(true);
-    });
+
+      it('array elements should have properties "users" and "label"', async () => {
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
+
+        const expectedProps = ['users', 'label'].sort();
+        const allHaveExpectedProps = res.body.every(item => {
+          const actualProps = Object.keys(item).sort();
+          return (
+            JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+          );
+        });
+
+        expect(allHaveExpectedProps).toBe(true);
+      });
 
 
-    it('array element "users" should be of type object', async () => {
-      const res = await request(app).post('/api/updateRota').send({type, ...validBody});
-      expect(res.body.every(item => typeof item.users === 'object' && item.users != null)).toBe(true);
-    });
+      it('array element "users" should be of type object', async () => {
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
+
+        expect(
+          res.body.every(
+            item => typeof item.users === 'object' && item.users != null
+          )
+        ).toBe(true);
+      });
 
 
-    it('array element property "label" should be of type string', async () => {
-      const res = await request(app).post('/api/updateRota').send({type, ...validBody});
-      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
-    });
-  });
+      it('array element property "label" should be of type string', async () => {
+        const res = await request(app)
+          .post('/api/updateRota')
+          .send({ type, ...validBody });
+
+        expect(
+          res.body.every(item => typeof item.label === 'string')
+        ).toBe(true);
+      });
+    }
+  );
 });
