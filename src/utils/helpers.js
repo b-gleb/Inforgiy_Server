@@ -22,7 +22,6 @@ export default function makeHelpers(database) {
     return initDataUnsafe;
   };
 
-
   const isRotaAdmin = async (branch, userId) => {
     const userEntry = await database.getUser(userId);
 
@@ -36,7 +35,6 @@ export default function makeHelpers(database) {
       return false;
     }
   };
-
 
   const statistic = async (
     initDataUnsafe,
@@ -63,7 +61,6 @@ export default function makeHelpers(database) {
     console.log(newEntry);
     await database.logUsageStatistics(newEntry);
   };
-
 
   const fillMissingDates = (data, startDate, endDate) => {
     let result = [];

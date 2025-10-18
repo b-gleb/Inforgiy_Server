@@ -61,7 +61,6 @@ export default function makeUserController(database) {
     res.json(Object.values(usersCache[value.branch]));
   };
 
-
   const removeUser = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -106,7 +105,6 @@ export default function makeUserController(database) {
     }
   };
 
-
   const updateUser = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -147,7 +145,6 @@ export default function makeUserController(database) {
         value.userObj.nick,
         value.userObj.color
       );
-
     } else if (!value.userObj.id && value.userObj.username) {
       // Add rota access to a user in DB
       updatedUser = await database.addUserPermission(

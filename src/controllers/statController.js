@@ -82,7 +82,6 @@ export default function makeStatController(database) {
     res.json(convertedStats);
   };
 
-
   const stats_cumulative = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -114,7 +113,6 @@ export default function makeStatController(database) {
     res.json(result);
   };
 
-
   const emptyDuties = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -139,7 +137,6 @@ export default function makeStatController(database) {
     res.json(result);
   };
 
-
   const takenDuties = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -163,7 +160,6 @@ export default function makeStatController(database) {
 
     res.json(result);
   };
-
 
   const uniqueUsers = async (req, res) => {
     // Validation

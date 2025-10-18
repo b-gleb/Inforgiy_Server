@@ -34,11 +34,8 @@ export async function getRota(branch, date) {
 export async function getUserDuties(branch, userId, startDate, endDate) {
   const cursor = mongo_db.collection(`rota_${branch}`).find(
     {
-      $and: [
-        {date: {$gte: startDate}},
-        {date: {$lte: endDate}}
-      ],
-      'rota': {'$elemMatch': {'$elemMatch': {'$eq': userId}}}
+      $and: [{ date: { $gte: startDate } }, { date: { $lte: endDate } }],
+      rota: { $elemMatch: { $elemMatch: { $eq: userId } } }
     },
     { sort: { date: 1 } }
   );
@@ -107,10 +104,7 @@ export async function getUser(userId) {
 export async function getUserRegion(userId) {
   const entry = await mongo_db
     .collection('users')
-    .findOne(
-      { telegram_id: userId },
-      { projection: { region: 1, _id: 0 } }
-  );
+    .findOne({ telegram_id: userId }, { projection: { region: 1, _id: 0 } });
 
   return entry?.region ?? null;
 }
