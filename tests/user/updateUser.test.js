@@ -22,7 +22,9 @@ const app = makeApp({
   addUserPermission
 });
 
-describe('POST /api/updateUser', () => {
+const apiUrl = '/api/updateUser';
+
+describe(`POST ${apiUrl}`, () => {
   let branch;
   let updateUserBody;
   let addUserBody;
@@ -69,8 +71,7 @@ describe('POST /api/updateUser', () => {
     addUserPermission.mockClear();
   });
 
-
-  describe('INVALID PARAMETERS POST /api/updateUser', () => {
+  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const validUserObj = {
         id: 1230,
@@ -88,67 +89,58 @@ describe('POST /api/updateUser', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).post('/api/updateUser').send(body);
+        const res = await request(app).post(apiUrl).send(body);
         expect(res.statusCode).toBe(400);
       }
     });
   });
 
-
-
-  describe('VALID PARAMETERS POST /api/updateUser', () => {
+  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 200', async () => {
       updateUser.mockResolvedValueOnce(generateUser(branch, 1230));
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(res.statusCode).toBe(200);
     });
 
-
     it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(res.statusCode).toBe(401);
     });
 
-
     it('should respond with status code 403 if non admin attempts to perform operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 4560));
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(res.statusCode).toBe(403);
     });
 
-
     it('should respond with status code 404 if user to modify does not exist', async () => {
       updateUser.mockResolvedValueOnce(null);
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(res.statusCode).toBe(404);
     });
-
 
     it('should respond with status code 404 if user to add permissions does not exist', async () => {
       addUserPermission.mockResolvedValueOnce(null);
-      const res = await request(app).post('/api/updateUser').send(addUserBody);
+      const res = await request(app).post(apiUrl).send(addUserBody);
       expect(res.statusCode).toBe(404);
     });
 
-
     it('should specify json in the content type header', async () => {
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
     });
 
-
     it('should call isRotaAdmin() once', async () => {
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(4560);
     });
 
-
     it('should call updateUser() once when updating permissions of user with rota access', async () => {
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(updateUser).toHaveBeenCalledTimes(1);
       expect(updateUser).toHaveBeenCalledWith(
         branch,
@@ -158,15 +150,13 @@ describe('POST /api/updateUser', () => {
       );
     });
 
-
     it('should not call addUserPermission() when updating permissions of user with rota access', async () => {
-      const res = await request(app).post('/api/updateUser').send(updateUserBody);
+      const res = await request(app).post(apiUrl).send(updateUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(0);
     });
 
-
     it('should call addUserPermission() once when adding a new user to rota', async () => {
-      const res = await request(app).post('/api/updateUser').send(addUserBody);
+      const res = await request(app).post(apiUrl).send(addUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(1);
       expect(addUserPermission).toHaveBeenCalledWith(
         branch,
@@ -176,21 +166,19 @@ describe('POST /api/updateUser', () => {
       );
     });
 
-
     it('should not call updateUser() when adding a new user to rota', async () => {
-      const res = await request(app).post('/api/updateUser').send(addUserBody);
+      const res = await request(app).post(apiUrl).send(addUserBody);
       expect(updateUser).toHaveBeenCalledTimes(0);
     });
   });
-
 
   [
     { name: 'updateUserBody', body: () => updateUserBody },
     { name: 'addUserBody', body: () => addUserBody }
   ].forEach(({ name, body }) => {
-    describe(`RESPONSE VALIDATION POST /api/updateUser with ${name}`, () => {
+    describe(`RESPONSE VALIDATION POST ${apiUrl} with ${name}`, () => {
       it('response should be a json object with properties "id", "username", "nick", "color"', async () => {
-        const res = await request(app).post('/api/updateUser').send(body());
+        const res = await request(app).post(apiUrl).send(body());
 
         const expectedProps = ['id', 'username', 'nick', 'color'].sort();
         const actualProps = Object.keys(res.body).sort();
@@ -201,30 +189,26 @@ describe('POST /api/updateUser', () => {
         ).toBe(true);
       });
 
-
       it('object property "id" should be an integer', async () => {
-        const res = await request(app).post('/api/updateUser').send(body());
+        const res = await request(app).post(apiUrl).send(body());
         expect(Number.isInteger(res.body.id)).toBe(true);
       });
 
-
       it('object property "username" should be a string beginning with @', async () => {
-        const res = await request(app).post('/api/updateUser').send(body());
+        const res = await request(app).post(apiUrl).send(body());
         expect(
           typeof res.body.username === 'string' &&
             res.body.username.startsWith('@')
         ).toBe(true);
       });
 
-
       it('object property "nick" should be a string', async () => {
-        const res = await request(app).post('/api/updateUser').send(body());
+        const res = await request(app).post(apiUrl).send(body());
         expect(typeof res.body.nick === 'string').toBe(true);
       });
 
-
       it('object property "color" should be an integer', async () => {
-        const res = await request(app).post('/api/updateUser').send(body());
+        const res = await request(app).post(apiUrl).send(body());
         expect(Number.isInteger(res.body.color)).toBe(true);
       });
     });

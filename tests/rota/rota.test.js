@@ -10,7 +10,9 @@ const app = makeApp({
   getRota
 });
 
-describe('GET /api/rota', () => {
+const apiUrl = '/api/rota';
+
+describe(`GET ${apiUrl}`, () => {
   let branch;
   let date;
   let validBody;
@@ -27,7 +29,7 @@ describe('GET /api/rota', () => {
     getRota.mockClear();
   });
 
-  describe('INVALID PARAMETERS GET /api/rota', () => {
+  describe(`INVALID PARAMETERS GET ${apiUrl}`, () => {
     it('should respond with a status code 400 when any parameter is missing', async () => {
       const bodyData = [
         {branch},
@@ -36,23 +38,21 @@ describe('GET /api/rota', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).get('/api/rota').query(body);
+        const res = await request(app).get(apiUrl).query(body);
         expect(res.statusCode).toBe(400);
       }
     });
   });
 
-
-  describe('VALID PARAMETERS GET /api/rota', () => {
+  describe(`VALID PARAMETERS GET ${apiUrl}`, () => {
     it('should respond with a status code of 200', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.statusCode).toBe(200);
     });
 
-
     it('should respond with a status code of 404 if date is not found', async () => {
       getRota.mockResolvedValueOnce(null);
-      const res = await request(app).get('/api/rota').query({
+      const res = await request(app).get(apiUrl).query({
         branch,
         date: '1990-01-01'
       });
@@ -60,35 +60,30 @@ describe('GET /api/rota', () => {
       expect(res.statusCode).toBe(404);
     });
 
-
     it('should specify json in the content type header', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
     });
 
-
     it('should query the database for day rota', async () => {
-      const res = await request(app).get('/api/rota').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
       expect(getRota).toHaveBeenCalledWith(branch, new Date(date));
     });
   });
 
-
   describe.each(Object.keys(settup))(
-    'RESPONSE VALIDATION GET /api/rota for branch %s',
-    branch => {
+    `RESPONSE VALIDATION GET ${apiUrl} for branch %s`, branch => {
       it('response should be an array of length 24', async () => {
-        const res = await request(app).get('/api/rota').query(validBody);
+        const res = await request(app).get(apiUrl).query(validBody);
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body).toHaveLength(24);
       });
 
-
       it('array elements should have properties "users" and "label"', async () => {
-        const res = await request(app).get('/api/rota').query(validBody);
+        const res = await request(app).get(apiUrl).query(validBody);
 
         const expectedProps = ['users', 'label'].sort();
         const allHaveExpectedProps = res.body.every(item => {
@@ -99,9 +94,8 @@ describe('GET /api/rota', () => {
         expect(allHaveExpectedProps).toBe(true);
       });
 
-
       it('array element "users" should be of type object', async () => {
-        const res = await request(app).get('/api/rota').query(validBody);
+        const res = await request(app).get(apiUrl).query(validBody);
         expect(
           res.body.every(
             item => typeof item.users === 'object' && item.users != null
@@ -109,9 +103,8 @@ describe('GET /api/rota', () => {
         ).toBe(true);
       });
 
-
       it('array element property "label" should be of type string', async () => {
-        const res = await request(app).get('/api/rota').query(validBody);
+        const res = await request(app).get(apiUrl).query(validBody);
         expect(
           res.body.every(item => typeof item.label === 'string')
         ).toBe(true);

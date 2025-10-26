@@ -10,7 +10,9 @@ const app = makeApp({
   getUserDuties
 });
 
-describe('GET /api/userDuties', () => {
+const apiUrl = '/api/userDuties';
+
+describe(`GET ${apiUrl}`, () => {
   let branch;
   let validBody;
 
@@ -26,12 +28,11 @@ describe('GET /api/userDuties', () => {
     getUserDuties.mockResolvedValue([rotaDBEntry]);
   });
 
-
   beforeEach(() => {
     getUserDuties.mockClear();
   });
 
-  describe('INVALID PARAMETRS GET /api/userDuties', () => {
+  describe(`INVALID PARAMETRS GET ${apiUrl}`, () => {
     it('should respond with a status code 400 when any parameter is missing', async () => {
       const bodyData = [
         { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
@@ -42,51 +43,43 @@ describe('GET /api/userDuties', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).get('/api/userDuties').query(body);
+        const res = await request(app).get(apiUrl).query(body);
         expect(res.statusCode).toBe(400);
       }
     });
 
-
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
-      const res = await request(app)
-        .get('/api/userDuties')
-        .query({
-          branch,
-          userId: 1230,
-          startDate: '2025-01-08',
-          endDate: '2025-01-01'
-        });
+      const res = await request(app).get(apiUrl).query({
+        branch,
+        userId: 1230,
+        startDate: '2025-01-08',
+        endDate: '2025-01-01'
+      });
 
       expect(res.statusCode).toBe(400);
     });
   });
 
-
-  describe('VALID PARAMETERS GET /api/userDuties', () => {
+  describe(`VALID PARAMETERS GET ${apiUrl}`, () => {
     it('should respond with status code 200', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.statusCode).toBe(200);
     });
 
-
     it('should specify json in the content type header', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
     });
 
-  
     it('should query the database for user duties', async () => {
-      const res = await request(app)
-        .get('/api/userDuties')
-        .query({
-          branch: 'di',
-          userId: 12345,
-          startDate: '2026-01-01',
-          endDate: '2026-01-08'
-        });
+      const res = await request(app).get(apiUrl).query({
+        branch: 'di',
+        userId: 12345,
+        startDate: '2026-01-01',
+        endDate: '2026-01-08'
+      });
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(
@@ -98,24 +91,21 @@ describe('GET /api/userDuties', () => {
     });
   });
 
-
-  describe('RESPONSE VALIDATION GET /api/userDuties', () => {
+  describe(`RESPONSE VALIDATION GET ${apiUrl}`, () => {
     it('should return an empty array if no duties are found', async () => {
       getUserDuties.mockResolvedValueOnce([]);
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.body).toBeInstanceOf(Array);
       expect(res.body).toHaveLength(0);
     });
 
-
     it('should return an array of objects if any duties are found', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.body.every(item => typeof item === 'object' && item != null));
     });
 
-
     it('array element should have properties "date" and "hours"', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
 
       const expectedProps = ['date', 'hours'];
       const allHaveExpectedProps = res.body.every(item => {
@@ -128,9 +118,8 @@ describe('GET /api/userDuties', () => {
       expect(allHaveExpectedProps).toBe(true);
     });
 
-
     it('array element property "date" should be of type date', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
         /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(item.date)
@@ -140,22 +129,18 @@ describe('GET /api/userDuties', () => {
       expect(allDatesMatchFormat).toBe(true);
     });
 
-
     it('array element property "hours" should be of type array', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.body.every(item => Array.isArray(item.hours))).toBe(true);
     });
 
-
     it('array element property "hours" should not be empty', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(res.body.every(item => item.hours.length != 0)).toBe(true);
     });
 
-
     it('array element property "hours" should contain integers', async () => {
-      const res = await request(app).get('/api/userDuties').query(validBody);
-
+      const res = await request(app).get(apiUrl).query(validBody);
       expect(
         res.body.every(item => item.hours.every(hour => Number.isInteger(hour)))
       ).toBe(true);

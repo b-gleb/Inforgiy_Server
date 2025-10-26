@@ -28,7 +28,9 @@ const app = makeApp({
   getUser
 });
 
-describe('POST /api/auth', () => {
+const apiUrl = '/api/auth';
+
+describe(`POST ${apiUrl}`, () => {
   let initDataUnsafe;
   let validBody;
 
@@ -45,86 +47,75 @@ describe('POST /api/auth', () => {
     getUser.mockClear();
   });
 
-  describe('INVALID PARAMETERS POST /api/auth', () => {
+  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const res = await request(app).post('/api/auth').send({});
+      const res = await request(app).post(apiUrl).send({});
       expect(res.statusCode).toBe(400);
     });
   });
 
-
-
-  describe('VALID PARAMETERS POST /api/auth', () => {
+  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 200', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
-
     it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(401);
     });
-
 
     it('should respond with status code 403 if user has no roles', async () => {
       getUser.mockResolvedValueOnce({
         telegram: '@username_1230',
         roles: {}
       });
-      const res = await request(app).post('/api/auth').send(validBody);
+
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });
 
-
     it('should respond with status code 404 if user is not found', async () => {
       getUser.mockResolvedValueOnce(null);
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(404);
     });
 
-
     it('should specify json in the content type header', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
     });
 
-
     it('should call `validateInitData` once', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(validateInitData).toHaveBeenCalledTimes(1);
     });
 
-
     it('should call `getUser` once', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(initDataUnsafe.user.id);
     });
 
-
     it('should not call `getUser` if `validateInitData` failed', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
     });
   });
 
-
-
-  describe('RESPONSE VALIDATION POST /api/auth', () => {
+  describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
     it('should return an object', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(typeof res.body === 'object' && res.body !== null).toBe(true);
     });
 
-
     it('response object should have properties "branches", "rotaAdmin"', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       const expectedProps = ['branches', 'rotaAdmin'].sort();
       const actualProps = Object.keys(res.body).sort();
 
@@ -132,7 +123,6 @@ describe('POST /api/auth', () => {
         JSON.stringify(actualProps) === JSON.stringify(expectedProps)
       ).toBe(true);
     });
-
 
     it('property "branches" should be an object of length equal to number of branches with access', async () => {
       const userData = { nick: 'nick', c: 0 };
@@ -147,7 +137,7 @@ describe('POST /api/auth', () => {
         getUser.mockClear();
         getUser.mockResolvedValueOnce(permission);
 
-        const res = await request(app).post('/api/auth').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
         expect(
           typeof res.body.branches === 'object' && res.body.branches !== null
         ).toBe(true);
@@ -155,9 +145,8 @@ describe('POST /api/auth', () => {
       }
     });
 
-
     it('subobject of "branches" should have properties "color" and "maxDuties"', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       const expectedProps = ['color', 'maxDuties'].sort();
       const allHaveExpectedProps = Object.values(res.body.branches).every(
@@ -170,9 +159,8 @@ describe('POST /api/auth', () => {
       expect(allHaveExpectedProps).toBe(true);
     });
 
-
     it('property "color" of subobject "branches" should be an integer', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(
         Object.values(res.body.branches).every(item =>
           Number.isInteger(item.color)
@@ -180,16 +168,14 @@ describe('POST /api/auth', () => {
       ).toBe(true);
     });
 
-
     it('property "maxDuties" of subobject "branches" should be an integer', async () => {
-      const res = await request(app).post('/api/auth').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(
         Object.values(res.body.branches).every(item =>
           Number.isInteger(item.maxDuties)
         )
       ).toBe(true);
     });
-
 
     it('property "rotaAdmin" should be an array of length equal to number of branches with admin access', async () => {
       const userData = { nick: 'nick', c: 0 };
@@ -204,7 +190,7 @@ describe('POST /api/auth', () => {
         getUser.mockClear();
         getUser.mockResolvedValueOnce(permission);
 
-        const res = await request(app).post('/api/auth').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
         expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
         expect(res.body.rotaAdmin.length === permission.roles.length);
       }

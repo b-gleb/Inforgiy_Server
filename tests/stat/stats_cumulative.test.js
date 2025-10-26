@@ -10,7 +10,9 @@ const app = makeApp({
   getCumulativeStats
 });
 
-describe('POST /api/stats/cumulative', () => {
+const apiUrl = '/api/stats/cumulative';
+
+describe(`POST ${apiUrl}`, () => {
   let branch;
   let userId;
   let dateRanges;
@@ -32,7 +34,7 @@ describe('POST /api/stats/cumulative', () => {
     getCumulativeStats.mockClear();
   });
 
-  describe('INVALID PARAMETERS POST /api/stats/cumulative', () => {
+  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
         { userId, dateRanges },
@@ -42,7 +44,7 @@ describe('POST /api/stats/cumulative', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).post('/api/stats/cumulative').send(body);
+        const res = await request(app).post(apiUrl).send(body);
         expect(res.statusCode).toBe(400);
       }
     });
@@ -50,22 +52,22 @@ describe('POST /api/stats/cumulative', () => {
 
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
       const res = await request(app)
-        .post('/api/stats/cumulative')
+        .post(apiUrl)
         .send({ ...validBody, dateRanges: ['2025-01-01', '2025-01-31'] });
       expect(res.statusCode).toBe(400);
     });
   });
 
 
-  describe('VALID PARAMETERS POST /api/stats/cumulative', () => {
+  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
     it('should return status code 200', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
 
     it('should specify json in the content type header', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
@@ -81,9 +83,11 @@ describe('POST /api/stats/cumulative', () => {
 
       for (const body of bodyData) {
         getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+        getCumulativeStats.mockResolvedValueOnce(
+          generateCumulativeStats(body.dateRanges)
+        );
 
-        const res = await request(app).post('/api/stats/cumulative').send(body);
+        const res = await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),
@@ -101,9 +105,9 @@ describe('POST /api/stats/cumulative', () => {
   });
 
 
-  describe('RESPONSE VALIDATION POST /api/stats/cumulative', () => {
+  describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
     it('should return an array of objects', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       expect(res.body).toBeInstanceOf(Array);
       expect(
@@ -121,16 +125,18 @@ describe('POST /api/stats/cumulative', () => {
 
       for (const body of bodyData) {
         getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+        getCumulativeStats.mockResolvedValueOnce(
+          generateCumulativeStats(body.dateRanges)
+        );
 
-        const res = await request(app).post('/api/stats/cumulative').send(body);
+        const res = await request(app).post(apiUrl).send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
       }
     });
 
 
     it('array object should have properties "userId", "dateRange" and "data"', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       const expectedProps = ['userId', 'dateRange', 'data'].sort();
       const allHaveExpectedProps = res.body.every(item => {
@@ -143,13 +149,13 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('property "userId" should be of type integer', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.body.every(item => Number.isInteger(item.userId))).toBe(true);
     });
 
 
     it('property "dateRange" should be of type array of length 2', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(
         res.body.every(
           item => Array.isArray(item.dateRange) && item.dateRange.length === 2
@@ -159,7 +165,7 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('property "dateRange" elements should be date strings', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
         item.dateRange.every(range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range))
@@ -175,7 +181,7 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('property "data" should be an array of objects', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(
         res.body.every(
           item => typeof item.data === 'object' && item.data !== null
@@ -185,7 +191,7 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('elements of "data" array should have properties "date", "count"', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       const expectedProps = ['date', 'count'].sort();
       const allHaveExpectedProps = res.body.every(item =>
@@ -200,7 +206,7 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('property "date" should be a date string', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
         item.data.every(entry => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(entry.date))
@@ -216,7 +222,7 @@ describe('POST /api/stats/cumulative', () => {
 
 
     it('property "count" should be a positive integer', async () => {
-      const res = await request(app).post('/api/stats/cumulative').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(
         res.body.every(item =>
           item.data.every(subitem => Number.isInteger(subitem.count))

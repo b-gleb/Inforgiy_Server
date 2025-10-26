@@ -10,7 +10,9 @@ const app = makeApp({
   getTakenDuties
 });
 
-describe('POST /api/stats/takenDuties', () => {
+const apiUrl = '/api/stats/takenDuties';
+
+describe(`POST ${apiUrl}`, () => {
   let branch;
   let dateRanges;
   let validBody;
@@ -30,7 +32,7 @@ describe('POST /api/stats/takenDuties', () => {
     getTakenDuties.mockClear();
   });
 
-  describe('INVALID PARAMETERS POST /api/stats/takenDuties', () => {
+  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
         { branch },
@@ -39,34 +41,31 @@ describe('POST /api/stats/takenDuties', () => {
       ];
 
       for (const body of bodyData) {
-        const res = await request(app).post('/api/stats/takenDuties').send(body);
+        const res = await request(app).post(apiUrl).send(body);
         expect(res.statusCode).toBe(400);
       }
     });
 
-
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
-      const res = await request(app).post('/api/stats/takenDuties').send({branch, dateRanges: ['2025-01-01', '2025-01-31']});
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ branch, dateRanges: ['2025-01-01', '2025-01-31'] });
       expect(res.statusCode).toBe(400);
     });
   });
 
-
-
-  describe('VALID PARAMETERS POST /api/stats/takenDuties', () => {
+  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
     it('should return status code 200', async () => {
-      const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
-
     it('should specify json in the content type header', async () => {
-      const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+      const res = await request(app).post(apiUrl).send(validBody);
       expect(res.headers['content-type']).toEqual(
         expect.stringContaining('json')
       );
     });
-
 
     it('should call `getTakenDuties` once', async () => {
       const bodyData = [
@@ -81,7 +80,7 @@ describe('POST /api/stats/takenDuties', () => {
           generateTakenDutiesStats(body.dateRanges)
         );
 
-        const res = await request(app).post('/api/stats/takenDuties').send(body);
+        const res = await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),
@@ -97,11 +96,10 @@ describe('POST /api/stats/takenDuties', () => {
     });
   });
 
-
   // count = undefined: a non empty pipeline output
   // count = 0: no documents returned by the pipeline
   describe.each([undefined, 0])(
-    'RESPONSE VALIDATION POST /api/stats/takenDuties, count is %s',
+    `RESPONSE VALIDATION POST ${apiUrl}, count is %s`,
     count => {
       beforeAll(() => {
         getTakenDuties.mockResolvedValue(
@@ -109,15 +107,13 @@ describe('POST /api/stats/takenDuties', () => {
         );
       });
 
-
       it('should return an array of objects', async () => {
-        const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
         expect(res.body).toBeInstanceOf(Array);
         expect(
           res.body.every(item => typeof item === 'object' && item !== null)
         ).toBe(true);
       });
-
 
       it('length of array should be the length of requested dateRanges', async () => {
         const bodyData = [
@@ -132,14 +128,13 @@ describe('POST /api/stats/takenDuties', () => {
             generateTakenDutiesStats(body.dateRanges, count)
           );
 
-          const res = await request(app).post('/api/stats/takenDuties').send(body);
+          const res = await request(app).post(apiUrl).send(body);
           expect(res.body.length).toBe(body.dateRanges.length);
         }
       });
 
-
       it('array elements should have properties "dateRange" and "count"', async () => {
-        const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
 
         const expectedProps = ['dateRange', 'count'].sort();
         const allHaveExpectedProps = res.body.every(item => {
@@ -150,9 +145,8 @@ describe('POST /api/stats/takenDuties', () => {
         expect(allHaveExpectedProps).toBe(true);
       });
 
-
       it('"dateRange" should be an array of length 2', async () => {
-        const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
         expect(
           res.body.every(
             item => Array.isArray(item.dateRange) && item.dateRange.length === 2
@@ -160,9 +154,8 @@ describe('POST /api/stats/takenDuties', () => {
         ).toBe(true);
       });
 
-
       it('"dateRange" elements should be date strings', async () => {
-        const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
 
         const allDatesMatchFormat = res.body.every(item =>
           item.dateRange.every(range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range))
@@ -176,9 +169,8 @@ describe('POST /api/stats/takenDuties', () => {
         expect(allDatesMatchFormat).toBe(true);
       });
 
-
       it('"count" should be an integer', async () => {
-        const res = await request(app).post('/api/stats/takenDuties').send(validBody);
+        const res = await request(app).post(apiUrl).send(validBody);
         expect(res.body.every(item => Number.isInteger(item.count))).toBe(true);
       });
     }
