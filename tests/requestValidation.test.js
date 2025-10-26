@@ -22,7 +22,6 @@ describe('validateBranch', () => {
   });
 });
 
-
 describe('validateUserId', () => {
   it('should accept positive integer values', () => {
     const { error, value } = validateUserId.validate(490770242);
@@ -57,7 +56,6 @@ describe('validateUserId', () => {
     expect(error).toBeDefined();
   });
 });
-
 
 describe('validateColor', () => {
   it('should accept a valid color integer', () => {
@@ -101,7 +99,6 @@ describe('validateColor', () => {
     expect(error).toBeDefined();
   });
 });
-
 
 describe('validateDateRange', () => {
   it('should accept an array of 2 dates in format YYYY-MM-DD', () => {

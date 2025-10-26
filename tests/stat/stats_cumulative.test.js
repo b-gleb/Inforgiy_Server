@@ -49,7 +49,6 @@ describe(`POST ${apiUrl}`, () => {
       }
     });
 
-
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
       const res = await request(app)
         .post(apiUrl)
@@ -58,13 +57,11 @@ describe(`POST ${apiUrl}`, () => {
     });
   });
 
-
   describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
     it('should return status code 200', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(200);
     });
-
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -72,7 +69,6 @@ describe(`POST ${apiUrl}`, () => {
         expect.stringContaining('json')
       );
     });
-
 
     it('should call getcumulativeStats() once', async () => {
       const bodyData = [
@@ -104,7 +100,6 @@ describe(`POST ${apiUrl}`, () => {
     });
   });
 
-
   describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
     it('should return an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -114,7 +109,6 @@ describe(`POST ${apiUrl}`, () => {
         res.body.every(item => typeof item === 'object' && item !== null)
       ).toBe(true);
     });
-
 
     it('length of the array should be equal to length of "dateRanges"', async () => {
       const bodyData = [
@@ -134,7 +128,6 @@ describe(`POST ${apiUrl}`, () => {
       }
     });
 
-
     it('array object should have properties "userId", "dateRange" and "data"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
@@ -147,12 +140,10 @@ describe(`POST ${apiUrl}`, () => {
       expect(allHaveExpectedProps).toBe(true);
     });
 
-
     it('property "userId" should be of type integer', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.body.every(item => Number.isInteger(item.userId))).toBe(true);
     });
-
 
     it('property "dateRange" should be of type array of length 2', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -162,7 +153,6 @@ describe(`POST ${apiUrl}`, () => {
         )
       ).toBe(true);
     });
-
 
     it('property "dateRange" elements should be date strings', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -179,7 +169,6 @@ describe(`POST ${apiUrl}`, () => {
       expect(allDatesMatchFormat).toBe(true);
     });
 
-
     it('property "data" should be an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
@@ -188,7 +177,6 @@ describe(`POST ${apiUrl}`, () => {
         )
       );
     });
-
 
     it('elements of "data" array should have properties "date", "count"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -204,7 +192,6 @@ describe(`POST ${apiUrl}`, () => {
       expect(allHaveExpectedProps).toBe(true);
     });
 
-
     it('property "date" should be a date string', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
@@ -219,7 +206,6 @@ describe(`POST ${apiUrl}`, () => {
       ).toBe(true);
       expect(allDatesMatchFormat).toBe(true);
     });
-
 
     it('property "count" should be a positive integer', async () => {
       const res = await request(app).post(apiUrl).send(validBody);

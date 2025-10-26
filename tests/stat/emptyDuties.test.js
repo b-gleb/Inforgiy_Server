@@ -97,7 +97,8 @@ describe(`POST ${apiUrl}`, () => {
   // count = undefined: a non empty pipeline output
   // count = 0: no documents returned by the pipeline
   describe.each([undefined, 0])(
-    `RESPONSE VALIDATION POST ${apiUrl}, count is %s`, count => {
+    `RESPONSE VALIDATION POST ${apiUrl}, count is %s`,
+    count => {
       beforeAll(() => {
         getEmptyDuties.mockResolvedValue(
           generateEmptyDutiesStats(dateRanges, count)
