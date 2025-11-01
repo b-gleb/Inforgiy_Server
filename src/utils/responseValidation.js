@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import settup from '../config/settup.json' with { type: 'json' };
-
 import BaseJoi from 'joi';
 import joiDate from '@joi/date';
+import settup from '../config/settup.json' with { type: 'json' };
 const Joi = BaseJoi.extend(joiDate);
 
 export const validateBranch = Joi.string().valid(...Object.keys(settup));
@@ -36,3 +35,9 @@ export const validateDateRange = Joi.array()
     }
     return value;
   });
+
+
+export const ensureUniqueArray = (value, helpers) => {
+  if (!Array.isArray(value)) return value;
+  return [...new Set(value)];
+};
