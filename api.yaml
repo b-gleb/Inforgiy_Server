@@ -297,7 +297,10 @@ paths:
       tags:
         - Rota
       summary: "Add user to rota over a range of dates"
-      description: "Add the same user to rota at the same time slot over a range of date. It can be chosen if the user is to be added only into empty slots or added anyway regardless of the slot occupancy."
+      description:
+        Add the same user to the rota for the same time slot across a range of dates.
+        You can choose whether to add the user only into empty slots or to override
+        existing assignments regardless of slot occupancy.
       requestBody:
         content:
           application/json:
@@ -342,6 +345,13 @@ paths:
                   format: int64
                   description: "ID of the user to mass add to rota"
                   example: 123456789
+                allowOccupiedSlots:
+                  type: boolean
+                  description:
+                    If true, allows users to be assigned to rota slots even if they are already taken.
+                    If false, the operation only fills unassigned slots.
+                  default: true
+                  example: true
                 initDataUnsafe:
                   $ref: '#/components/schemas/WebAppInitData'
         required: true
