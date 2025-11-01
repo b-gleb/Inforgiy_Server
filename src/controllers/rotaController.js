@@ -91,7 +91,6 @@ export default function makeRotaController(database) {
     Updates rota for a particilar day
   */
   const updateRota = async (req, res) => {
-    // TODO: add modifyUserId not found check
     // Validation
     let timeIndex;
 
