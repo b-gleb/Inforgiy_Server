@@ -51,7 +51,7 @@ describe(`POST ${apiUrl}`, () => {
         {}
       ];
 
-      for (const data of bodyData) {
+      for (const body of bodyData) {
         const res = await request(app).post(apiUrl).send(body);
         expect(res.statusCode).toBe(400);
       }
