@@ -100,6 +100,35 @@ describe('validateColor', () => {
   });
 });
 
+describe('validateTimeRange', () => {
+  it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
+    const { error, value } = validateTimeRange.validate('00:00-01:00');
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
+    const { error, value } = validateTimeRange.validate('00:00 - 01:00');
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should reject a string of desired format if the first 2 digits >= 24', () => {
+    const { error } = validateTimeRange.validate('24:00-25:00');
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an intiger', () => {
+    const { error } = validateTimeRange.validate(5);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a string not matching the format ', () => {
+    const { error } = validateTimeRange.validate('some string');
+    expect(error).toBeDefined();
+  });
+});
+
 describe('validateDateRange', () => {
   it('should accept an array of 2 dates in format YYYY-MM-DD', () => {
     const { error, value } = validateDateRange.validate([
@@ -150,31 +179,3 @@ describe('validateDateRange', () => {
   });
 });
 
-describe('validateTimeRange', () => {
-  it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
-    const { error, value } = validateTimeRange.validate('00:00-01:00');
-    expect(error).toBeUndefined();
-    expect(value).toBeDefined();
-  });
-
-  it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
-    const { error, value } = validateTimeRange.validate('00:00 - 01:00');
-    expect(error).toBeUndefined();
-    expect(value).toBeDefined();
-  });
-
-  it('should reject a string of desired format if the first 2 digits >= 24', () => {
-    const { error } = validateTimeRange.validate('24:00-25:00');
-    expect(error).toBeDefined();
-  });
-
-  it('should reject an intiger', () => {
-    const { error } = validateTimeRange.validate(5);
-    expect(error).toBeDefined();
-  });
-
-  it('should reject a string not matching the format ', () => {
-    const { error } = validateTimeRange.validate('some string');
-    expect(error).toBeDefined();
-  });
-});
