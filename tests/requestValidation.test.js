@@ -4,7 +4,8 @@ import {
   validateUserId,
   validateColor,
   validateDateRange,
-  validateTimeRange
+  validateTimeRange,
+  validateDayOfWeek
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
@@ -100,6 +101,45 @@ describe('validateColor', () => {
   });
 });
 
+describe('validateDayOfWeek', () => {
+  it('should accept numbers 0-6 (inclusive)', () => {
+    const array = [0, 1, 2, 3, 4, 5, 6];
+
+    for (const item in array) {
+      const { error, value } = validateDayOfWeek.validate(item);
+      expect(error).toBeUndefined();
+      expect(value).toBeDefined();
+      expect(typeof value).toBe('number');
+    }
+  });
+
+  it('should accept numbers 0-6 (inclusive) as strings', () => {
+    const array = ['0', '1', '2', '3', '4', '5', '6'];
+
+    for (const item in array) {
+      const { error, value } = validateDayOfWeek.validate(item);
+      expect(error).toBeUndefined();
+      expect(value).toBeDefined();
+      expect(typeof value).toBe('number');
+    }
+  });
+
+  it('should reject 7 and above', () => {
+    const { error } = validateDayOfWeek.validate(7);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject negative values', () => {
+    const { error } = validateDayOfWeek.validate(-1);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject non integer values', () => {
+    const { error } = validateDayOfWeek.validate(2.5);
+    expect(error).toBeDefined();
+  });
+});
+
 describe('validateTimeRange', () => {
   it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
     const { error, value } = validateTimeRange.validate('00:00-01:00');
@@ -178,4 +218,3 @@ describe('validateDateRange', () => {
     expect(error).toBeDefined();
   });
 });
-
