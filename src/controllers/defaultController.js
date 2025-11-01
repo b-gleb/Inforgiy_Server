@@ -28,8 +28,7 @@ export default function makeDefaultController(database) {
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
-      res.status(401).send('Unable to verify hash');
-      return;
+      return res.status(401).send('Unable to verify hash');
     }
 
     // Logic
@@ -40,8 +39,7 @@ export default function makeDefaultController(database) {
     const userEntry = await database.getUser(initDataUnsafe.user.id);
 
     if (userEntry === null) {
-      res.status(404).send('User not found');
-      return;
+      return res.status(404).send('User not found');
     }
 
     Object.keys(settup).forEach(branch => {

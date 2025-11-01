@@ -108,8 +108,7 @@ export default function makeRotaController(database) {
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
-      res.status(401).send('Unable to verify hash');
-      return;
+      return res.status(401).send('Unable to verify hash');
     }
 
     try {
@@ -123,8 +122,7 @@ export default function makeRotaController(database) {
     let dayEntry = await database.getRota(value.branch, value.date);
 
     if (dayEntry === null) {
-      res.status(404).send('Date not found');
-      return;
+      return res.status(404).send('Date not found');
     }
 
     const isAdmin = await helpers.isRotaAdmin(

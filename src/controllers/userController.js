@@ -23,8 +23,7 @@ export default function makeUserController(database) {
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
-      res.status(401).send('Unable to verify hash');
-      return;
+      return res.status(401).send('Unable to verify hash');
     }
 
     if (
@@ -74,13 +73,11 @@ export default function makeUserController(database) {
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
-      res.status(401).send('Unable to verify hash');
-      return;
+      return res.status(401).send('Unable to verify hash');
     }
 
     if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
-      res.status(403).send('You must be a rota admin');
-      return;
+      return res.status(403).send('You must be a rota admin');
     }
 
     // Logic
@@ -125,13 +122,11 @@ export default function makeUserController(database) {
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) {
-      res.status(401).send('Unable to verify hash');
-      return;
+      return res.status(401).send('Unable to verify hash');
     }
 
     if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
-      res.status(403).send('You must be a rota admin');
-      return;
+      return res.status(403).send('You must be a rota admin');
     }
 
     // Logic
