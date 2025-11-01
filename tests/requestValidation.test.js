@@ -5,7 +5,8 @@ import {
   validateColor,
   validateDateRange,
   validateTimeRange,
-  validateDayOfWeek
+  validateDayOfWeek,
+  validateDayOfWeekArray
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
@@ -136,6 +137,45 @@ describe('validateDayOfWeek', () => {
 
   it('should reject non integer values', () => {
     const { error } = validateDayOfWeek.validate(2.5);
+    expect(error).toBeDefined();
+  });
+});
+
+describe('validateDayOfWeekArray', () => {
+  it('should accept a array of length 1', () => {
+    const { error, value } = validateDayOfWeekArray.validate(new Array(1).fill(0));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should accept an array of length 7', () => {
+    const { error, value } = validateDayOfWeekArray.validate(new Array(7).fill(0));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should reject an array of length 8', () => {
+    const { error } = validateDayOfWeekArray.validate(new Array(8).fill(0));
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an empty array', () => {
+    const { error } = validateDayOfWeekArray.validate([]);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a string', () => {
+    const { error } = validateDayOfWeekArray.validate('string');
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a number', () => {
+    const { error } = validateDayOfWeekArray.validate(1);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an object', () => {
+    const { error } = validateDayOfWeekArray.validate({});
     expect(error).toBeDefined();
   });
 });
