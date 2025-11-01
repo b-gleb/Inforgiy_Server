@@ -98,6 +98,11 @@ describe('validateColor', () => {
     const { error } = validateColor.validate(-2);
     expect(error).toBeDefined();
   });
+
+  it('should reject an alpha-numerical string', () => {
+    const { error } = validateColor.validate('test1');
+    expect(error).toBeDefined();
+  });
 });
 
 describe('validateDateRange', () => {
