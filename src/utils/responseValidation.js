@@ -22,6 +22,7 @@ export const validateTimeRange = Joi.string()
       return value;
     }
   });
+export const validateTimeRangeArray = Joi.array().min(1).max(24).items(validateTimeRange);
 
 export const validateDateRange = Joi.array()
   .length(2)
