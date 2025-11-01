@@ -120,6 +120,7 @@ describe(`POST ${apiUrl}`, () => {
 
         expect(res.statusCode).toBe(403);
         expect(getUser).toHaveBeenCalledTimes(1);
+        expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
       });
 
       it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
