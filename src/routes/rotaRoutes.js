@@ -8,6 +8,7 @@ export default function makeRotaRoutes(database) {
   router.get('/rota', rotaController.rota);
   router.post('/updateRota', rotaController.updateRota);
   router.get('/userDuties', rotaController.userDuties);
+  router.post('/addRotaMulti', rotaController.addRotaMulti);
 
   return router;
 }
