@@ -54,6 +54,37 @@ export async function addUserToRota(branch, _id, timeIndex, timeSlot) {
   return entry;
 }
 
+export async function addUserToRotaMultiAllowOccupied(
+  branch,
+  userId,
+  startDate,
+  endDate,
+  daysOfWeek,
+  hours
+) {
+  const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
+    {
+      $expr: {
+        $and: [
+          { $gte: ['$date', startDate] },
+          { $lte: ['$date', endDate] },
+          {
+            $in: [
+              { $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] },
+              daysOfWeek
+            ]
+          }
+        ]
+      }
+    },
+    {
+      $addToSet: Object.fromEntries(hours.map(hour => [`rota.${hour}`, userId]))
+    }
+  );
+
+  return updateObj;
+}
+
 export async function removeUserFromRota(branch, _id, timeIndex, modifyUserId) {
   const entry = await mongo_db.collection(`rota_${branch}`).findOneAndUpdate(
     { _id: _id },
@@ -337,6 +368,7 @@ export default {
   getRota,
   getUserDuties,
   addUserToRota,
+  addUserToRotaMultiAllowOccupied,
   removeUserFromRota,
   // USERS
   getUser,
