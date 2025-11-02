@@ -145,13 +145,13 @@ export async function addUserPermission(branch, username, nick, color) {
 }
 
 export async function removeUserPermission(branch, userId) {
-  const entry = await mongo_db
+  const updateObj = await mongo_db
     .collection('users')
     .updateOne(
       { telegram_id: userId },
       { $unset: { [`roles.rota_${branch}`]: null } }
     );
-  return entry;
+  return updateObj;
 }
 
 export async function updateUser(branch, userId, nick, color) {
