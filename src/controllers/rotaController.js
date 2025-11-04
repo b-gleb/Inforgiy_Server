@@ -210,19 +210,37 @@ export default function makeRotaController(database) {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
+    // TODO: Can init data validation be moved as a custom?
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) {
-      return res.status(401).send('Unable to verify hash');
-    }
+    if (!validateInitData(initDataUnsafe)) return res.status(401).send('Unable to verify hash');
 
     const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
     if (!isAdmin) return res.status(403).send('You must be a rota admin to multi add users to rota');
 
-    const userInBranch = await helpers.isUserInBranch(value.branch, userId);
-    if (!userInBranch) return res.status(404).send('User to add to rota is not found')
+    const userInBranch = await helpers.isUserInBranch(value.branch, value.userId);
+    if (!userInBranch) return res.status(404).send('User to add to rota is not found');
 
     // Logic
-    // TODO: Add logic
+    const hours = value.timeRanges.map(range => Number(range.slice(0, 2)));
+
+    const updateObj = await database.addUserToRotaMulti({
+      branch: value.branch,
+      userId: value.userId,
+      startDate: value.startDate,
+      endDate: value.endDate,
+      daysOfWeek: value.daysOfWeek,
+      hours: hours,
+      allowOccupiedSlots: value.allowOccupiedSlots
+    });
+
+    res.json(updateObj);
+
+    await helpers.statistic(
+      initDataUnsafe,
+      value.branch.toUpperCase(),
+      'rota-add-multi',
+      value
+    );
   };
 
   return {
