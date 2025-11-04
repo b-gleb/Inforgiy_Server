@@ -361,7 +361,11 @@ paths:
           content:
             application/json:
               schema:
-              # TODO: Add schema
+                type: object
+                properties:
+                  modifiedCount:
+                    type: integer
+                    example: 4
         '400':
           description: "Bad Request - Invalid input data."
           content:
