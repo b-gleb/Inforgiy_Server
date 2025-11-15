@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateDateRangeStats } from './generators.js';
+import { generateUser, generateDateRangeStats } from '../generators.js';
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
