@@ -86,7 +86,7 @@ export async function addUserToRotaMulti({
       }
     );
 
-    return { modifiedCount: updateObj.modifiedCount };
+    return { modifiedCount: updateObj.modifiedCount * hours.length };
 
   } else {
     let modifiedCount = 0;
