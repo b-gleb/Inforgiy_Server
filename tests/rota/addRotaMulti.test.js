@@ -2,9 +2,23 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import { addDays } from 'date-fns';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+// TODO: Import generateUser, generateAdmin
+
+jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
+  validateInitData: jest.fn()
+}));
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 const makeApp = (await import('../../src/app.js')).default;
 
-const app = makeApp({});
+const getUser = jest.fn();
+const addUserToRotaMulti = jest.fn();
+
+const app = makeApp({
+  getUser,
+  addUserToRotaMulti
+});
 
 const apiUrl = '/api/addRotaMulti';
 
@@ -36,6 +50,19 @@ describe(`POST ${apiUrl}`, () => {
       userId,
       initDataUnsafe
     };
+
+    validateInitData.mockReturnValue(true);
+    addUserToRotaMulti.mockResolvedValue({matchedCout: 5, modifiedCount: 5});
+  });
+
+  beforeEach(() => {
+    validateInitData.mockClear();
+    getUser.mockClear();
+    addUserToRotaMulti.mockClear();
+    // TODO: finish mock values for generateuser
+    getUser
+      .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
+      .mockResolvedValueOnce();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -66,15 +93,29 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
-    // should respond with status code 200
+    it('should respond with status code 200', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(200);
+    });
 
-    // should respond with status code 401 if unable to verify hash
+    it('should respond with status code 401 if unable to verify hash', async () => {
+      validateInitData.mockReturnValueOnce(false);
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(401);
+    });
 
-    // should respond with status code 403 if non admin calls the endpoint
+    // it('should respond with status code 403 if non admin calls the endpoint', async () => {
+    //   const res = await request(app).post(apiUrl).send(validBody);
+    // });
 
-    // should respond with status code 404 if unable to find user
+    // it('should respond with status code 404 if unable to find user', async () => {
+    //   const res = await request(app).post(apiUrl).send(validBody);
+    // });
 
-    // should specify json in the content type header
+    it('should specify json in the content type header', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+    });
 
     // should call `getUser` once if non admin calls the endpoint
 
@@ -84,6 +125,17 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
-    
+    it('response should be an object', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(typeof res.body === 'object' && res.body !== null).toBe(true);
+    });
+
+    it('response object should have property "modifiedCount"', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+
+      const expectedProps = ['modifiedCount'].sort();
+      const actualProps = Object.keys(res.body).sort();
+      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+    });
   });
 });
