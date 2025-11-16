@@ -233,7 +233,7 @@ export default function makeRotaController(database) {
       allowOccupiedSlots: value.allowOccupiedSlots
     });
 
-    res.json(updateObj);
+    res.json({ modifiedCount: updateObj.modifiedCount });
 
     await helpers.statistic(
       initDataUnsafe,
