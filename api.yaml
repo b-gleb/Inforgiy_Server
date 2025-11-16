@@ -320,7 +320,7 @@ paths:
                 startDate:
                   type: string
                   format: date
-                  description: "Star date (inclusive) at which to begin the mass adding operation"
+                  description: "Start date (inclusive) at which to begin the mass adding operation"
                   example: "2025-01-01"
                 endDate:
                   type: string
@@ -394,6 +394,95 @@ paths:
                 schema:
                   type: string
                   example: "User not found"
+
+
+  /removeRotaMulti:
+    post:
+      tags:
+        - Rota
+      summary: "Remove user from rota over a range of dates"
+      description:
+        Remove the same user from rota for the same time slot across a range of dates.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - startDate
+                - endDate
+                - timeRanges
+                - daysOfWeek
+                - userId
+                - initDataUnsafe
+              properties:
+                branch:
+                  $ref: '#/components/schemas/Branch'
+                startDate:
+                  type: string
+                  format: date
+                  description: "Start date (inclusive) at which to begin the mass adding operation"
+                  example: "2025-01-01"
+                endDate:
+                  type: string
+                  format: date
+                  description: "End date (inclusive) at which to end the mass adding operation"
+                  example: "2025-01-01"
+                timeRanges:
+                  type: array
+                  description: "An array of timeRange elements indicating which slots the operation is to be performed on"
+                  items:
+                    type: string
+                    description: "Time range string indicating which time range the operation is performed on"
+                    example: "00:00-01:00"
+                daysOfWeek:
+                  type: array
+                  description: "An array of intigers indicating on which days of the week in the time range the operation is to be performed. Monday = 0, Sunday = 6"
+                  items:
+                    type: integer
+                    example: 2
+                userId:
+                  type: integer
+                  format: int64
+                  description: "ID of the user to mass add to rota"
+                  example: 123456789
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "Rota updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modifiedCount:
+                    type: integer
+                    example: 4
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '401':
+          description: "Unauthorized - Unable to verify hash."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unable to verify hash"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+
 
   /users:
     post:
