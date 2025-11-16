@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import { addDays } from 'date-fns';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-// TODO: Import generateUser, generateAdmin
+import { generateUser, generateAdmin } from '../generators.js';
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
@@ -52,17 +52,16 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    addUserToRotaMulti.mockResolvedValue({matchedCout: 5, modifiedCount: 5});
+    addUserToRotaMulti.mockResolvedValue({ matchedCout: 5, modifiedCount: 5 });
   });
 
   beforeEach(() => {
     validateInitData.mockClear();
-    getUser.mockClear();
+    getUser.mockReset();
     addUserToRotaMulti.mockClear();
-    // TODO: finish mock values for generateuser
     getUser
-      .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
-      .mockResolvedValueOnce();
+      .mockResolvedValueOnce(generateAdmin(Object.keys(settup)[0], 1230))
+      .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -104,24 +103,69 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.statusCode).toBe(401);
     });
 
-    // it('should respond with status code 403 if non admin calls the endpoint', async () => {
-    //   const res = await request(app).post(apiUrl).send(validBody);
-    // });
+    it('should respond with status code 403 if non admin calls the endpoint', async () => {
+      getUser.mockReset();
+      getUser
+        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
+        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(403);
+    });
 
-    // it('should respond with status code 404 if unable to find user', async () => {
-    //   const res = await request(app).post(apiUrl).send(validBody);
-    // });
+    it('should respond with status code 403 if unable to find admin user', async () => {
+      getUser.mockReset();
+      getUser.mockResolvedValueOnce(null);
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('should respond with status code 404 if unable to find user', async () => {
+      getUser.mockReset();
+      getUser
+        .mockResolvedValueOnce(generateAdmin(Object.keys(settup)[0], 1230))
+        .mockResolvedValueOnce(null);
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(404);
+    });
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
+      expect(res.headers['content-type']).toEqual(
+        expect.stringContaining('json')
+      );
     });
 
-    // should call `getUser` once if non admin calls the endpoint
+    it('should call `getUser` once if non admin calls the endpoint', async () => {
+      getUser.mockReset();
+      getUser
+        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
+        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
 
-    // should call `getUser` twice (to check calling user and the user to add to rota)
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(getUser).toHaveBeenCalledTimes(1);
+      expect(getUser).toHaveBeenCalledWith(1230);
+    });
 
-    // TODO: Add test which checks that the DB function has been called
+    it('should call `getUser` twice (to check calling user and the user to add to rota)', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(getUser).toHaveBeenCalledTimes(2);
+      expect(getUser).toHaveBeenNthCalledWith(1, 1230);
+      expect(getUser).toHaveBeenLastCalledWith(4560);
+    });
+
+    it('should call `addUserToRotaMulti`', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(addUserToRotaMulti).toHaveBeenCalledTimes(1);
+      expect(addUserToRotaMulti).toHaveBeenCalledWith({
+        branch,
+        userId,
+        startDate,
+        endDate,
+        daysOfWeek,
+        hours: [0, 23],
+        allowOccupiedSlots: true
+      });
+    });
   });
 
   describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
@@ -132,7 +176,6 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have property "modifiedCount"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-
       const expectedProps = ['modifiedCount'].sort();
       const actualProps = Object.keys(res.body).sort();
       expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
