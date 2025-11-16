@@ -92,7 +92,6 @@ export async function addUserToRotaMulti({
     let modifiedCount = 0;
 
     for (const hour of hours) {
-      console.dir({ ...baseQuery, [`rota.${hour}`]: [] }, {depth: null})
       const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
         { ...baseQuery, [`rota.${hour}`]: [] },
         { $addToSet: { [`rota.${hour}`]: userId } }
