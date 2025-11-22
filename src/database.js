@@ -115,6 +115,37 @@ export async function removeUserFromRota(branch, _id, timeIndex, modifyUserId) {
   return entry;
 }
 
+export async function removeUserFromRotaMulti({
+  branch,
+  userId,
+  startDate,
+  endDate,
+  daysOfWeek,
+  hours
+}) {
+  const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
+    {
+      $expr: {
+        $and: [
+          { $gte: ['$date', startDate] },
+          { $lte: ['$date', endDate] },
+          {
+            $in: [
+              { $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] },
+              daysOfWeek
+            ]
+          }
+        ]
+      }
+    },
+    {
+      $pull: Object.fromEntries(hours.map(hour => [`rota.${hour}`, userId]))
+    }
+  );
+
+  return { modifiedCount: updateObj.modifiedCount * hours.length };
+}
+
 ///////////
 // USERS //
 ///////////
@@ -389,6 +420,7 @@ export default {
   addUserToRota,
   addUserToRotaMulti,
   removeUserFromRota,
+  removeUserFromRotaMulti,
   // USERS
   getUser,
   getUserRegion,

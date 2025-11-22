@@ -240,10 +240,62 @@ export default function makeRotaController(database) {
     );
   };
 
+  /**
+    Removes user from the same timeslot(s) across date range
+  */
+  const removeRotaMulti = async (req, res) => {
+    // Validation
+    const validationSchema = Joi.object({
+      branch: validateBranch.required(),
+      startDate: Joi.date().required(),
+      endDate: Joi.date().required(),
+      timeRanges: validateTimeRangeArray.custom(ensureUniqueArray).required(),
+      daysOfWeek: validateDayOfWeekArray.custom(ensureUniqueArray).required(),
+      userId: validateUserId.required(),
+      initDataUnsafe: Joi.any().required()
+    }).custom((value, helpers) => {
+      if (value.startDate >= value.endDate) {
+        return helpers.message('startDate must be less than endDate');
+      }
+      return value;
+    });
+
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
+    if (!validateInitData(initDataUnsafe)) return res.status(401).send('Unable to verify hash');
+
+    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
+    if (!isAdmin) return res.status(403).send('You must be a rota admin to multi add users to rota');
+
+    // Logic
+    const hours = value.timeRanges.map(range => Number(range.slice(0, 2)));
+
+    const updateObj = await database.removeUserFromRotaMulti({
+      branch: value.branch,
+      userId: value.userId,
+      startDate: value.startDate,
+      endDate: value.endDate,
+      daysOfWeek: value.daysOfWeek,
+      hours: hours
+    });
+
+    res.json({ modifiedCount: updateObj.modifiedCount });
+
+    await helpers.statistic(
+      initDataUnsafe,
+      value.branch.toUpperCase(),
+      'rota-remove-multi',
+      value
+    );
+  };
+
   return {
     rota,
     userDuties,
     updateRota,
-    addRotaMulti
+    addRotaMulti,
+    removeRotaMulti
   };
 }
