@@ -53,15 +53,13 @@ describe(`POST ${apiUrl}`, () => {
 
     validateInitData.mockReturnValue(true);
     removeUserFromRotaMulti.mockResolvedValue({ matchedCout: 5, modifiedCount: 5 });
+    getUser.mockResolvedValue(generateAdmin(Object.keys(settup)[0], 1230));
   });
 
   beforeEach(() => {
     validateInitData.mockClear();
-    getUser.mockReset();
+    getUser.mockClear();
     removeUserFromRotaMulti.mockClear();
-    getUser
-      .mockResolvedValueOnce(generateAdmin(Object.keys(settup)[0], 1230))
-      .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -104,16 +102,12 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should respond with status code 403 if non admin calls the endpoint', async () => {
-      getUser.mockReset();
-      getUser
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
+      getUser.mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230));
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });
 
     it('should respond with status code 403 if unable to find admin user', async () => {
-      getUser.mockReset();
       getUser.mockResolvedValueOnce(null);
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
@@ -126,24 +120,11 @@ describe(`POST ${apiUrl}`, () => {
       );
     });
 
-    // TODO: Finish tests
-    // it('should call `getUser` once if non admin calls the endpoint', async () => {
-    //   getUser.mockReset();
-    //   getUser
-    //     .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
-    //     .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
-
-    //   const res = await request(app).post(apiUrl).send(validBody);
-    //   expect(getUser).toHaveBeenCalledTimes(1);
-    //   expect(getUser).toHaveBeenCalledWith(1230);
-    // });
-
-    // it('should call `getUser` twice (to check calling user and the user to add to rota)', async () => {
-    //   const res = await request(app).post(apiUrl).send(validBody);
-    //   expect(getUser).toHaveBeenCalledTimes(2);
-    //   expect(getUser).toHaveBeenNthCalledWith(1, 1230);
-    //   expect(getUser).toHaveBeenLastCalledWith(4560);
-    // });
+    it('should call `getUser` once', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(getUser).toHaveBeenCalledTimes(1);
+      expect(getUser).toHaveBeenCalledWith(1230);
+    });
 
     it('should call `removeUserFromRotaMulti`', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -154,7 +135,7 @@ describe(`POST ${apiUrl}`, () => {
         startDate,
         endDate,
         daysOfWeek,
-        hours: [0, 23],
+        hours: [0, 23]
       });
     });
   });
@@ -169,7 +150,9 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       const expectedProps = ['modifiedCount'].sort();
       const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(
+        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      ).toBe(true);
     });
   });
 });
