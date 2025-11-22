@@ -54,6 +54,56 @@ export async function addUserToRota(branch, _id, timeIndex, timeSlot) {
   return entry;
 }
 
+export async function addUserToRotaMulti({
+  branch,
+  userId,
+  startDate,
+  endDate,
+  daysOfWeek,
+  hours,
+  allowOccupiedSlots
+}) {
+  const baseQuery = {
+    $expr: {
+      $and: [
+        { $gte: ['$date', startDate] },
+        { $lte: ['$date', endDate] },
+        {
+          $in: [
+            { $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] },
+            daysOfWeek
+          ]
+        }
+      ]
+    }
+  };
+
+  if (allowOccupiedSlots === true) {
+    const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
+      baseQuery,
+      {
+        $addToSet: Object.fromEntries(hours.map(hour => [`rota.${hour}`, userId]))
+      }
+    );
+
+    return { modifiedCount: updateObj.modifiedCount * hours.length };
+
+  } else {
+    let modifiedCount = 0;
+
+    for (const hour of hours) {
+      const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
+        { ...baseQuery, [`rota.${hour}`]: [] },
+        { $addToSet: { [`rota.${hour}`]: userId } }
+      );
+
+      modifiedCount += updateObj.modifiedCount;
+    }
+
+    return { modifiedCount };
+  }
+}
+
 export async function removeUserFromRota(branch, _id, timeIndex, modifyUserId) {
   const entry = await mongo_db.collection(`rota_${branch}`).findOneAndUpdate(
     { _id: _id },
@@ -337,6 +387,7 @@ export default {
   getRota,
   getUserDuties,
   addUserToRota,
+  addUserToRotaMulti,
   removeUserFromRota,
   // USERS
   getUser,

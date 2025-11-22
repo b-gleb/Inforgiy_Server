@@ -4,7 +4,10 @@ import {
   validateUserId,
   validateColor,
   validateDateRange,
-  validateTimeRange
+  validateTimeRange,
+  validateTimeRangeArray,
+  validateDayOfWeek,
+  validateDayOfWeekArray
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
@@ -105,6 +108,152 @@ describe('validateColor', () => {
   });
 });
 
+describe('validateDayOfWeek', () => {
+  it('should accept numbers 0-6 (inclusive)', () => {
+    const array = [0, 1, 2, 3, 4, 5, 6];
+
+    for (const item in array) {
+      const { error, value } = validateDayOfWeek.validate(item);
+      expect(error).toBeUndefined();
+      expect(value).toBeDefined();
+      expect(typeof value).toBe('number');
+    }
+  });
+
+  it('should accept numbers 0-6 (inclusive) as strings', () => {
+    const array = ['0', '1', '2', '3', '4', '5', '6'];
+
+    for (const item in array) {
+      const { error, value } = validateDayOfWeek.validate(item);
+      expect(error).toBeUndefined();
+      expect(value).toBeDefined();
+      expect(typeof value).toBe('number');
+    }
+  });
+
+  it('should reject 7 and above', () => {
+    const { error } = validateDayOfWeek.validate(7);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject negative values', () => {
+    const { error } = validateDayOfWeek.validate(-1);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject non integer values', () => {
+    const { error } = validateDayOfWeek.validate(2.5);
+    expect(error).toBeDefined();
+  });
+});
+
+describe('validateDayOfWeekArray', () => {
+  it('should accept a array of length 1', () => {
+    const { error, value } = validateDayOfWeekArray.validate(new Array(1).fill(0));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should accept an array of length 7', () => {
+    const { error, value } = validateDayOfWeekArray.validate(new Array(7).fill(0));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should reject an array of length 8', () => {
+    const { error } = validateDayOfWeekArray.validate(new Array(8).fill(0));
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an empty array', () => {
+    const { error } = validateDayOfWeekArray.validate([]);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a string', () => {
+    const { error } = validateDayOfWeekArray.validate('string');
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a number', () => {
+    const { error } = validateDayOfWeekArray.validate(1);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an object', () => {
+    const { error } = validateDayOfWeekArray.validate({});
+    expect(error).toBeDefined();
+  });
+});
+
+describe('validateTimeRange', () => {
+  it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
+    const { error, value } = validateTimeRange.validate('00:00-01:00');
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
+    const { error, value } = validateTimeRange.validate('00:00 - 01:00');
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should reject a string of desired format if the first 2 digits >= 24', () => {
+    const { error } = validateTimeRange.validate('24:00-25:00');
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an intiger', () => {
+    const { error } = validateTimeRange.validate(5);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a string not matching the format ', () => {
+    const { error } = validateTimeRange.validate('some string');
+    expect(error).toBeDefined();
+  });
+});
+
+describe('validateTimeRangeArray', () => {
+  it('should accept a array of length 1', () => {
+    const { error, value } = validateTimeRangeArray.validate(new Array(1).fill('00:00-01:00'));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should accept an array of length 24', () => {
+    const { error, value } = validateTimeRangeArray.validate(new Array(24).fill('00:00-01:00'));
+    expect(error).toBeUndefined();
+    expect(value).toBeDefined();
+  });
+
+  it('should reject an array of length 25', () => {
+    const { error } = validateTimeRangeArray.validate(new Array(25).fill('00:00-01:00'));
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an empty array', () => {
+    const { error } = validateTimeRangeArray.validate([]);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a string', () => {
+    const { error } = validateTimeRangeArray.validate('string');
+    expect(error).toBeDefined();
+  });
+
+  it('should reject a number', () => {
+    const { error } = validateTimeRangeArray.validate(1);
+    expect(error).toBeDefined();
+  });
+
+  it('should reject an object', () => {
+    const { error } = validateTimeRangeArray.validate({});
+    expect(error).toBeDefined();
+  });
+});
+
 describe('validateDateRange', () => {
   it('should accept an array of 2 dates in format YYYY-MM-DD', () => {
     const { error, value } = validateDateRange.validate([
@@ -151,35 +300,6 @@ describe('validateDateRange', () => {
 
   it('should reject an array of 2 strings', () => {
     const { error } = validateDateRange.validate(['some text', 'other text']);
-    expect(error).toBeDefined();
-  });
-});
-
-describe('validateTimeRange', () => {
-  it('should accept a string of format hh:mm-hh:mm (regular rota)', () => {
-    const { error, value } = validateTimeRange.validate('00:00-01:00');
-    expect(error).toBeUndefined();
-    expect(value).toBeDefined();
-  });
-
-  it('should accept a string of format hh:mm<space>-<space>hh:mm (weekly view)', () => {
-    const { error, value } = validateTimeRange.validate('00:00 - 01:00');
-    expect(error).toBeUndefined();
-    expect(value).toBeDefined();
-  });
-
-  it('should reject a string of desired format if the first 2 digits >= 24', () => {
-    const { error } = validateTimeRange.validate('24:00-25:00');
-    expect(error).toBeDefined();
-  });
-
-  it('should reject an intiger', () => {
-    const { error } = validateTimeRange.validate(5);
-    expect(error).toBeDefined();
-  });
-
-  it('should reject a string not matching the format ', () => {
-    const { error } = validateTimeRange.validate('some string');
     expect(error).toBeDefined();
   });
 });

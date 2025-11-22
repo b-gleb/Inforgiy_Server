@@ -292,6 +292,109 @@ paths:
                   type: string
                   example: "Date not found"
 
+  /addRotaMulti:
+    post:
+      tags:
+        - Rota
+      summary: "Add user to rota over a range of dates"
+      description:
+        Add the same user to the rota for the same time slot across a range of dates.
+        You can choose whether to add the user only into empty slots or to override
+        existing assignments regardless of slot occupancy.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+                - startDate
+                - endDate
+                - timeRanges
+                - daysOfWeek
+                - userId
+                - initDataUnsafe
+              properties:
+                branch:
+                  $ref: '#/components/schemas/Branch'
+                startDate:
+                  type: string
+                  format: date
+                  description: "Star date (inclusive) at which to begin the mass adding operation"
+                  example: "2025-01-01"
+                endDate:
+                  type: string
+                  format: date
+                  description: "End date (inclusive) at which to end the mass adding operation"
+                  example: "2025-01-01"
+                timeRanges:
+                  type: array
+                  description: "An array of timeRange elements indicating which slots the operation is to be performed on"
+                  items:
+                    type: string
+                    description: "Time range string indicating which time range the operation is performed on"
+                    example: "00:00-01:00"
+                daysOfWeek:
+                  type: array
+                  description: "An array of intigers indicating on which days of the week in the time range the operation is to be performed. Monday = 0, Sunday = 6"
+                  items:
+                    type: integer
+                    example: 2
+                userId:
+                  type: integer
+                  format: int64
+                  description: "ID of the user to mass add to rota"
+                  example: 123456789
+                allowOccupiedSlots:
+                  type: boolean
+                  description:
+                    If true, allows users to be assigned to rota slots even if they are already taken.
+                    If false, the operation only fills unassigned slots.
+                  default: true
+                  example: true
+                initDataUnsafe:
+                  $ref: '#/components/schemas/WebAppInitData'
+        required: true
+      responses:
+        '200':
+          description: "Rota updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modifiedCount:
+                    type: integer
+                    example: 4
+        '400':
+          description: "Bad Request - Invalid input data."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Validation error message"
+        '401':
+          description: "Unauthorized - Unable to verify hash."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unable to verify hash"
+        '403':
+          description: "Forbidden - User is not authorized to perform this action."
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "You must be a rota admin"
+        '404':
+            description: "Not Found - User does not exist."
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: "User not found"
+
   /users:
     post:
       tags:

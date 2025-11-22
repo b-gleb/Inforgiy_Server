@@ -36,6 +36,20 @@ export default function makeHelpers(database) {
     }
   };
 
+  const isUserInBranch = async (branch, userId) => {
+    const userEntry = await database.getUser(userId);
+
+    if (userEntry === null) {
+      return false;
+    }
+
+    if (Object.hasOwn(userEntry.roles, `rota_${branch}`)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const statistic = async (
     initDataUnsafe,
     action,
@@ -97,6 +111,7 @@ export default function makeHelpers(database) {
   return {
     formatInitData,
     isRotaAdmin,
+    isUserInBranch,
     statistic,
     fillMissingDates
   };
