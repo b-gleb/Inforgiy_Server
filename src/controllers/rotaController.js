@@ -281,7 +281,7 @@ export default function makeRotaController(database) {
       startDate: value.startDate,
       endDate: value.endDate,
       daysOfWeek: value.daysOfWeek,
-      hours: hours,
+      hours: hours
     });
 
     res.json({ modifiedCount: updateObj.modifiedCount });
