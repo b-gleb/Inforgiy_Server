@@ -8,6 +8,7 @@ import {
   validateTimeRange,
   validateDayOfWeekArray,
   validateTimeRangeArray,
+  validateStartDateBeforeEndDate,
   ensureUniqueArray
 } from '../utils/responseValidation.js';
 
@@ -53,14 +54,7 @@ export default function makeRotaController(database) {
       userId: validateUserId.required(),
       startDate: Joi.date().required(),
       endDate: Joi.date().required()
-    }).custom((value, helpers) => {
-      if (value.startDate > value.endDate) {
-        return helpers.message(
-          'startDate must be less than or equal to endDate'
-        );
-      }
-      return value;
-    });
+    }).custom(validateStartDateBeforeEndDate);
 
     const { error, value } = validationSchema.validate(req.query);
     if (error) return res.status(400).send(error.details[0].message);
@@ -197,12 +191,7 @@ export default function makeRotaController(database) {
       userId: validateUserId.required(),
       allowOccupiedSlots: Joi.bool().default(true),
       initDataUnsafe: Joi.any().required()
-    }).custom((value, helpers) => {
-      if (value.startDate >= value.endDate) {
-        return helpers.message('startDate must be less than endDate');
-      }
-      return value;
-    });
+    }).custom(validateStartDateBeforeEndDate);
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
@@ -253,12 +242,7 @@ export default function makeRotaController(database) {
       daysOfWeek: validateDayOfWeekArray.custom(ensureUniqueArray).required(),
       userId: validateUserId.required(),
       initDataUnsafe: Joi.any().required()
-    }).custom((value, helpers) => {
-      if (value.startDate >= value.endDate) {
-        return helpers.message('startDate must be less than endDate');
-      }
-      return value;
-    });
+    }).custom(validateStartDateBeforeEndDate);
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
