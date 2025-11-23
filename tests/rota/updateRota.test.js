@@ -40,7 +40,7 @@ describe(`POST ${apiUrl}`, () => {
     validBody = {
       branch,
       date,
-      modifyUserId: 1813610409,
+      userId: 1813610409,
       timeRange: '05:00-06:00',
       initDataUnsafe
     };
@@ -66,15 +66,15 @@ describe(`POST ${apiUrl}`, () => {
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 when any parameter is missing', async () => {
       const timeRange = '00:00-01:00';
-      const modifyUserId = 4560;
+      const userId = 4560;
 
       const bodyData = [
-        { branch, date, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', date, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', branch, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', branch, date, modifyUserId, initDataUnsafe },
+        { branch, date, timeRange, userId, initDataUnsafe },
+        { type: 'add', date, timeRange, userId, initDataUnsafe },
+        { type: 'add', branch, timeRange, userId, initDataUnsafe },
+        { type: 'add', branch, date, userId, initDataUnsafe },
         { type: 'add', branch, date, timeRange, initDataUnsafe },
-        { type: 'add', branch, date, timeRange, modifyUserId },
+        { type: 'add', branch, date, timeRange, userId },
         {}
       ];
 
@@ -116,7 +116,7 @@ describe(`POST ${apiUrl}`, () => {
     describe('Adding a user to rota', () => {
       it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
         getUser.mockResolvedValueOnce(null);
-        const res = await request(app).post(apiUrl).send({ ...validBody, type: 'add', modifyUserId: 1230 });
+        const res = await request(app).post(apiUrl).send({ ...validBody, type: 'add', userId: 1230 });
 
         expect(res.statusCode).toBe(403);
         expect(getUser).toHaveBeenCalledTimes(1);

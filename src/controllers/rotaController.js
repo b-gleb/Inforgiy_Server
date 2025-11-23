@@ -102,7 +102,7 @@ export default function makeRotaController(database) {
       branch: validateBranch.required(),
       date: Joi.date().required(),
       timeRange: validateTimeRange.required(),
-      modifyUserId: validateUserId.required(),
+      userId: validateUserId.required(),
       initDataUnsafe: Joi.any().required()
     });
 
@@ -143,11 +143,11 @@ export default function makeRotaController(database) {
         value.branch,
         dayEntry._id,
         timeIndex,
-        value.modifyUserId
+        value.userId
       );
     } else if (value.type === 'add') {
       // Only admins can add someone else to rota
-      if (value.modifyUserId != initDataUnsafe.user.id && !isAdmin) {
+      if (value.userId != initDataUnsafe.user.id && !isAdmin) {
         return res
           .status(403)
           .send('You must be rota admin to add someone else');
@@ -155,8 +155,8 @@ export default function makeRotaController(database) {
 
       const timeSlot = dayEntry.rota[timeIndex];
 
-      if (!timeSlot.includes(value.modifyUserId)) {
-        timeSlot.push(value.modifyUserId);
+      if (!timeSlot.includes(value.userId)) {
+        timeSlot.push(value.userId);
       }
 
       updatedDayEntry = await database.addUserToRota(
@@ -178,7 +178,7 @@ export default function makeRotaController(database) {
       initDataUnsafe,
       value.branch.toUpperCase(),
       `rota-${value.type}`,
-      { date: value.date, time: value.timeRange, modify: value.modifyUserId }
+      { date: value.date, time: value.timeRange, modify: value.userId }
     );
     return;
   };

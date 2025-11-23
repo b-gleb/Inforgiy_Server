@@ -228,7 +228,7 @@ paths:
                   - branch
                   - date
                   - timeRange
-                  - modifyUserId
+                  - userId
                   - initDataUnsafe
                 properties:
                   type:
@@ -248,7 +248,7 @@ paths:
                     type: string
                     description: "Time range string indicating which time range the operation is performed on"
                     example: "00:00-01:00"
-                  modifyUserId:
+                  userId:
                     type: integer
                     format: int64
                     description: "ID of the user to add or remove from rota"
@@ -609,13 +609,13 @@ paths:
               type: object
               required:
                 - branch
-                - modifyUserId
+                - userId
                 - initDataUnsafe
               properties:
                 branch:
                   description: "Branch for which to perform the operation"
                   $ref: '#/components/schemas/Branch'
-                modifyUserId:
+                userId:
                   type: integer
                   format: int64
                   description: The ID of the user to be modified
