@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import settup from '../src/config/settup.json' with { type: 'json' };
 import {
   validateBranch,
@@ -7,7 +8,8 @@ import {
   validateTimeRange,
   validateTimeRangeArray,
   validateDayOfWeek,
-  validateDayOfWeekArray
+  validateDayOfWeekArray,
+  validateStartDateBeforeEndDate
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
@@ -301,5 +303,48 @@ describe('validateDateRange', () => {
   it('should reject an array of 2 strings', () => {
     const { error } = validateDateRange.validate(['some text', 'other text']);
     expect(error).toBeDefined();
+  });
+});
+
+describe('validateStartDateBeforeEndDate', () => {
+  let helpers;
+  let errorMessage;
+
+  beforeAll(() => {
+    helpers = {
+      message: jest.fn(msg => ({ error: msg }))
+    };
+    
+    errorMessage = 'startDate must be less than endDate';
+  });
+
+  it('should accept startDate before endDate', () => {
+    const value = {
+      startDate: new Date(2025, 0, 1),
+      endDate: new Date(2025, 1, 1)
+    };
+
+    const result = validateStartDateBeforeEndDate(value, helpers);
+    expect(result).toBe(value);
+  });
+
+  it('shoud reject endDate before startDate', () => {
+    const value = {
+      startDate: new Date(2025, 1, 1),
+      endDate: new Date(2025, 0, 1)
+    };
+
+    const result = validateStartDateBeforeEndDate(value, helpers);
+    expect(helpers.message).toHaveBeenCalledWith(errorMessage);
+  });
+
+  it('should reject startDate equals endDate', () => {
+    const value = {
+      startDate: new Date(2025, 1, 1),
+      endDate: new Date(2025, 1, 1)
+    };
+
+    const result = validateStartDateBeforeEndDate(value, helpers);
+    expect(helpers.message).toHaveBeenCalledWith(errorMessage);
   });
 });
