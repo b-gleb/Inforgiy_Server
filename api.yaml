@@ -285,12 +285,12 @@ paths:
                   type: string
                   example: "You must be a rota admin"
           '404':
-            description: "Not Found - Date does not exist."
+            description: "Not Found - Date or user to add is not found."
             content:
               text/plain:
                 schema:
                   type: string
-                  example: "Date not found"
+                  example: "Date/User not found"
 
   /addRotaMulti:
     post:
