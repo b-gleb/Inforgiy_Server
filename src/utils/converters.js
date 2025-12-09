@@ -4,21 +4,21 @@ export default function makeCoverters(database) {
   /**
     Converts userId into username. Checks cache values first
   */
-  const convertUserId = async (branch, user_id) => {
+  const convertUserId = async (branch, userId) => {
     // Check cache
-    if (usersCache[branch][user_id]) {
-      return usersCache[branch][user_id];
+    if (usersCache[branch][userId]) {
+      return usersCache[branch][userId];
     }
 
     // Get user from DB
-    const userEntry = await database.getUser(user_id);
+    const userEntry = await database.getUser(userId);
 
     if (userEntry === null) {
       return null;
     }
 
     // Save information to cache
-    usersCache[branch][user_id] = {
+    usersCache[branch][userId] = {
       username: userEntry.telegram,
       nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
       color: userEntry?.roles[`rota_${branch}`]?.c ?? null
@@ -26,11 +26,11 @@ export default function makeCoverters(database) {
 
     // Self-destructing cache
     setTimeout(() => {
-      delete usersCache[branch][user_id];
+      delete usersCache[branch][userId];
     }, usersCacheTTL).unref();
 
-    const userObj = usersCache[branch][user_id];
-    userObj.id = user_id;
+    const userObj = usersCache[branch][userId];
+    userObj.id = userId;
 
     return userObj;
   };
@@ -48,7 +48,7 @@ export default function makeCoverters(database) {
       const label = `${startHour}:00-${endHour}:00`;
 
       if (data && data[index]) {
-        // Process user_ids asynchronously and convert them to usernames
+        // Process userIds asynchronously and convert them to usernames
         const userArray = [];
         await Promise.all(
           data[index].map(async userId => {
