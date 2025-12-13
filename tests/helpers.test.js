@@ -5,7 +5,7 @@ import makeHelpers from '../src/utils/helpers.js';
 
 const getUser = jest.fn();
 
-const { isRotaAdmin } = makeHelpers({
+const { isRotaAdmin, isUserInBranch } = makeHelpers({
   getUser
 });
 
@@ -55,3 +55,58 @@ describe('isRotaAdmin', () => {
     expect(getUser).toHaveBeenCalledWith(userId);
   });
 });
+
+describe('isUserInBranch', () => {
+  let userId;
+  let branch;
+  let wrongBranch;
+
+  beforeAll(() => {
+    userId = 1230;
+    branch = Object.keys(settup)[0];
+    wrongBranch = Object.keys(settup)[1];
+  });
+
+  beforeEach(() => {
+    getUser.mockClear();
+  });
+
+  it('should return true if user is in branch', async () => {
+    getUser.mockResolvedValueOnce(generateUser(branch, userId));
+    const res = await isUserInBranch(branch, userId);
+    expect(res).toBe(true);
+  });
+
+  it('should return true for admins', async () => {
+    getUser.mockResolvedValueOnce(generateAdmin(branch, userId));
+    const res = await isUserInBranch(branch, userId);
+    expect(res).toBe(true);
+  });
+
+  it('should return false if user is not found', async () => {
+    getUser.mockResolvedValueOnce(null);
+    const res = await isUserInBranch(branch, userId);
+    expect(res).toBe(false);
+  });
+
+  it('should return false for user of a different branch', async () => {
+    getUser.mockResolvedValueOnce(generateUser(wrongBranch, userId));
+    const res = await isUserInBranch(branch, userId);
+    expect(res).toBe(false);
+  });
+
+  it('should return false for admin of a different branch', async () => {
+    getUser.mockResolvedValueOnce(generateAdmin(wrongBranch, userId));
+    const res = await isUserInBranch(branch, userId);
+    expect(res).toBe(false);
+  });
+
+  it('should call `getUser` once', async () => {
+    getUser.mockResolvedValueOnce(generateUser(branch, userId));
+    const res = await isUserInBranch(branch, userId);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(getUser).toHaveBeenCalledWith(userId);
+  });
+});
+
+
