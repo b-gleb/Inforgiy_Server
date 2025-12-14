@@ -30,7 +30,7 @@ describe(`POST ${apiUrl}`, () => {
     branch = Object.keys(settup)[0];
     validBody = {
       branch,
-      modifyUserId: 4560,
+      userId: 4560,
       initDataUnsafe: { user: { id: 1230 } }
     };
 
@@ -48,9 +48,9 @@ describe(`POST ${apiUrl}`, () => {
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
-        { modifyUserId: 4560, initDataUnsafe: { user: { id: 1230 } } },
+        { userId: 4560, initDataUnsafe: { user: { id: 1230 } } },
         { branch, initDataUnsafe: { user: { id: 1230 } } },
-        { branch, modifyUserId: 4560 },
+        { branch, userId: 4560 },
         {}
       ];
 

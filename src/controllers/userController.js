@@ -64,7 +64,7 @@ export default function makeUserController(database) {
     // Validation
     const validationSchema = Joi.object({
       branch: validateBranch.required(),
-      modifyUserId: validateUserId.required(),
+      userId: validateUserId.required(),
       initDataUnsafe: Joi.any().required()
     });
 
@@ -83,11 +83,11 @@ export default function makeUserController(database) {
     // Logic
     const removedUser = await database.removeUserPermission(
       value.branch,
-      value.modifyUserId
+      value.userId
     );
 
     // Update cache
-    delete usersCache[value.branch][value.modifyUserId];
+    delete usersCache[value.branch][value.userId];
 
     if (removedUser.matchedCount === 1) {
       res.sendStatus(204);
@@ -95,7 +95,7 @@ export default function makeUserController(database) {
         initDataUnsafe,
         value.branch.toUpperCase(),
         'rota-remove-user',
-        { modify: value.modifyUserId }
+        { modify: value.userId }
       );
     } else {
       res.status(404).send('User not found');
