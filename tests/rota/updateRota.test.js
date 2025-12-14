@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import { format } from 'date-fns';
 import { rotaDBEntry } from './mocks.js';
+import { generateUser, generateAdmin } from '../generators.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
@@ -29,12 +30,14 @@ const apiUrl = '/api/updateRota';
 
 describe(`POST ${apiUrl}`, () => {
   let branch;
+  let wrongBranch;
   let date;
   let initDataUnsafe;
   let validBody;
 
   beforeAll(() => {
     branch = Object.keys(settup)[0];
+    wrongBranch = Object.keys(settup)[1];
     date = format(new Date(), 'yyyy-MM-dd');
     initDataUnsafe = { user: { id: 1813610409 } };
     validBody = {
@@ -46,10 +49,7 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue({
-      telegram: '@username',
-      roles: { [`admin_rota_${branch}`]: null }
-    });
+    getUser.mockResolvedValue(generateAdmin(branch, validBody.initDataUnsafe.user.id));
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -119,8 +119,22 @@ describe(`POST ${apiUrl}`, () => {
         const res = await request(app).post(apiUrl).send({ ...validBody, type: 'add', userId: 1230 });
 
         expect(res.statusCode).toBe(403);
-        expect(getUser).toHaveBeenCalledTimes(1);
+        expect(getUser).toHaveBeenCalledTimes(2);
         expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(addUserToRota).toHaveBeenCalledTimes(0);
+      });
+
+      it('should respond with status code 404 if adding a user not assigned to current rota', async () => {
+        getUser
+          .mockResolvedValueOnce(generateAdmin(validBody.branch, initDataUnsafe.user.id))
+          .mockResolvedValueOnce(generateUser(wrongBranch, validBody.userId));
+  
+        const res = await request(app).post(apiUrl).send({ type: 'add', ...validBody})
+
+        expect(res.statusCode).toBe(404);
+        expect(getUser).toHaveBeenCalledTimes(2);
+        expect(getUser).toHaveBeenLastCalledWith(validBody.userId);
+        expect(addUserToRota).toHaveBeenCalledTimes(0);
       });
 
       it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
@@ -139,6 +153,17 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     describe('Removing a user from rota', () => {
+      it('should respond with status code 200 if removing a user not assigned to current rota', async () => {
+        getUser.mockResolvedValueOnce(generateAdmin(branch, validBody.initDataUnsafe.user.id))
+
+        const res = await request(app).post(apiUrl).send({ type: 'remove', ...validBody });
+
+        expect(res.statusCode).toBe(200);
+        expect(getUser).toHaveBeenCalledTimes(1);
+        expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(removeUserFromRota).toHaveBeenCalledTimes(1);
+      });
+
       it('should respond with status code 403 if non admin user tries to remove any user from rota', async () => {
         getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
         const res = await request(app).post(apiUrl).send({ type: 'remove', ...validBody });
