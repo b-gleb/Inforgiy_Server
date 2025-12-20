@@ -50,8 +50,7 @@ describe(`GET ${apiUrl}`, () => {
 
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
       const res = await request(app).get(apiUrl).query({
-        branch,
-        userId: 1230,
+        ...validBody,
         startDate: '2025-01-08',
         endDate: '2025-01-01'
       });
