@@ -207,7 +207,6 @@ export default function makeRotaController(database) {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    // TODO: Can init data validation be moved as a custom?
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
     if (!validateInitData(initDataUnsafe)) return res.status(401).send('Unable to verify hash');
 
