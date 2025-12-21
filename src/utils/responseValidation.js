@@ -36,6 +36,12 @@ export const validateDateRange = Joi.array()
     return value;
   });
 
+export const validateStartDateBeforeEndDate = (value, helpers) => {
+  if (value.startDate >= value.endDate) {
+    return helpers.message('startDate must be less than endDate');
+  }
+  return value;
+};
 
 export const ensureUniqueArray = (value, helpers) => {
   if (!Array.isArray(value)) return value;
