@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import { format } from 'date-fns';
 import { rotaDBEntry } from './mocks.js';
+import { generateAdmin } from '../generators.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
@@ -46,10 +47,9 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue({
-      telegram: '@username',
-      roles: { [`admin_rota_${branch}`]: null }
-    });
+    getUser.mockResolvedValue(
+      generateAdmin(branch, validBody.initDataUnsafe.user.id)
+    );
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);
