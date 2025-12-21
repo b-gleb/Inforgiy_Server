@@ -73,19 +73,14 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for user duties', async () => {
-      const res = await request(app).get(apiUrl).query({
-        branch: 'di',
-        userId: 12345,
-        startDate: '2026-01-01',
-        endDate: '2026-01-08'
-      });
+      const res = await request(app).get(apiUrl).query(validBody);
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(
-        'di',
-        12345,
-        new Date('2026-01-01'),
-        new Date('2026-01-08')
+        validBody.branch,
+        validBody.userId,
+        new Date(validBody.startDate),
+        new Date(validBody.endDate)
       );
     });
   });
