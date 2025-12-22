@@ -104,10 +104,10 @@ export async function addUserToRotaMulti({
   }
 }
 
-export async function removeUserFromRota(branch, _id, timeIndex, modifyUserId) {
+export async function removeUserFromRota(branch, _id, timeIndex, userId) {
   const entry = await mongo_db.collection(`rota_${branch}`).findOneAndUpdate(
     { _id: _id },
-    { $pull: { [`rota.${timeIndex}`]: modifyUserId } },
+    { $pull: { [`rota.${timeIndex}`]: userId } },
     {
       returnDocument: 'after'
     }

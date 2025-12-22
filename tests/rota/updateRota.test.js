@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import { format } from 'date-fns';
 import { rotaDBEntry } from './mocks.js';
-import { generateAdmin } from '../generators.js';
+import { generateUser, generateAdmin } from '../generators.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
@@ -30,18 +30,20 @@ const apiUrl = '/api/updateRota';
 
 describe(`POST ${apiUrl}`, () => {
   let branch;
+  let wrongBranch;
   let date;
   let initDataUnsafe;
   let validBody;
 
   beforeAll(() => {
     branch = Object.keys(settup)[0];
+    wrongBranch = Object.keys(settup)[1];
     date = format(new Date(), 'yyyy-MM-dd');
     initDataUnsafe = { user: { id: 1813610409 } };
     validBody = {
       branch,
       date,
-      modifyUserId: 1813610409,
+      userId: 1813610409,
       timeRange: '05:00-06:00',
       initDataUnsafe
     };
@@ -66,15 +68,15 @@ describe(`POST ${apiUrl}`, () => {
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 when any parameter is missing', async () => {
       const timeRange = '00:00-01:00';
-      const modifyUserId = 4560;
+      const userId = 4560;
 
       const bodyData = [
-        { branch, date, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', date, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', branch, timeRange, modifyUserId, initDataUnsafe },
-        { type: 'add', branch, date, modifyUserId, initDataUnsafe },
+        { branch, date, timeRange, userId, initDataUnsafe },
+        { type: 'add', date, timeRange, userId, initDataUnsafe },
+        { type: 'add', branch, timeRange, userId, initDataUnsafe },
+        { type: 'add', branch, date, userId, initDataUnsafe },
         { type: 'add', branch, date, timeRange, initDataUnsafe },
-        { type: 'add', branch, date, timeRange, modifyUserId },
+        { type: 'add', branch, date, timeRange, userId },
         {}
       ];
 
@@ -116,11 +118,25 @@ describe(`POST ${apiUrl}`, () => {
     describe('Adding a user to rota', () => {
       it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
         getUser.mockResolvedValueOnce(null);
-        const res = await request(app).post(apiUrl).send({ ...validBody, type: 'add', modifyUserId: 1230 });
+        const res = await request(app).post(apiUrl).send({ ...validBody, type: 'add', userId: 1230 });
 
         expect(res.statusCode).toBe(403);
-        expect(getUser).toHaveBeenCalledTimes(1);
+        expect(getUser).toHaveBeenCalledTimes(2);
         expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(addUserToRota).toHaveBeenCalledTimes(0);
+      });
+
+      it('should respond with status code 404 if adding a user not assigned to current rota', async () => {
+        getUser
+          .mockResolvedValueOnce(generateAdmin(validBody.branch, initDataUnsafe.user.id))
+          .mockResolvedValueOnce(generateUser(wrongBranch, validBody.userId));
+  
+        const res = await request(app).post(apiUrl).send({ type: 'add', ...validBody})
+
+        expect(res.statusCode).toBe(404);
+        expect(getUser).toHaveBeenCalledTimes(2);
+        expect(getUser).toHaveBeenLastCalledWith(validBody.userId);
+        expect(addUserToRota).toHaveBeenCalledTimes(0);
       });
 
       it('should respond with status code 200 if non admin user trues to add themselves to rota', async () => {
@@ -139,6 +155,17 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     describe('Removing a user from rota', () => {
+      it('should respond with status code 200 if removing a user not assigned to current rota', async () => {
+        getUser.mockResolvedValueOnce(generateAdmin(branch, validBody.initDataUnsafe.user.id))
+
+        const res = await request(app).post(apiUrl).send({ type: 'remove', ...validBody });
+
+        expect(res.statusCode).toBe(200);
+        expect(getUser).toHaveBeenCalledTimes(1);
+        expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(removeUserFromRota).toHaveBeenCalledTimes(1);
+      });
+
       it('should respond with status code 403 if non admin user tries to remove any user from rota', async () => {
         getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
         const res = await request(app).post(apiUrl).send({ type: 'remove', ...validBody });
