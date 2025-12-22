@@ -49,7 +49,9 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(generateAdmin(branch, validBody.initDataUnsafe.user.id));
+    getUser.mockResolvedValue(
+      generateAdmin(branch, validBody.initDataUnsafe.user.id)
+    );
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);

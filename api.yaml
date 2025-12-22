@@ -185,7 +185,7 @@ paths:
           description: |-
             For each day a user is on duty within the range returns an array of JSON objects. 
 
-            If the search produced no results (user_id does not exist or no duties in the specified range) an empty array is returned.
+            If the search produced no results (userId does not exist or no duties in the specified range) an empty array is returned.
           content:
             application/json:
               schema:

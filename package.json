@@ -5,10 +5,11 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --coverageDirectory='coverage'",
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "format": "prettier --write"
   },
   "keywords": [],
   "author": "Gleb Butyagin",
