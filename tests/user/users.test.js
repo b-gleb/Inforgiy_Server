@@ -3,7 +3,7 @@ import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateUser, generateAdmin } from '../generators.js';
 
-jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
+jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
 const { validateInitData } = await import(

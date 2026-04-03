@@ -5,7 +5,7 @@ import { rotaDBEntry } from './mocks.js';
 import { generateUser, generateAdmin } from '../generators.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
-jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
+jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
 const { validateInitData } = await import(

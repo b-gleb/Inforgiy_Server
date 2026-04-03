@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
-jest.unstable_mockModule('../src/utils/initDataValidation.js', () => ({
+jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
 const { validateInitData } = await import(
