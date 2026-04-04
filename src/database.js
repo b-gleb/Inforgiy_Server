@@ -1,5 +1,6 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
 import dotenv from 'dotenv';
+import { MongoClient, ServerApiVersion } from 'mongodb';
+
 dotenv.config();
 
 let mongo_client;

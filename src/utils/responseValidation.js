@@ -1,8 +1,11 @@
 import dotenv from 'dotenv';
+
 dotenv.config();
-import BaseJoi from 'joi';
+
 import joiDate from '@joi/date';
+import BaseJoi from 'joi';
 import settup from '../config/settup.json' with { type: 'json' };
+
 const Joi = BaseJoi.extend(joiDate);
 
 export const validateBranch = Joi.string().valid(...Object.keys(settup));

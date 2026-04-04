@@ -3,13 +3,13 @@ import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
+  ensureUniqueArray, 
   validateBranch,
-  validateUserId,
-  validateTimeRange,
   validateDayOfWeekArray,
-  validateTimeRangeArray,
   validateStartDateBeforeEndDate,
-  ensureUniqueArray
+  validateTimeRange,
+  validateTimeRangeArray,
+  validateUserId
 } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {

@@ -1,14 +1,15 @@
-import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
+
 dotenv.config();
 
 // ROUTES
 import makeDefaultRoutes from './routes/defaultRoutes.js';
 import makeRotaRoutes from './routes/rotaRoutes.js';
-import makeUserRoutes from './routes/userRoutes.js';
 import makeStatRoutes from './routes/statRoutes.js';
+import makeUserRoutes from './routes/userRoutes.js';
 
 export default function makeApp(database) {
   const app = express();

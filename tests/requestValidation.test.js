@@ -2,14 +2,14 @@ import { jest } from '@jest/globals';
 import settup from '../src/config/settup.json' with { type: 'json' };
 import {
   validateBranch,
-  validateUserId,
   validateColor,
   validateDateRange,
-  validateTimeRange,
-  validateTimeRangeArray,
   validateDayOfWeek,
   validateDayOfWeekArray,
-  validateStartDateBeforeEndDate
+  validateStartDateBeforeEndDate,
+  validateTimeRange,
+  validateTimeRangeArray,
+  validateUserId
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {

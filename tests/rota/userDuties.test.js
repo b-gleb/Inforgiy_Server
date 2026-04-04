@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import { rotaDBEntry } from './mocks.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import { rotaDBEntry } from './mocks.js';
 
 const makeApp = (await import('../../src/app.js')).default;
 const getUserDuties = jest.fn();

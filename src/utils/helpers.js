@@ -1,4 +1,4 @@
-import { isBefore, formatISO, addDays, isAfter, isEqual } from 'date-fns';
+import { addDays, formatISO, isAfter, isBefore, isEqual } from 'date-fns';
 
 export default function makeHelpers(database) {
   const formatInitData = initDataUnsafe => {

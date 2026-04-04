@@ -1,9 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import request from 'supertest';
 import { format } from 'date-fns';
-import { rotaDBEntry } from './mocks.js';
-import { generateUser, generateAdmin } from '../generators.js';
+import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import { generateAdmin, generateUser } from '../generators.js';
+import { rotaDBEntry } from './mocks.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()

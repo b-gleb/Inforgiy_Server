@@ -1,7 +1,7 @@
 import Joi from 'joi';
+import settup from '../config/settup.json' with { type: 'json' };
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
-import settup from '../config/settup.json' with { type: 'json' };
 
 export default function makeDefaultController(database) {
   const helpers = makeHelpers(database);

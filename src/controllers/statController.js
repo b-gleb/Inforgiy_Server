@@ -3,8 +3,8 @@ import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
 import {
   validateBranch,
-  validateUserId,
-  validateDateRange
+  validateDateRange,
+  validateUserId
 } from '../utils/responseValidation.js';
 
 export default function makeStatController(database) {

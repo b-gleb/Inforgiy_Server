@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import settup from '../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from './generators.js';
-import makeHelpers from '../src/utils/helpers.js';
 import { parseISO } from 'date-fns';
+import settup from '../src/config/settup.json' with { type: 'json' };
+import makeHelpers from '../src/utils/helpers.js';
+import { generateAdmin, generateUser } from './generators.js';
 
 const getUser = jest.fn();
 

@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateEmptyDutiesStats } from '../generators.js';
+
 const makeApp = (await import('../../src/app.js')).default;
 
 const getEmptyDuties = jest.fn();

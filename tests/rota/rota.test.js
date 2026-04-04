@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { format, lastDayOfYear } from 'date-fns';
 import request from 'supertest';
-import { lastDayOfYear, format } from 'date-fns';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 const makeApp = (await import('../../src/app.js')).default;
