@@ -34,7 +34,7 @@ describe(`POST ${apiUrl}`, () => {
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
-      // prettier-ignore
+      // biome-ignore format: keep test cases on separate lines
       const bodyData = [
         { branch },
         { dateRanges },

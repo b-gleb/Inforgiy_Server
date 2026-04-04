@@ -79,7 +79,7 @@ describe(`POST ${apiUrl}`, () => {
         color: 0
       };
 
-      // prettier-ignore
+      // biome-ignore format: keep test cases on separate lines
       const bodyData = [
         { userObj: validUserObj, initDataUnsafe: { user: { id: 1230 } } },
         { branch, initDataUnsafe: { user: { id: 1230 } } },
