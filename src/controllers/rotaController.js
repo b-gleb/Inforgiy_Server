@@ -110,7 +110,7 @@ export default function makeRotaController(database) {
 
     try {
       timeIndex = Number(value.timeRange.slice(0, 2));
-    } catch (error) {
+    } catch {
       return res.status(400).send('Expect slice(0, 2) of time to be a Number');
     }
 
@@ -146,7 +146,7 @@ export default function makeRotaController(database) {
       }
 
       // Only admins can add someone else to rota
-      if (value.userId != initDataUnsafe.user.id && !isAdmin) {
+      if (value.userId !== initDataUnsafe.user.id && !isAdmin) {
         return res
           .status(403)
           .send('You must be rota admin to add someone else');

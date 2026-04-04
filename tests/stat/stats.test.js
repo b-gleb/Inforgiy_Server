@@ -124,7 +124,7 @@ describe(`POST ${apiUrl}`, () => {
           generateDateRangeStats(userIds)
         );
 
-        const res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
         expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
@@ -246,7 +246,7 @@ describe(`POST ${apiUrl}`, () => {
       for (const body of bodyData) {
         const res = await request(app).post(apiUrl).send(body);
         expect(
-          res.body.every(item => item.data.length === body['dateRanges'].length)
+          res.body.every(item => item.data.length === body.dateRanges.length)
         );
       }
     });
@@ -284,7 +284,7 @@ describe(`POST ${apiUrl}`, () => {
         res.body.every(item =>
           item.data.every(
             subitem =>
-              Array.isArray(subitem.dateRange) && subitem.dateRange.length == 2
+              Array.isArray(subitem.dateRange) && subitem.dateRange.length === 2
           )
         )
       ).toBe(true);

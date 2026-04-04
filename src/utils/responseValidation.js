@@ -49,7 +49,7 @@ export const validateStartDateBeforeEndDate = (value, helpers) => {
   return value;
 };
 
-export const ensureUniqueArray = (value, helpers) => {
+export const ensureUniqueArray = (value, _helpers) => {
   if (!Array.isArray(value)) return value;
   return [...new Set(value)];
 };

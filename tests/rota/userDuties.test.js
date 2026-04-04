@@ -75,7 +75,7 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for user duties', async () => {
-      const res = await request(app).get(apiUrl).query(validBody);
+      const _res = await request(app).get(apiUrl).query(validBody);
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(
@@ -132,7 +132,7 @@ describe(`GET ${apiUrl}`, () => {
 
     it('array element property "hours" should not be empty', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
-      expect(res.body.every(item => item.hours.length != 0)).toBe(true);
+      expect(res.body.every(item => item.hours.length !== 0)).toBe(true);
     });
 
     it('array element property "hours" should contain integers', async () => {

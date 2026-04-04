@@ -47,7 +47,7 @@ export default function makeCoverters(database) {
       const endHour = String(index + 1).padStart(2, '0');
       const label = `${startHour}:00-${endHour}:00`;
 
-      if (data && data[index]) {
+      if (data?.[index]) {
         // Process userIds asynchronously and convert them to usernames
         const userArray = [];
         await Promise.all(

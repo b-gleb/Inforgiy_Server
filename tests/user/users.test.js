@@ -25,7 +25,7 @@ const app = makeApp({
 const apiUrl = '/api/users';
 
 describe(`POST ${apiUrl}`, () => {
-  describe('INVALID PARAMETERS POST ${apiUrl}', () => {
+  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
       const bodyData = [
         { branch: Object.keys(settup)[0] },
@@ -86,25 +86,25 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call isRotaAdmin() once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call getUserCount() once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUserCount).toHaveBeenCalledTimes(1);
       expect(getUserCount).toHaveBeenCalledWith(branch);
     });
 
     it('should not call getBranchUsers() when userCount matches cache', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getBranchUsers).toHaveBeenCalledTimes(0);
     });
 
     it('should call getBranchUsers() once when userCount differs from cache', async () => {
       getUserCount.mockResolvedValueOnce(1);
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getBranchUsers).toHaveBeenCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch);
     });

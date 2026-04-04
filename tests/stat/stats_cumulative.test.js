@@ -96,7 +96,7 @@ describe(`POST ${apiUrl}`, () => {
           generateCumulativeStats(body.dateRanges)
         );
 
-        const res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),

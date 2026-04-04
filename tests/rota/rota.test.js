@@ -69,7 +69,7 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for day rota', async () => {
-      const res = await request(app).get(apiUrl).query(validBody);
+      const _res = await request(app).get(apiUrl).query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
       expect(getRota).toHaveBeenCalledWith(branch, new Date(date));
     });

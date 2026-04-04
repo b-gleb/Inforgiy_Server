@@ -9,7 +9,7 @@ export default function makeDefaultController(database) {
   /**
     To check if the server is working
   */
-  const ping = async (req, res) => {
+  const ping = async (_req, res) => {
     res.send('pong');
   };
 
@@ -23,7 +23,7 @@ export default function makeDefaultController(database) {
       initDataUnsafe: Joi.any().required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);

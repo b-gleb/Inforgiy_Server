@@ -38,7 +38,7 @@ export default function makeApp(database) {
   app.use('/api', makeUserRoutes(database));
   app.use('/api', makeStatRoutes(database));
 
-  app.use((err, req, res, next) => {
+  app.use((err, _req, res, _next) => {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   });
