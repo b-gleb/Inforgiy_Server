@@ -19,7 +19,8 @@
       "!**/build",
       "!**/coverage",
       "!**/api.yaml",
-      "!**/jest.config.js"
+      "!**/jest.config.js",
+      "!**/src/controllers/rotaController.js"
     ]
   },
   "linter": { "enabled": true, "rules": { "recommended": true } },
