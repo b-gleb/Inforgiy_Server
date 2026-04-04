@@ -1,11 +1,11 @@
 import Joi from 'joi';
-import makeHelpers from '../utils/helpers.js';
 import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
+import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
   validateBranch,
-  validateUserId,
-  validateColor
+  validateColor,
+  validateUserId
 } from '../utils/responseValidation.js';
 
 export default function makeUserController(database) {

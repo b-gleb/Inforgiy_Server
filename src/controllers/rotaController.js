@@ -3,13 +3,13 @@ import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
+  ensureUniqueArray, 
   validateBranch,
-  validateUserId,
-  validateTimeRange,
   validateDayOfWeekArray,
-  validateTimeRangeArray,
   validateStartDateBeforeEndDate,
-  ensureUniqueArray
+  validateTimeRange,
+  validateTimeRangeArray,
+  validateUserId
 } from '../utils/responseValidation.js';
 
 export default function makeRotaController(database) {
@@ -70,7 +70,7 @@ export default function makeRotaController(database) {
     const result = [];
 
     dayArray.forEach(dayEntry => {
-      let dayDuties = { date: dayEntry.date, hours: [] };
+      const dayDuties = { date: dayEntry.date, hours: [] };
 
       dayEntry.rota.forEach((timeSlot, index) => {
         if (timeSlot.includes(value.userId)) {
@@ -110,13 +110,13 @@ export default function makeRotaController(database) {
 
     try {
       timeIndex = Number(value.timeRange.slice(0, 2));
-    } catch (error) {
+    } catch {
       return res.status(400).send('Expect slice(0, 2) of time to be a Number');
     }
 
     // Logic
     let updatedDayEntry;
-    let dayEntry = await database.getRota(value.branch, value.date);
+    const dayEntry = await database.getRota(value.branch, value.date);
 
     if (dayEntry === null) {
       return res.status(404).send('Date not found');
@@ -141,12 +141,12 @@ export default function makeRotaController(database) {
       );
     } else if (value.type === 'add') {
       // Return status 404 when atempting to add user not in rota
-      if (! await helpers.isUserInBranch(value.branch, value.userId)) {
+      if (!(await helpers.isUserInBranch(value.branch, value.userId))) {
         return res.status(404).send('User is not assigned to this rota');
       }
 
       // Only admins can add someone else to rota
-      if (value.userId != initDataUnsafe.user.id && !isAdmin) {
+      if (value.userId !== initDataUnsafe.user.id && !isAdmin) {
         return res
           .status(403)
           .send('You must be rota admin to add someone else');

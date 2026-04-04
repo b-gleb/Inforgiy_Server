@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from '../generators.js';
+import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
@@ -92,20 +92,20 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call isRotaAdmin() once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call removeUserPermission() once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(removeUserPermission).toHaveBeenCalledTimes(1);
       expect(removeUserPermission).toHaveBeenCalledWith(branch, 4560);
     });
 
     it('should not call removeUserPermission() if non admin performs the operation', async () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(removeUserPermission).toHaveBeenCalledTimes(0);
     });
   });

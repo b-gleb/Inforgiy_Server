@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { format, lastDayOfYear } from 'date-fns';
 import request from 'supertest';
-import { lastDayOfYear, format } from 'date-fns';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -31,9 +31,10 @@ describe(`GET ${apiUrl}`, () => {
 
   describe(`INVALID PARAMETERS GET ${apiUrl}`, () => {
     it('should respond with a status code 400 when any parameter is missing', async () => {
+      // biome-ignore format: keep test cases on separate lines
       const bodyData = [
-        {branch},
-        {date},
+        { branch },
+        { date },
         {}
       ];
 
@@ -68,47 +69,53 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for day rota', async () => {
-      const res = await request(app).get(apiUrl).query(validBody);
+      const _res = await request(app).get(apiUrl).query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
       expect(getRota).toHaveBeenCalledWith(branch, new Date(date));
     });
   });
 
-  describe.each(Object.keys(settup))(
-    `RESPONSE VALIDATION GET ${apiUrl} for branch %s`, iterateBranch => {
-      it('response should be an array of length 24', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
-        expect(res.body).toBeInstanceOf(Array);
-        expect(res.body).toHaveLength(24);
+  describe.each(
+    Object.keys(settup)
+  )(`RESPONSE VALIDATION GET ${apiUrl} for branch %s`, iterateBranch => {
+    it('response should be an array of length 24', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body).toHaveLength(24);
+    });
+
+    it('array elements should have properties "users" and "label"', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+
+      const expectedProps = ['users', 'label'].sort();
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       });
 
-      it('array elements should have properties "users" and "label"', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
+      expect(allHaveExpectedProps).toBe(true);
+    });
 
-        const expectedProps = ['users', 'label'].sort();
-        const allHaveExpectedProps = res.body.every(item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        });
+    it('array element "users" should be of type object', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(
+        res.body.every(
+          item => typeof item.users === 'object' && item.users != null
+        )
+      ).toBe(true);
+    });
 
-        expect(allHaveExpectedProps).toBe(true);
-      });
-
-      it('array element "users" should be of type object', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
-        expect(
-          res.body.every(
-            item => typeof item.users === 'object' && item.users != null
-          )
-        ).toBe(true);
-      });
-
-      it('array element property "label" should be of type string', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
-        expect(
-          res.body.every(item => typeof item.label === 'string')
-        ).toBe(true);
-      });
-    }
-  );
+    it('array element property "label" should be of type string', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
+    });
+  });
 });

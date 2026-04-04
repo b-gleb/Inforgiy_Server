@@ -1,14 +1,15 @@
-import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
+
 dotenv.config();
 
 // ROUTES
 import makeDefaultRoutes from './routes/defaultRoutes.js';
 import makeRotaRoutes from './routes/rotaRoutes.js';
-import makeUserRoutes from './routes/userRoutes.js';
 import makeStatRoutes from './routes/statRoutes.js';
+import makeUserRoutes from './routes/userRoutes.js';
 
 export default function makeApp(database) {
   const app = express();
@@ -38,7 +39,7 @@ export default function makeApp(database) {
   app.use('/api', makeUserRoutes(database));
   app.use('/api', makeStatRoutes(database));
 
-  app.use((err, req, res, next) => {
+  app.use((err, _req, res, _next) => {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   });

@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from '../generators.js';
+import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
@@ -80,6 +80,7 @@ describe(`POST ${apiUrl}`, () => {
         color: 0
       };
 
+      // biome-ignore format: keep test cases on separate lines
       const bodyData = [
         { userObj: validUserObj, initDataUnsafe: { user: { id: 1230 } } },
         { branch, initDataUnsafe: { user: { id: 1230 } } },
@@ -134,13 +135,13 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call isRotaAdmin() once', async () => {
-      const res = await request(app).post(apiUrl).send(updateUserBody);
+      const _res = await request(app).post(apiUrl).send(updateUserBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(4560);
     });
 
     it('should call updateUser() once when updating permissions of user with rota access', async () => {
-      const res = await request(app).post(apiUrl).send(updateUserBody);
+      const _res = await request(app).post(apiUrl).send(updateUserBody);
       expect(updateUser).toHaveBeenCalledTimes(1);
       expect(updateUser).toHaveBeenCalledWith(
         branch,
@@ -151,12 +152,12 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should not call addUserPermission() when updating permissions of user with rota access', async () => {
-      const res = await request(app).post(apiUrl).send(updateUserBody);
+      const _res = await request(app).post(apiUrl).send(updateUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(0);
     });
 
     it('should call addUserPermission() once when adding a new user to rota', async () => {
-      const res = await request(app).post(apiUrl).send(addUserBody);
+      const _res = await request(app).post(apiUrl).send(addUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(1);
       expect(addUserPermission).toHaveBeenCalledWith(
         branch,
@@ -167,7 +168,7 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should not call updateUser() when adding a new user to rota', async () => {
-      const res = await request(app).post(apiUrl).send(addUserBody);
+      const _res = await request(app).post(apiUrl).send(addUserBody);
       expect(updateUser).toHaveBeenCalledTimes(0);
     });
   });

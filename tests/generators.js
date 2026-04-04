@@ -37,21 +37,21 @@ export function generateCumulativeStats(dateRanges) {
 }
 
 export function generateEmptyDutiesStats(dateRanges, count = 10) {
-  return dateRanges.reduce((acc, range, idx) => {
+  return dateRanges.reduce((acc, _range, idx) => {
     acc[`range_${idx}`] = count === 0 ? [] : [{ count }];
     return acc;
   }, {});
 }
 
 export function generateTakenDutiesStats(dateRanges, count = 10) {
-  return dateRanges.reduce((acc, range, idx) => {
+  return dateRanges.reduce((acc, _range, idx) => {
     acc[`range_${idx}`] = count === 0 ? [] : [{ count }];
     return acc;
   }, {});
 }
 
 export function generateUniqueUsersStats(dateRanges, count = 10) {
-  return dateRanges.reduce((acc, range, idx) => {
+  return dateRanges.reduce((acc, _range, idx) => {
     acc[`range_${idx}`] = count === 0 ? [] : [{ count }];
     return acc;
   }, {});

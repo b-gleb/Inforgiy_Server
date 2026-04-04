@@ -1,7 +1,7 @@
 import Joi from 'joi';
+import settup from '../config/settup.json' with { type: 'json' };
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
-import settup from '../config/settup.json' with { type: 'json' };
 
 export default function makeDefaultController(database) {
   const helpers = makeHelpers(database);
@@ -9,7 +9,7 @@ export default function makeDefaultController(database) {
   /**
     To check if the server is working
   */
-  const ping = async (req, res) => {
+  const ping = async (_req, res) => {
     res.send('pong');
   };
 
@@ -23,7 +23,7 @@ export default function makeDefaultController(database) {
       initDataUnsafe: Joi.any().required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
@@ -32,8 +32,8 @@ export default function makeDefaultController(database) {
     }
 
     // Logic
-    let rotaAdmin = [];
-    let userBranches = {};
+    const rotaAdmin = [];
+    const userBranches = {};
     let hasRoles = false;
 
     const userEntry = await database.getUser(initDataUnsafe.user.id);

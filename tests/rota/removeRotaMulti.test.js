@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import request from 'supertest';
 import { addDays } from 'date-fns';
+import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from '../generators.js';
+import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
@@ -52,7 +52,10 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    removeUserFromRotaMulti.mockResolvedValue({ matchedCout: 5, modifiedCount: 5 });
+    removeUserFromRotaMulti.mockResolvedValue({
+      matchedCout: 5,
+      modifiedCount: 5
+    });
     getUser.mockResolvedValue(generateAdmin(Object.keys(settup)[0], 1230));
   });
 
@@ -121,13 +124,13 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `getUser` once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `removeUserFromRotaMulti`', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(removeUserFromRotaMulti).toHaveBeenCalledTimes(1);
       expect(removeUserFromRotaMulti).toHaveBeenCalledWith({
         branch,

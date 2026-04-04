@@ -1,6 +1,7 @@
+import crypto from 'node:crypto';
 import dotenv from 'dotenv';
+
 dotenv.config();
-import crypto from 'crypto';
 
 export const validateInitData = initDataUnsafe => {
   const unixTime = Math.floor(Date.now() / 1000);

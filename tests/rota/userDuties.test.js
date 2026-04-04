@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import { rotaDBEntry } from './mocks.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import { rotaDBEntry } from './mocks.js';
 
 const makeApp = (await import('../../src/app.js')).default;
 const getUserDuties = jest.fn();
@@ -49,11 +49,13 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
-      const res = await request(app).get(apiUrl).query({
-        ...validBody,
-        startDate: '2025-01-08',
-        endDate: '2025-01-01'
-      });
+      const res = await request(app)
+        .get(apiUrl)
+        .query({
+          ...validBody,
+          startDate: '2025-01-08',
+          endDate: '2025-01-01'
+        });
 
       expect(res.statusCode).toBe(400);
     });
@@ -73,7 +75,7 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for user duties', async () => {
-      const res = await request(app).get(apiUrl).query(validBody);
+      const _res = await request(app).get(apiUrl).query(validBody);
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(
@@ -130,7 +132,7 @@ describe(`GET ${apiUrl}`, () => {
 
     it('array element property "hours" should not be empty', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
-      expect(res.body.every(item => item.hours.length != 0)).toBe(true);
+      expect(res.body.every(item => item.hours.length !== 0)).toBe(true);
     });
 
     it('array element property "hours" should contain integers', async () => {

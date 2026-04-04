@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import request from 'supertest';
 import { addDays } from 'date-fns';
+import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from '../generators.js';
+import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
@@ -141,20 +141,20 @@ describe(`POST ${apiUrl}`, () => {
         .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
         .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
 
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `getUser` twice (to check calling user and the user to add to rota)', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(2);
       expect(getUser).toHaveBeenNthCalledWith(1, 1230);
       expect(getUser).toHaveBeenLastCalledWith(4560);
     });
 
     it('should call `addUserToRotaMulti`', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(addUserToRotaMulti).toHaveBeenCalledTimes(1);
       expect(addUserToRotaMulti).toHaveBeenCalledWith({
         branch,
@@ -178,7 +178,9 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       const expectedProps = ['modifiedCount'].sort();
       const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(
+        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      ).toBe(true);
     });
   });
 });

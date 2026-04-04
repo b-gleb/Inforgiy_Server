@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
-import settup from '../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateAdmin } from './generators.js';
-import makeHelpers from '../src/utils/helpers.js';
 import { parseISO } from 'date-fns';
+import settup from '../src/config/settup.json' with { type: 'json' };
+import makeHelpers from '../src/utils/helpers.js';
+import { generateAdmin, generateUser } from './generators.js';
 
 const getUser = jest.fn();
 
@@ -51,7 +51,7 @@ describe('isRotaAdmin', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateAdmin(branch, userId));
-    const res = await isRotaAdmin(branch, userId);
+    const _res = await isRotaAdmin(branch, userId);
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });
@@ -104,7 +104,7 @@ describe('isUserInBranch', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateUser(branch, userId));
-    const res = await isUserInBranch(branch, userId);
+    const _res = await isUserInBranch(branch, userId);
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });

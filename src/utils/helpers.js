@@ -1,4 +1,4 @@
-import { isBefore, formatISO, addDays, isAfter, isEqual } from 'date-fns';
+import { addDays, formatISO, isAfter, isBefore, isEqual } from 'date-fns';
 
 export default function makeHelpers(database) {
   const formatInitData = initDataUnsafe => {
@@ -77,10 +77,10 @@ export default function makeHelpers(database) {
   };
 
   const fillMissingDates = (data, startDate, endDate) => {
-    let result = [];
+    const result = [];
     let lastKnownCount = 0;
     let index = 0;
-    let firstDataDate = data[0]?.date ?? startDate; // fallback to startDate when data is an empty array (ie no stats avaliable for user)
+    const firstDataDate = data[0]?.date ?? startDate; // fallback to startDate when data is an empty array (ie no stats avaliable for user)
 
     // Fill missing dates before the first data point with zero
     while (isBefore(startDate, firstDataDate)) {
@@ -92,7 +92,7 @@ export default function makeHelpers(database) {
     }
 
     while (!isAfter(startDate, endDate)) {
-      let dateStr = formatISO(startDate, { representation: 'complete' });
+      const dateStr = formatISO(startDate, { representation: 'complete' });
 
       if (index < data.length && isEqual(data[index].date, startDate)) {
         lastKnownCount = data[index].count;

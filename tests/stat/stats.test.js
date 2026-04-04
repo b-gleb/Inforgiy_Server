@@ -1,7 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
-import { generateUser, generateDateRangeStats } from '../generators.js';
+import { generateDateRangeStats, generateUser } from '../generators.js';
+
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
@@ -96,8 +97,23 @@ describe(`POST ${apiUrl}`, () => {
     it('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async () => {
       const bodyData = [
         { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']] },
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']] }
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
@@ -109,7 +125,7 @@ describe(`POST ${apiUrl}`, () => {
           generateDateRangeStats(userIds)
         );
 
-        const res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
         expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
@@ -187,9 +203,9 @@ describe(`POST ${apiUrl}`, () => {
 
     it('property "nick" of object "user" object should be a string', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(
-        res.body.every(item => typeof item.user.nick === 'string')
-      ).toBe(true);
+      expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(
+        true
+      );
     });
 
     it('property "color" of object "user" object should be a positive integer or zero', async () => {
@@ -208,15 +224,30 @@ describe(`POST ${apiUrl}`, () => {
 
     it('array element "data" should have be the length of requested `dataRanges`', async () => {
       const bodyData = [
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]},
+        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
         const res = await request(app).post(apiUrl).send(body);
         expect(
-          res.body.every(item => item.data.length === body['dateRanges'].length)
+          res.body.every(item => item.data.length === body.dateRanges.length)
         );
       }
     });
@@ -254,7 +285,7 @@ describe(`POST ${apiUrl}`, () => {
         res.body.every(item =>
           item.data.every(
             subitem =>
-              Array.isArray(subitem.dateRange) && subitem.dateRange.length == 2
+              Array.isArray(subitem.dateRange) && subitem.dateRange.length === 2
           )
         )
       ).toBe(true);

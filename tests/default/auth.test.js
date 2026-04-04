@@ -90,19 +90,19 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `validateInitData` once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(validateInitData).toHaveBeenCalledTimes(1);
     });
 
     it('should call `getUser` once', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(initDataUnsafe.user.id);
     });
 
     it('should not call `getUser` if `validateInitData` failed', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const res = await request(app).post(apiUrl).send(validBody);
+      const _res = await request(app).post(apiUrl).send(validBody);
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
     });
@@ -128,9 +128,18 @@ describe(`POST ${apiUrl}`, () => {
       const userData = { nick: 'nick', c: 0 };
 
       const userPermissions = [
-        { telegram: '@username', roles: { rota_lns: userData } },
-        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData } },
-        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, rota_gp: userData } }
+        {
+          telegram: '@username',
+          roles: { rota_lns: userData }
+        },
+        {
+          telegram: '@username',
+          roles: { rota_lns: userData, rota_di: userData }
+        },
+        {
+          telegram: '@username',
+          roles: { rota_lns: userData, rota_di: userData, rota_gp: userData }
+        }
       ];
 
       for (const permission of userPermissions) {
@@ -181,9 +190,30 @@ describe(`POST ${apiUrl}`, () => {
       const userData = { nick: 'nick', c: 0 };
 
       const userPermissions = [
-        { telegram: '@username', roles: { rota_lns: userData, admin_rota_lns: null } },
-        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, admin_rota_lns: null, admin_rota_di: null } },
-        { telegram: '@username', roles: { rota_lns: userData, rota_di: userData, rota_gp: userData, admin_rota_lns: null, admin_rota_di: null, admin_rota_gp: null } }
+        {
+          telegram: '@username',
+          roles: { rota_lns: userData, admin_rota_lns: null }
+        },
+        {
+          telegram: '@username',
+          roles: {
+            rota_lns: userData,
+            rota_di: userData,
+            admin_rota_lns: null,
+            admin_rota_di: null
+          }
+        },
+        {
+          telegram: '@username',
+          roles: {
+            rota_lns: userData,
+            rota_di: userData,
+            rota_gp: userData,
+            admin_rota_lns: null,
+            admin_rota_di: null,
+            admin_rota_gp: null
+          }
+        }
       ];
 
       for (const permission of userPermissions) {
