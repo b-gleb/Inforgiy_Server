@@ -32,8 +32,8 @@ export default function makeDefaultController(database) {
     }
 
     // Logic
-    let rotaAdmin = [];
-    let userBranches = {};
+    const rotaAdmin = [];
+    const userBranches = {};
     let hasRoles = false;
 
     const userEntry = await database.getUser(initDataUnsafe.user.id);

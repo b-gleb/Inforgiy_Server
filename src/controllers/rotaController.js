@@ -70,7 +70,7 @@ export default function makeRotaController(database) {
     const result = [];
 
     dayArray.forEach(dayEntry => {
-      let dayDuties = { date: dayEntry.date, hours: [] };
+      const dayDuties = { date: dayEntry.date, hours: [] };
 
       dayEntry.rota.forEach((timeSlot, index) => {
         if (timeSlot.includes(value.userId)) {
@@ -116,7 +116,7 @@ export default function makeRotaController(database) {
 
     // Logic
     let updatedDayEntry;
-    let dayEntry = await database.getRota(value.branch, value.date);
+    const dayEntry = await database.getRota(value.branch, value.date);
 
     if (dayEntry === null) {
       return res.status(404).send('Date not found');
