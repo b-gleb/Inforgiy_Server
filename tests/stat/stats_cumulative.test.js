@@ -72,9 +72,22 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should call getcumulativeStats() once', async () => {
       const bodyData = [
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
@@ -112,9 +125,22 @@ describe(`POST ${apiUrl}`, () => {
 
     it('length of the array should be equal to length of "dateRanges"', async () => {
       const bodyData = [
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {

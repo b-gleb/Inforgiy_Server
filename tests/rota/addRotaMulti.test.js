@@ -7,9 +7,8 @@ import { generateUser, generateAdmin } from '../generators.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } =
+  await import('../../src/utils/initDataValidation.js');
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
@@ -178,7 +177,9 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       const expectedProps = ['modifiedCount'].sort();
       const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(
+        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
+      ).toBe(true);
     });
   });
 });

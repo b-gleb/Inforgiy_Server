@@ -34,9 +34,10 @@ describe(`POST ${apiUrl}`, () => {
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
+      // prettier-ignore
       const bodyData = [
-        {branch},
-        {dateRanges},
+        { branch },
+        { dateRanges },
         {}
       ];
 
@@ -47,7 +48,9 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
-      const res = await request(app).post(apiUrl).send({branch, dateRanges: ['2025-01-01', '2025-01-31']});
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ branch, dateRanges: ['2025-01-01', '2025-01-31'] });
       expect(res.statusCode).toBe(400);
     });
   });
@@ -67,9 +70,22 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should call `getEmptyDuties` once', async () => {
       const bodyData = [
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
@@ -115,10 +131,23 @@ describe(`POST ${apiUrl}`, () => {
 
       it('length of array should be the length of requested dateRanges', async () => {
         const bodyData = [
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
-      ];
+          { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+          {
+            ...validBody,
+            dateRanges: [
+              ['2025-01-01', '2025-01-31'],
+              ['2025-02-01', '2025-02-28']
+            ]
+          },
+          {
+            ...validBody,
+            dateRanges: [
+              ['2025-01-01', '2025-01-31'],
+              ['2025-02-01', '2025-02-28'],
+              ['2025-03-01', '2025-03-31']
+            ]
+          }
+        ];
 
         for (const body of bodyData) {
           getEmptyDuties.mockClear();

@@ -35,7 +35,7 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
           DB_NAME: ${{ secrets.DB_NAME }}
-  
+
   deploy:
     name: Deploy to Fly
     needs: test
@@ -45,14 +45,14 @@ jobs:
 
     permissions:
       contents: read
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-      
+
       - name: Install Fly
         uses: superfly/flyctl-actions/setup-flyctl@master
-      
+
       - name: Deploy
         run: flyctl deploy --remote-only --strategy immediate
         env:

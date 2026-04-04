@@ -96,8 +96,23 @@ describe(`POST ${apiUrl}`, () => {
     it('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async () => {
       const bodyData = [
         { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']] },
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']] }
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
@@ -187,9 +202,9 @@ describe(`POST ${apiUrl}`, () => {
 
     it('property "nick" of object "user" object should be a string', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(
-        res.body.every(item => typeof item.user.nick === 'string')
-      ).toBe(true);
+      expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(
+        true
+      );
     });
 
     it('property "color" of object "user" object should be a positive integer or zero', async () => {
@@ -208,9 +223,24 @@ describe(`POST ${apiUrl}`, () => {
 
     it('array element "data" should have be the length of requested `dataRanges`', async () => {
       const bodyData = [
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {branch, userIds, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]},
+        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          branch,
+          userIds,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {

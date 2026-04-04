@@ -31,9 +31,10 @@ describe(`GET ${apiUrl}`, () => {
 
   describe(`INVALID PARAMETERS GET ${apiUrl}`, () => {
     it('should respond with a status code 400 when any parameter is missing', async () => {
+      // prettier-ignore
       const bodyData = [
-        {branch},
-        {date},
+        { branch },
+        { date },
         {}
       ];
 
@@ -75,15 +76,20 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe.each(Object.keys(settup))(
-    `RESPONSE VALIDATION GET ${apiUrl} for branch %s`, iterateBranch => {
+    `RESPONSE VALIDATION GET ${apiUrl} for branch %s`,
+    iterateBranch => {
       it('response should be an array of length 24', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
+        const res = await request(app)
+          .get(apiUrl)
+          .query({ ...validBody, branch: iterateBranch });
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body).toHaveLength(24);
       });
 
       it('array elements should have properties "users" and "label"', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
+        const res = await request(app)
+          .get(apiUrl)
+          .query({ ...validBody, branch: iterateBranch });
 
         const expectedProps = ['users', 'label'].sort();
         const allHaveExpectedProps = res.body.every(item => {
@@ -95,7 +101,9 @@ describe(`GET ${apiUrl}`, () => {
       });
 
       it('array element "users" should be of type object', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
+        const res = await request(app)
+          .get(apiUrl)
+          .query({ ...validBody, branch: iterateBranch });
         expect(
           res.body.every(
             item => typeof item.users === 'object' && item.users != null
@@ -104,10 +112,12 @@ describe(`GET ${apiUrl}`, () => {
       });
 
       it('array element property "label" should be of type string', async () => {
-        const res = await request(app).get(apiUrl).query({...validBody, branch: iterateBranch});
-        expect(
-          res.body.every(item => typeof item.label === 'string')
-        ).toBe(true);
+        const res = await request(app)
+          .get(apiUrl)
+          .query({ ...validBody, branch: iterateBranch });
+        expect(res.body.every(item => typeof item.label === 'string')).toBe(
+          true
+        );
       });
     }
   );

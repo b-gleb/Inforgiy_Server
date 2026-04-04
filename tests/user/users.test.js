@@ -6,9 +6,8 @@ import { generateUser, generateAdmin } from '../generators.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } =
+  await import('../../src/utils/initDataValidation.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 

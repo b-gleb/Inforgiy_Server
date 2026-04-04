@@ -151,13 +151,17 @@ describe('validateDayOfWeek', () => {
 
 describe('validateDayOfWeekArray', () => {
   it('should accept a array of length 1', () => {
-    const { error, value } = validateDayOfWeekArray.validate(new Array(1).fill(0));
+    const { error, value } = validateDayOfWeekArray.validate(
+      new Array(1).fill(0)
+    );
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
 
   it('should accept an array of length 7', () => {
-    const { error, value } = validateDayOfWeekArray.validate(new Array(7).fill(0));
+    const { error, value } = validateDayOfWeekArray.validate(
+      new Array(7).fill(0)
+    );
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
@@ -219,19 +223,25 @@ describe('validateTimeRange', () => {
 
 describe('validateTimeRangeArray', () => {
   it('should accept a array of length 1', () => {
-    const { error, value } = validateTimeRangeArray.validate(new Array(1).fill('00:00-01:00'));
+    const { error, value } = validateTimeRangeArray.validate(
+      new Array(1).fill('00:00-01:00')
+    );
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
 
   it('should accept an array of length 24', () => {
-    const { error, value } = validateTimeRangeArray.validate(new Array(24).fill('00:00-01:00'));
+    const { error, value } = validateTimeRangeArray.validate(
+      new Array(24).fill('00:00-01:00')
+    );
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
 
   it('should reject an array of length 25', () => {
-    const { error } = validateTimeRangeArray.validate(new Array(25).fill('00:00-01:00'));
+    const { error } = validateTimeRangeArray.validate(
+      new Array(25).fill('00:00-01:00')
+    );
     expect(error).toBeDefined();
   });
 
@@ -314,7 +324,7 @@ describe('validateStartDateBeforeEndDate', () => {
     helpers = {
       message: jest.fn(msg => ({ error: msg }))
     };
-    
+
     errorMessage = 'startDate must be less than endDate';
   });
 

@@ -34,6 +34,7 @@ describe(`POST ${apiUrl}`, () => {
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it('should respond with status code 400 if any of the parameters are missing', async () => {
+      // prettier-ignore
       const bodyData = [
         { branch },
         { dateRanges },
@@ -69,9 +70,22 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should call `getUniqueUsers` once', async () => {
       const bodyData = [
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-        {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28']
+          ]
+        },
+        {
+          ...validBody,
+          dateRanges: [
+            ['2025-01-01', '2025-01-31'],
+            ['2025-02-01', '2025-02-28'],
+            ['2025-03-01', '2025-03-31']
+          ]
+        }
       ];
 
       for (const body of bodyData) {
@@ -117,9 +131,22 @@ describe(`POST ${apiUrl}`, () => {
 
       it('length of array should be the length of requested dateRanges', async () => {
         const bodyData = [
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31']]},
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28']]},
-          {...validBody, dateRanges: [['2025-01-01', '2025-01-31'], ['2025-02-01', '2025-02-28'], ['2025-03-01', '2025-03-31']]}
+          { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+          {
+            ...validBody,
+            dateRanges: [
+              ['2025-01-01', '2025-01-31'],
+              ['2025-02-01', '2025-02-28']
+            ]
+          },
+          {
+            ...validBody,
+            dateRanges: [
+              ['2025-01-01', '2025-01-31'],
+              ['2025-02-01', '2025-02-28'],
+              ['2025-03-01', '2025-03-31']
+            ]
+          }
         ];
 
         for (const body of bodyData) {

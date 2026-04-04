@@ -79,23 +79,25 @@ export async function addUserToRotaMulti({
   };
 
   if (allowOccupiedSlots === true) {
-    const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
-      baseQuery,
-      {
-        $addToSet: Object.fromEntries(hours.map(hour => [`rota.${hour}`, userId]))
-      }
-    );
+    const updateObj = await mongo_db
+      .collection(`rota_${branch}`)
+      .updateMany(baseQuery, {
+        $addToSet: Object.fromEntries(
+          hours.map(hour => [`rota.${hour}`, userId])
+        )
+      });
 
     return { modifiedCount: updateObj.modifiedCount * hours.length };
-
   } else {
     let modifiedCount = 0;
 
     for (const hour of hours) {
-      const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(
-        { ...baseQuery, [`rota.${hour}`]: [] },
-        { $addToSet: { [`rota.${hour}`]: userId } }
-      );
+      const updateObj = await mongo_db
+        .collection(`rota_${branch}`)
+        .updateMany(
+          { ...baseQuery, [`rota.${hour}`]: [] },
+          { $addToSet: { [`rota.${hour}`]: userId } }
+        );
 
       modifiedCount += updateObj.modifiedCount;
     }
