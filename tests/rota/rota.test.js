@@ -75,50 +75,47 @@ describe(`GET ${apiUrl}`, () => {
     });
   });
 
-  describe.each(Object.keys(settup))(
-    `RESPONSE VALIDATION GET ${apiUrl} for branch %s`,
-    iterateBranch => {
-      it('response should be an array of length 24', async () => {
-        const res = await request(app)
-          .get(apiUrl)
-          .query({ ...validBody, branch: iterateBranch });
-        expect(res.body).toBeInstanceOf(Array);
-        expect(res.body).toHaveLength(24);
+  describe.each(
+    Object.keys(settup)
+  )(`RESPONSE VALIDATION GET ${apiUrl} for branch %s`, iterateBranch => {
+    it('response should be an array of length 24', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body).toHaveLength(24);
+    });
+
+    it('array elements should have properties "users" and "label"', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+
+      const expectedProps = ['users', 'label'].sort();
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       });
 
-      it('array elements should have properties "users" and "label"', async () => {
-        const res = await request(app)
-          .get(apiUrl)
-          .query({ ...validBody, branch: iterateBranch });
+      expect(allHaveExpectedProps).toBe(true);
+    });
 
-        const expectedProps = ['users', 'label'].sort();
-        const allHaveExpectedProps = res.body.every(item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        });
+    it('array element "users" should be of type object', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(
+        res.body.every(
+          item => typeof item.users === 'object' && item.users != null
+        )
+      ).toBe(true);
+    });
 
-        expect(allHaveExpectedProps).toBe(true);
-      });
-
-      it('array element "users" should be of type object', async () => {
-        const res = await request(app)
-          .get(apiUrl)
-          .query({ ...validBody, branch: iterateBranch });
-        expect(
-          res.body.every(
-            item => typeof item.users === 'object' && item.users != null
-          )
-        ).toBe(true);
-      });
-
-      it('array element property "label" should be of type string', async () => {
-        const res = await request(app)
-          .get(apiUrl)
-          .query({ ...validBody, branch: iterateBranch });
-        expect(res.body.every(item => typeof item.label === 'string')).toBe(
-          true
-        );
-      });
-    }
-  );
+    it('array element property "label" should be of type string', async () => {
+      const res = await request(app)
+        .get(apiUrl)
+        .query({ ...validBody, branch: iterateBranch });
+      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
+    });
+  });
 });

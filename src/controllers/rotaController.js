@@ -141,7 +141,7 @@ export default function makeRotaController(database) {
       );
     } else if (value.type === 'add') {
       // Return status 404 when atempting to add user not in rota
-      if (! await helpers.isUserInBranch(value.branch, value.userId)) {
+      if (!(await helpers.isUserInBranch(value.branch, value.userId))) {
         return res.status(404).send('User is not assigned to this rota');
       }
 

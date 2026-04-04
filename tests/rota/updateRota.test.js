@@ -8,8 +8,9 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } =
-  await import('../../src/utils/initDataValidation.js');
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -209,53 +210,51 @@ describe(`POST ${apiUrl}`, () => {
     });
   });
 
-  describe.each(['add', 'remove'])(
-    `RESPONSE VALIDATION POST ${apiUrl} for type "%s"`,
-    type => {
-      it('response should be an array of length 24', async () => {
-        const res = await request(app)
-          .post(apiUrl)
-          .send({ type, ...validBody });
+  describe.each([
+    'add',
+    'remove'
+  ])(`RESPONSE VALIDATION POST ${apiUrl} for type "%s"`, type => {
+    it('response should be an array of length 24', async () => {
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ type, ...validBody });
 
-        expect(res.body).toBeInstanceOf(Array);
-        expect(res.body).toHaveLength(24);
+      expect(res.body).toBeInstanceOf(Array);
+      expect(res.body).toHaveLength(24);
+    });
+
+    it('array elements should have properties "users" and "label"', async () => {
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ type, ...validBody });
+
+      const expectedProps = ['users', 'label'].sort();
+      const allHaveExpectedProps = res.body.every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
       });
 
-      it('array elements should have properties "users" and "label"', async () => {
-        const res = await request(app)
-          .post(apiUrl)
-          .send({ type, ...validBody });
+      expect(allHaveExpectedProps).toBe(true);
+    });
 
-        const expectedProps = ['users', 'label'].sort();
-        const allHaveExpectedProps = res.body.every(item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        });
+    it('array element "users" should be of type object', async () => {
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ type, ...validBody });
 
-        expect(allHaveExpectedProps).toBe(true);
-      });
+      expect(
+        res.body.every(
+          item => typeof item.users === 'object' && item.users != null
+        )
+      ).toBe(true);
+    });
 
-      it('array element "users" should be of type object', async () => {
-        const res = await request(app)
-          .post(apiUrl)
-          .send({ type, ...validBody });
+    it('array element property "label" should be of type string', async () => {
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ type, ...validBody });
 
-        expect(
-          res.body.every(
-            item => typeof item.users === 'object' && item.users != null
-          )
-        ).toBe(true);
-      });
-
-      it('array element property "label" should be of type string', async () => {
-        const res = await request(app)
-          .post(apiUrl)
-          .send({ type, ...validBody });
-
-        expect(res.body.every(item => typeof item.label === 'string')).toBe(
-          true
-        );
-      });
-    }
-  );
+      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
+    });
+  });
 });

@@ -5,8 +5,9 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } =
-  await import('../../src/utils/initDataValidation.js');
+const { validateInitData } = await import(
+  '../../src/utils/initDataValidation.js'
+);
 const makeApp = (await import('../../src/app.js')).default;
 
 function generateUser(branch, id) {
