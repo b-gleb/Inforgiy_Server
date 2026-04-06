@@ -61,6 +61,21 @@ describe(`GET ${apiUrl}`, () => {
       expect(res.statusCode).toBe(404);
     });
 
+    it('should respond with a status code of 500 if DB call fails', async () => {
+      // suppress console.error output
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      getRota.mockRejectedValueOnce(new Error('DB exception occured'));
+      const res = await request(app).get(apiUrl).query(validBody);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({
+        error: 'Internal server error'
+      });
+
+      errorSpy.mockRestore();
+    });
+
     it('should specify json in the content type header', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
       expect(res.headers['content-type']).toEqual(
