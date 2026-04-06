@@ -13,10 +13,7 @@ export default function makeHelpers(database) {
     }
 
     if (initDataUnsafe.can_send_after) {
-      initDataUnsafe.can_send_after = parseInt(
-        initDataUnsafe?.can_send_after,
-        10
-      );
+      initDataUnsafe.can_send_after = parseInt(initDataUnsafe?.can_send_after, 10);
     }
 
     return initDataUnsafe;
@@ -50,12 +47,7 @@ export default function makeHelpers(database) {
     }
   };
 
-  const statistic = async (
-    initDataUnsafe,
-    action,
-    sub_action = null,
-    misc = null
-  ) => {
+  const statistic = async (initDataUnsafe, action, sub_action = null, misc = null) => {
     if (process.env.ENV === 'TEST') {
       return;
     }

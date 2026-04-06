@@ -78,9 +78,7 @@ describe(`GET ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should query the database for day rota', async () => {
@@ -120,9 +118,7 @@ describe(`GET ${apiUrl}`, () => {
         .get(apiUrl)
         .query({ ...validBody, branch: iterateBranch });
       expect(
-        res.body.every(
-          item => typeof item.users === 'object' && item.users != null
-        )
+        res.body.every(item => typeof item.users === 'object' && item.users != null)
       ).toBe(true);
     });
 

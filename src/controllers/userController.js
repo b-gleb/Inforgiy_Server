@@ -26,9 +26,7 @@ export default function makeUserController(database) {
       return res.status(401).send('Unable to verify hash');
     }
 
-    if (
-      !(await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id))
-    ) {
+    if (!(await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id))) {
       return res.status(403).send('You must be a rota admin');
     }
 
@@ -81,10 +79,7 @@ export default function makeUserController(database) {
     }
 
     // Logic
-    const removedUser = await database.removeUserPermission(
-      value.branch,
-      value.userId
-    );
+    const removedUser = await database.removeUserPermission(value.branch, value.userId);
 
     // Update cache
     delete usersCache[value.branch][value.userId];
@@ -156,9 +151,7 @@ export default function makeUserController(database) {
       userObj = {
         id: updatedUser.telegram_id,
         username: updatedUser.telegram,
-        nick:
-          updatedUser.roles[`rota_${value.branch}`]?.nick ??
-          updatedUser.telegram,
+        nick: updatedUser.roles[`rota_${value.branch}`]?.nick ?? updatedUser.telegram,
         color: updatedUser.roles[`rota_${value.branch}`]?.c ?? 0
       };
 

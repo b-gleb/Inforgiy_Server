@@ -151,17 +151,13 @@ describe('validateDayOfWeek', () => {
 
 describe('validateDayOfWeekArray', () => {
   it('should accept a array of length 1', () => {
-    const { error, value } = validateDayOfWeekArray.validate(
-      new Array(1).fill(0)
-    );
+    const { error, value } = validateDayOfWeekArray.validate(new Array(1).fill(0));
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
 
   it('should accept an array of length 7', () => {
-    const { error, value } = validateDayOfWeekArray.validate(
-      new Array(7).fill(0)
-    );
+    const { error, value } = validateDayOfWeekArray.validate(new Array(7).fill(0));
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });
@@ -239,9 +235,7 @@ describe('validateTimeRangeArray', () => {
   });
 
   it('should reject an array of length 25', () => {
-    const { error } = validateTimeRangeArray.validate(
-      new Array(25).fill('00:00-01:00')
-    );
+    const { error } = validateTimeRangeArray.validate(new Array(25).fill('00:00-01:00'));
     expect(error).toBeDefined();
   });
 
@@ -268,10 +262,7 @@ describe('validateTimeRangeArray', () => {
 
 describe('validateDateRange', () => {
   it('should accept an array of 2 dates in format YYYY-MM-DD', () => {
-    const { error, value } = validateDateRange.validate([
-      '2025-01-01',
-      '2025-01-31'
-    ]);
+    const { error, value } = validateDateRange.validate(['2025-01-01', '2025-01-31']);
     expect(error).toBeUndefined();
     expect(value).toBeDefined();
   });

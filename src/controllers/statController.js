@@ -65,10 +65,7 @@ export default function makeStatController(database) {
     const convertedStats = [];
 
     for (const userId of allUserIds) {
-      const userObj = await converters.convertUserId(
-        value.branch,
-        Number(userId)
-      );
+      const userObj = await converters.convertUserId(value.branch, Number(userId));
 
       if (!userObj) {
         return res.status(404).send(`User not found (ID: ${userId})`);
@@ -105,11 +102,7 @@ export default function makeStatController(database) {
     const result = value.dateRanges.map((range, idx) => ({
       userId: value.userId,
       dateRange: range,
-      data: helpers.fillMissingDates(
-        pipeline_output[`range_${idx}`],
-        range[0],
-        range[1]
-      )
+      data: helpers.fillMissingDates(pipeline_output[`range_${idx}`], range[0], range[1])
     }));
 
     res.json(result);
@@ -126,10 +119,7 @@ export default function makeStatController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     // Logic
-    const pipeline_output = await database.getEmptyDuties(
-      value.branch,
-      value.dateRanges
-    );
+    const pipeline_output = await database.getEmptyDuties(value.branch, value.dateRanges);
 
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,
@@ -150,10 +140,7 @@ export default function makeStatController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     // Logic
-    const pipeline_output = await database.getTakenDuties(
-      value.branch,
-      value.dateRanges
-    );
+    const pipeline_output = await database.getTakenDuties(value.branch, value.dateRanges);
 
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,
@@ -174,10 +161,7 @@ export default function makeStatController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     // Logic
-    const pipeline_output = await database.getUniqueUsers(
-      value.branch,
-      value.dateRanges
-    );
+    const pipeline_output = await database.getUniqueUsers(value.branch, value.dateRanges);
 
     const result = value.dateRanges.map((range, idx) => ({
       dateRange: range,

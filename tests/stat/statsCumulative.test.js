@@ -66,9 +66,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call getcumulativeStats() once', async () => {
@@ -119,9 +117,9 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
       expect(res.body).toBeInstanceOf(Array);
-      expect(
-        res.body.every(item => typeof item === 'object' && item !== null)
-      ).toBe(true);
+      expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(
+        true
+      );
     });
 
     it('length of the array should be equal to length of "dateRanges"', async () => {
@@ -189,20 +187,14 @@ describe(`POST ${apiUrl}`, () => {
       );
 
       expect(
-        res.body.every(item =>
-          item.dateRange.every(range => typeof range === 'string')
-        )
+        res.body.every(item => item.dateRange.every(range => typeof range === 'string'))
       ).toBe(true);
       expect(allDatesMatchFormat).toBe(true);
     });
 
     it('property "data" should be an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(
-        res.body.every(
-          item => typeof item.data === 'object' && item.data !== null
-        )
-      );
+      expect(res.body.every(item => typeof item.data === 'object' && item.data !== null));
     });
 
     it('elements of "data" array should have properties "date", "count"', async () => {
@@ -227,9 +219,7 @@ describe(`POST ${apiUrl}`, () => {
       );
 
       expect(
-        res.body.every(item =>
-          item.data.every(entry => typeof entry.date === 'string')
-        )
+        res.body.every(item => item.data.every(entry => typeof entry.date === 'string'))
       ).toBe(true);
       expect(allDatesMatchFormat).toBe(true);
     });

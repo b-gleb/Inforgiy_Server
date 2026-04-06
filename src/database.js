@@ -25,9 +25,7 @@ export const initializeMongoDB = async () => {
 // ROTA //
 //////////
 export async function getRota(branch, date) {
-  const entry = await mongo_db
-    .collection(`rota_${branch}`)
-    .findOne({ date: date });
+  const entry = await mongo_db.collection(`rota_${branch}`).findOne({ date: date });
 
   return entry;
 }
@@ -70,23 +68,16 @@ export async function addUserToRotaMulti({
         { $gte: ['$date', startDate] },
         { $lte: ['$date', endDate] },
         {
-          $in: [
-            { $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] },
-            daysOfWeek
-          ]
+          $in: [{ $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] }, daysOfWeek]
         }
       ]
     }
   };
 
   if (allowOccupiedSlots === true) {
-    const updateObj = await mongo_db
-      .collection(`rota_${branch}`)
-      .updateMany(baseQuery, {
-        $addToSet: Object.fromEntries(
-          hours.map(hour => [`rota.${hour}`, userId])
-        )
-      });
+    const updateObj = await mongo_db.collection(`rota_${branch}`).updateMany(baseQuery, {
+      $addToSet: Object.fromEntries(hours.map(hour => [`rota.${hour}`, userId]))
+    });
 
     return { modifiedCount: updateObj.modifiedCount * hours.length };
   } else {
@@ -133,10 +124,7 @@ export async function removeUserFromRotaMulti({
           { $gte: ['$date', startDate] },
           { $lte: ['$date', endDate] },
           {
-            $in: [
-              { $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] },
-              daysOfWeek
-            ]
+            $in: [{ $mod: [{ $add: [{ $dayOfWeek: '$date' }, 5] }, 7] }, daysOfWeek]
           }
         ]
       }
@@ -231,10 +219,7 @@ export async function addUserPermission(branch, username, nick, color) {
 export async function removeUserPermission(branch, userId) {
   const updateObj = await mongo_db
     .collection('users')
-    .updateOne(
-      { telegram_id: userId },
-      { $unset: { [`roles.rota_${branch}`]: null } }
-    );
+    .updateOne({ telegram_id: userId }, { $unset: { [`roles.rota_${branch}`]: null } });
   return updateObj;
 }
 
@@ -265,10 +250,7 @@ export async function getDateRangeStats(branch, userIds, dateRange) {
   const pipeline = [
     {
       $match: {
-        $and: [
-          { date: { $gte: dateRange[0] } },
-          { date: { $lte: dateRange[1] } }
-        ]
+        $and: [{ date: { $gte: dateRange[0] } }, { date: { $lte: dateRange[1] } }]
       }
     },
     { $unwind: { path: '$rota' } },
@@ -291,10 +273,7 @@ export async function getCumulativeStats(branch, userId, dateRanges) {
     facets[`range_${idx}`] = [
       {
         $match: {
-          $and: [
-            { date: { $gte: dateRange[0] } },
-            { date: { $lte: dateRange[1] } }
-          ]
+          $and: [{ date: { $gte: dateRange[0] } }, { date: { $lte: dateRange[1] } }]
         }
       },
       { $unwind: { path: '$rota' } },
@@ -332,10 +311,7 @@ export async function getEmptyDuties(branch, dateRanges) {
     facets[`range_${idx}`] = [
       {
         $match: {
-          $and: [
-            { date: { $gte: dateRange[0] } },
-            { date: { $lte: dateRange[1] } }
-          ]
+          $and: [{ date: { $gte: dateRange[0] } }, { date: { $lte: dateRange[1] } }]
         }
       },
       { $unwind: { path: '$rota' } },
@@ -360,10 +336,7 @@ export async function getTakenDuties(branch, dateRanges) {
     facets[`range_${idx}`] = [
       {
         $match: {
-          $and: [
-            { date: { $gte: dateRange[0] } },
-            { date: { $lte: dateRange[1] } }
-          ]
+          $and: [{ date: { $gte: dateRange[0] } }, { date: { $lte: dateRange[1] } }]
         }
       },
       { $unwind: { path: '$rota', preserveNullAndEmptyArrays: false } },
@@ -387,10 +360,7 @@ export async function getUniqueUsers(branch, dateRanges) {
     facets[`range_${idx}`] = [
       {
         $match: {
-          $and: [
-            { date: { $gte: dateRange[0] } },
-            { date: { $lte: dateRange[1] } }
-          ]
+          $and: [{ date: { $gte: dateRange[0] } }, { date: { $lte: dateRange[1] } }]
         }
       },
       { $unwind: { path: '$rota', preserveNullAndEmptyArrays: false } },
@@ -409,9 +379,7 @@ export async function getUniqueUsers(branch, dateRanges) {
 }
 
 export async function logUsageStatistics(entry) {
-  const insertedEntry = await mongo_db
-    .collection('usageStatistics')
-    .insertOne(entry);
+  const insertedEntry = await mongo_db.collection('usageStatistics').insertOne(entry);
   return insertedEntry;
 }
 

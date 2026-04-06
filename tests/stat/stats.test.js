@@ -89,9 +89,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async () => {
@@ -121,9 +119,7 @@ describe(`POST ${apiUrl}`, () => {
         getDateRangeStats.mockClear();
 
         getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-        getDateRangeStats.mockResolvedValueOnce(
-          generateDateRangeStats(userIds)
-        );
+        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
 
         const _res = await request(app).post(apiUrl).send(body);
 
@@ -138,9 +134,9 @@ describe(`POST ${apiUrl}`, () => {
     it('should return an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.body).toBeInstanceOf(Array);
-      expect(
-        res.body.every(item => typeof item === 'object' && item !== null)
-      ).toBe(true);
+      expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(
+        true
+      );
     });
 
     it('length of array should be the length of requested `userIds`', async () => {
@@ -151,9 +147,7 @@ describe(`POST ${apiUrl}`, () => {
       ];
 
       for (const body of bodyData) {
-        getDateRangeStats.mockResolvedValue(
-          generateDateRangeStats(body.userIds)
-        );
+        getDateRangeStats.mockResolvedValue(generateDateRangeStats(body.userIds));
         const res = await request(app).post(apiUrl).send(body);
         expect(res.body.length).toBe(body.userIds.length);
       }
@@ -174,9 +168,7 @@ describe(`POST ${apiUrl}`, () => {
     it('array element "user" should be of type object', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
-        res.body.every(
-          item => typeof item.user === 'object' && item.user != null
-        )
+        res.body.every(item => typeof item.user === 'object' && item.user != null)
       ).toBe(true);
     });
 
@@ -195,25 +187,19 @@ describe(`POST ${apiUrl}`, () => {
     it('property "id" of object "user" object should be of a positive integer', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
-        res.body.every(
-          item => Number.isInteger(item.user.id) && item.user.id > 0
-        )
+        res.body.every(item => Number.isInteger(item.user.id) && item.user.id > 0)
       ).toBe(true);
     });
 
     it('property "nick" of object "user" object should be a string', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(
-        true
-      );
+      expect(res.body.every(item => typeof item.user.nick === 'string')).toBe(true);
     });
 
     it('property "color" of object "user" object should be a positive integer or zero', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
-        res.body.every(
-          item => Number.isInteger(item.user.color) && item.user.color >= 0
-        )
+        res.body.every(item => Number.isInteger(item.user.color) && item.user.color >= 0)
       ).toBe(true);
     });
 
@@ -246,9 +232,7 @@ describe(`POST ${apiUrl}`, () => {
 
       for (const body of bodyData) {
         const res = await request(app).post(apiUrl).send(body);
-        expect(
-          res.body.every(item => item.data.length === body.dateRanges.length)
-        );
+        expect(res.body.every(item => item.data.length === body.dateRanges.length));
       }
     });
 
@@ -257,9 +241,7 @@ describe(`POST ${apiUrl}`, () => {
 
       expect(
         res.body.every(item =>
-          item.data.every(
-            subitem => typeof subitem === 'object' && subitem != null
-          )
+          item.data.every(subitem => typeof subitem === 'object' && subitem != null)
         )
       ).toBe(true);
     });
@@ -284,8 +266,7 @@ describe(`POST ${apiUrl}`, () => {
       expect(
         res.body.every(item =>
           item.data.every(
-            subitem =>
-              Array.isArray(subitem.dateRange) && subitem.dateRange.length === 2
+            subitem => Array.isArray(subitem.dateRange) && subitem.dateRange.length === 2
           )
         )
       ).toBe(true);
@@ -296,9 +277,7 @@ describe(`POST ${apiUrl}`, () => {
 
       const allDatesMatchFormat = res.body.every(item =>
         item.data.every(subitem =>
-          subitem.dateRange.every(range =>
-            /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range)
-          )
+          subitem.dateRange.every(range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range))
         )
       );
 
@@ -318,8 +297,7 @@ describe(`POST ${apiUrl}`, () => {
       expect(
         res.body.every(item =>
           item.data.every(
-            subitem =>
-              typeof Number.isInteger(subitem.count) && subitem.count >= 0
+            subitem => typeof Number.isInteger(subitem.count) && subitem.count >= 0
           )
         )
       ).toBe(true);

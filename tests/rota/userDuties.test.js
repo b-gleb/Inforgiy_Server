@@ -69,9 +69,7 @@ describe(`GET ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should query the database for user duties', async () => {
@@ -106,9 +104,7 @@ describe(`GET ${apiUrl}`, () => {
       const expectedProps = ['date', 'hours'];
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
-        return (
-          JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort())
-        );
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
       });
 
       expect(allHaveExpectedProps).toBe(true);
