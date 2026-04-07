@@ -6,9 +6,7 @@ import { generateAdmin, generateUser } from '../generators.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -129,9 +127,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(updateUserBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call isRotaAdmin() once', async () => {
@@ -185,9 +181,7 @@ describe(`POST ${apiUrl}`, () => {
         const actualProps = Object.keys(res.body).sort();
 
         expect(res.body).toBeInstanceOf(Object);
-        expect(
-          JSON.stringify(actualProps) === JSON.stringify(expectedProps)
-        ).toBe(true);
+        expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
       });
 
       it('object property "id" should be an integer', async () => {
@@ -198,8 +192,7 @@ describe(`POST ${apiUrl}`, () => {
       it('object property "username" should be a string beginning with @', async () => {
         const res = await request(app).post(apiUrl).send(body());
         expect(
-          typeof res.body.username === 'string' &&
-            res.body.username.startsWith('@')
+          typeof res.body.username === 'string' && res.body.username.startsWith('@')
         ).toBe(true);
       });
 

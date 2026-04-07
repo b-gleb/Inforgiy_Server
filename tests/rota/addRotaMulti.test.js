@@ -7,9 +7,7 @@ import { generateAdmin, generateUser } from '../generators.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
@@ -130,9 +128,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call `getUser` once if non admin calls the endpoint', async () => {
@@ -178,9 +174,7 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       const expectedProps = ['modifiedCount'].sort();
       const actualProps = Object.keys(res.body).sort();
-      expect(
-        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
-      ).toBe(true);
+      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
     });
   });
 });

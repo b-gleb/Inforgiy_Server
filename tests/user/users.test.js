@@ -6,9 +6,7 @@ import { generateAdmin, generateUser } from '../generators.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -78,11 +76,24 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.statusCode).toBe(403);
     });
 
+    it('should respond with a status code of 500 if DB call fails', async () => {
+      // suppress console.error output
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      getUser.mockRejectedValueOnce(new Error('DB exception occured'));
+      const res = await request(app).post(apiUrl).send(validBody);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({
+        error: 'Internal server error'
+      });
+
+      errorSpy.mockRestore();
+    });
+
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call isRotaAdmin() once', async () => {
@@ -136,9 +147,7 @@ describe(`POST ${apiUrl}`, () => {
     it('response should be an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.body).toBeInstanceOf(Array);
-      expect(
-        res.body.every(item => typeof item === 'object' && item != null)
-      ).toBe(true);
+      expect(res.body.every(item => typeof item === 'object' && item != null)).toBe(true);
     });
 
     it('response object should only have properties: "id", "username", "nick", "color"', async () => {
@@ -147,9 +156,7 @@ describe(`POST ${apiUrl}`, () => {
       const expectedProps = ['id', 'username', 'nick', 'color'];
       const allHaveExpectedProps = res.body.every(item => {
         const actualProps = Object.keys(item).sort();
-        return (
-          JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort())
-        );
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
       });
 
       expect(allHaveExpectedProps).toBe(true);
@@ -164,8 +171,7 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
         res.body.every(
-          item =>
-            typeof item.username === 'string' && item.username.startsWith('@')
+          item => typeof item.username === 'string' && item.username.startsWith('@')
         )
       ).toBe(true);
     });

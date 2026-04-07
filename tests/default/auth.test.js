@@ -5,9 +5,7 @@ import settup from '../../src/config/settup.json' with { type: 'json' };
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 const makeApp = (await import('../../src/app.js')).default;
 
 function generateUser(branch, id) {
@@ -84,9 +82,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call `validateInitData` once', async () => {
@@ -119,9 +115,7 @@ describe(`POST ${apiUrl}`, () => {
       const expectedProps = ['branches', 'rotaAdmin'].sort();
       const actualProps = Object.keys(res.body).sort();
 
-      expect(
-        JSON.stringify(actualProps) === JSON.stringify(expectedProps)
-      ).toBe(true);
+      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
     });
 
     it('property "branches" should be an object of length equal to number of branches with access', async () => {
@@ -147,9 +141,9 @@ describe(`POST ${apiUrl}`, () => {
         getUser.mockResolvedValueOnce(permission);
 
         const res = await request(app).post(apiUrl).send(validBody);
-        expect(
-          typeof res.body.branches === 'object' && res.body.branches !== null
-        ).toBe(true);
+        expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(
+          true
+        );
         expect(res.body.branches.length === permission.roles.length);
       }
     });
@@ -158,12 +152,10 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
       const expectedProps = ['color', 'maxDuties'].sort();
-      const allHaveExpectedProps = Object.values(res.body.branches).every(
-        item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        }
-      );
+      const allHaveExpectedProps = Object.values(res.body.branches).every(item => {
+        const actualProps = Object.keys(item).sort();
+        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
+      });
 
       expect(allHaveExpectedProps).toBe(true);
     });
@@ -171,18 +163,14 @@ describe(`POST ${apiUrl}`, () => {
     it('property "color" of subobject "branches" should be an integer', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
-        Object.values(res.body.branches).every(item =>
-          Number.isInteger(item.color)
-        )
+        Object.values(res.body.branches).every(item => Number.isInteger(item.color))
       ).toBe(true);
     });
 
     it('property "maxDuties" of subobject "branches" should be an integer', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(
-        Object.values(res.body.branches).every(item =>
-          Number.isInteger(item.maxDuties)
-        )
+        Object.values(res.body.branches).every(item => Number.isInteger(item.maxDuties))
       ).toBe(true);
     });
 

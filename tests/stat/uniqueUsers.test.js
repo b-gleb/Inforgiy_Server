@@ -64,9 +64,7 @@ describe(`POST ${apiUrl}`, () => {
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.headers['content-type']).toEqual(
-        expect.stringContaining('json')
-      );
+      expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should call `getUniqueUsers` once', async () => {
@@ -91,9 +89,7 @@ describe(`POST ${apiUrl}`, () => {
 
       for (const body of bodyData) {
         getUniqueUsers.mockClear();
-        getUniqueUsers.mockResolvedValueOnce(
-          generateUniqueUsersStats(body.dateRanges)
-        );
+        getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges));
 
         const _res = await request(app).post(apiUrl).send(body);
 
@@ -103,10 +99,7 @@ describe(`POST ${apiUrl}`, () => {
         ]);
 
         expect(getUniqueUsers).toHaveBeenCalledTimes(1);
-        expect(getUniqueUsers).toHaveBeenCalledWith(
-          body.branch,
-          expectedDateRanges
-        );
+        expect(getUniqueUsers).toHaveBeenCalledWith(body.branch, expectedDateRanges);
       }
     });
   });
@@ -118,17 +111,15 @@ describe(`POST ${apiUrl}`, () => {
     0
   ])(`RESPONSE VALIDATION POST ${apiUrl}, count is %s`, count => {
     beforeAll(() => {
-      getUniqueUsers.mockResolvedValue(
-        generateUniqueUsersStats(dateRanges, count)
-      );
+      getUniqueUsers.mockResolvedValue(generateUniqueUsersStats(dateRanges, count));
     });
 
     it('should return an array of objects', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.body).toBeInstanceOf(Array);
-      expect(
-        res.body.every(item => typeof item === 'object' && item !== null)
-      ).toBe(true);
+      expect(res.body.every(item => typeof item === 'object' && item !== null)).toBe(
+        true
+      );
     });
 
     it('length of array should be the length of requested dateRanges', async () => {
@@ -191,9 +182,7 @@ describe(`POST ${apiUrl}`, () => {
       );
 
       expect(
-        res.body.every(item =>
-          item.dateRange.every(range => typeof range === 'string')
-        )
+        res.body.every(item => item.dateRange.every(range => typeof range === 'string'))
       ).toBe(true);
       expect(allDatesMatchFormat).toBe(true);
     });

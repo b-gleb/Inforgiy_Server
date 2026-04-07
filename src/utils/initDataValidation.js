@@ -6,10 +6,7 @@ dotenv.config();
 export const validateInitData = initDataUnsafe => {
   const unixTime = Math.floor(Date.now() / 1000);
 
-  if (
-    process.env.ENV === 'PROD' &&
-    unixTime - 3600 > initDataUnsafe.auth_date
-  ) {
+  if (process.env.ENV === 'PROD' && unixTime - 3600 > initDataUnsafe.auth_date) {
     return false;
   }
 
@@ -29,9 +26,7 @@ export const validateInitData = initDataUnsafe => {
     })
     .join('\n');
 
-  const secret = crypto
-    .createHmac('sha256', 'WebAppData')
-    .update(process.env.TOKEN);
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(process.env.TOKEN);
 
   const calculatedHash = crypto
     .createHmac('sha256', secret.digest())

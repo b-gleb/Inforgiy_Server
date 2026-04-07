@@ -8,9 +8,7 @@ import { rotaDBEntry } from './mocks.js';
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
-const { validateInitData } = await import(
-  '../../src/utils/initDataValidation.js'
-);
+const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -49,9 +47,7 @@ describe(`POST ${apiUrl}`, () => {
     };
 
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(
-      generateAdmin(branch, validBody.initDataUnsafe.user.id)
-    );
+    getUser.mockResolvedValue(generateAdmin(branch, validBody.initDataUnsafe.user.id));
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -117,9 +113,7 @@ describe(`POST ${apiUrl}`, () => {
           .post(apiUrl)
           .send({ type, ...validBody });
 
-        expect(res.headers['content-type']).toEqual(
-          expect.stringContaining('json')
-        );
+        expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
       });
     });
 
@@ -138,9 +132,7 @@ describe(`POST ${apiUrl}`, () => {
 
       it('should respond with status code 404 if adding a user not assigned to current rota', async () => {
         getUser
-          .mockResolvedValueOnce(
-            generateAdmin(validBody.branch, initDataUnsafe.user.id)
-          )
+          .mockResolvedValueOnce(generateAdmin(validBody.branch, initDataUnsafe.user.id))
           .mockResolvedValueOnce(generateUser(wrongBranch, validBody.userId));
 
         const res = await request(app)
@@ -243,9 +235,7 @@ describe(`POST ${apiUrl}`, () => {
         .send({ type, ...validBody });
 
       expect(
-        res.body.every(
-          item => typeof item.users === 'object' && item.users != null
-        )
+        res.body.every(item => typeof item.users === 'object' && item.users != null)
       ).toBe(true);
     });
 
