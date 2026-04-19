@@ -18,14 +18,14 @@
     "@joi/date": "^2.1.1",
     "cors": "^2.8.6",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.4.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
     "joi": "^18.1.2",
     "mongodb": "^7.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.10",
+    "@biomejs/biome": "^2.4.12",
     "@shelf/jest-mongodb": "^6.0.2",
     "jest": "^30.3.0",
     "nodemon": "^3.1.14",
