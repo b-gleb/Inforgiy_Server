@@ -49,12 +49,8 @@ export default function makeCoverters(database) {
 
       if (data?.[index]) {
         // Process userIds asynchronously and convert them to usernames
-        const userArray = [];
-        await Promise.all(
-          data[index].map(async userId => {
-            const userObj = await convertUserId(branch, userId);
-            userArray.push(userObj);
-          })
+        const userArray = await Promise.all(
+          data[index].map(userId => convertUserId(branch, userId))
         );
 
         result.push({
