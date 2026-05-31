@@ -25,7 +25,7 @@
     "mongodb": "^7.2.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.15",
+    "@biomejs/biome": "^2.4.16",
     "@shelf/jest-mongodb": "^6.0.2",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
