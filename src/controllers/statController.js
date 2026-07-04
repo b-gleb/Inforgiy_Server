@@ -37,7 +37,6 @@ export default function makeStatController(database) {
 
       // For returned users push stats values
       for (const document of pipeline_output) {
-        // biome-ignore lint: newer JS versions support this
         (stats[document._id] ??= []).push({
           dateRange: dateRange,
           count: document.count
@@ -52,7 +51,6 @@ export default function makeStatController(database) {
       );
 
       for (const userId of notReturnedUserIds) {
-        // biome-ignore lint: newer JS versions support this
         (stats[userId] ??= []).push({
           dateRange: dateRange,
           count: 0
