@@ -11,8 +11,7 @@ export const userSchema = {
       type: 'string',
       pattern: '^@\\S+$',
       description: 'Username on Telegram',
-      examples: ['@b_gleb'],
-      description: 'username field description'
+      examples: ['@b_gleb']
     },
     nick: {
       type: 'string',
