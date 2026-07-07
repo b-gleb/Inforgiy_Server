@@ -49,17 +49,13 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe('Validation, Authentication, Authorization', () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const bodyData = [
-        { branch: Object.keys(settup)[0] },
-        { initDataUnsafe: { user: { id: 1230 } } },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { branch: Object.keys(settup)[0] },
+      { initDataUnsafe: { user: { id: 1230 } } },
+      {}
+    ])('should respond with status code 400 for incomplete body: %j', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 401 if unable to verify hash', async () => {
