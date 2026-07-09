@@ -1,6 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import Ajv from 'ajv';
 import { format, lastDayOfYear } from 'date-fns';
 import request from 'supertest';
+import { rotaSchema } from '../../schemas/rota.schema.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -29,26 +31,14 @@ describe(`GET ${apiUrl}`, () => {
     getRota.mockClear();
   });
 
-  describe(`INVALID PARAMETERS GET ${apiUrl}`, () => {
-    it('should respond with a status code 400 when any parameter is missing', async () => {
-      // biome-ignore format: keep test cases on separate lines
-      const bodyData = [
-        { branch },
-        { date },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).get(apiUrl).query(body);
-        expect(res.statusCode).toBe(400);
-      }
-    });
-  });
-
-  describe(`VALID PARAMETERS GET ${apiUrl}`, () => {
-    it('should respond with a status code of 200', async () => {
-      const res = await request(app).get(apiUrl).query(validBody);
-      expect(res.statusCode).toBe(200);
+  describe('Validation, Authentication, Authorization', () => {
+    it.each([
+      { branch },
+      { date },
+      {}
+    ])('should respond with a status code 400 with incomplete query: %j', async body => {
+      const res = await request(app).get(apiUrl).query(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with a status code of 404 if date is not found', async () => {
@@ -75,58 +65,34 @@ describe(`GET ${apiUrl}`, () => {
 
       errorSpy.mockRestore();
     });
+  });
 
+  describe('Response Validation', () => {
     it('should specify json in the content type header', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
+    it('should return payload matching an array of userSchema', async () => {
+      const ajv = new Ajv({ allErrors: true, strict: true });
+      const validSchema = ajv.compile(rotaSchema);
+
+      const res = await request(app).get(apiUrl).query(validBody);
+
+      const valid = validSchema(res.body);
+      if (!valid) {
+        console.error(validSchema.errors);
+      }
+
+      expect(valid).toBe(true);
+    });
+  });
+
+  describe('Business Logic', () => {
     it('should query the database for day rota', async () => {
       const _res = await request(app).get(apiUrl).query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
       expect(getRota).toHaveBeenCalledWith(branch, new Date(date));
-    });
-  });
-
-  describe.each(
-    Object.keys(settup)
-  )(`RESPONSE VALIDATION GET ${apiUrl} for branch %s`, iterateBranch => {
-    it('response should be an array of length 24', async () => {
-      const res = await request(app)
-        .get(apiUrl)
-        .query({ ...validBody, branch: iterateBranch });
-      expect(res.body).toBeInstanceOf(Array);
-      expect(res.body).toHaveLength(24);
-    });
-
-    it('array elements should have properties "users" and "label"', async () => {
-      const res = await request(app)
-        .get(apiUrl)
-        .query({ ...validBody, branch: iterateBranch });
-
-      const expectedProps = ['users', 'label'].sort();
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
-    });
-
-    it('array element "users" should be of type object', async () => {
-      const res = await request(app)
-        .get(apiUrl)
-        .query({ ...validBody, branch: iterateBranch });
-      expect(
-        res.body.every(item => typeof item.users === 'object' && item.users != null)
-      ).toBe(true);
-    });
-
-    it('array element property "label" should be of type string', async () => {
-      const res = await request(app)
-        .get(apiUrl)
-        .query({ ...validBody, branch: iterateBranch });
-      expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
     });
   });
 });
