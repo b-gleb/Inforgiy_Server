@@ -30,6 +30,8 @@ describe(`POST ${apiUrl}`, () => {
   let branch;
   let wrongBranch;
   let date;
+  let userId;
+  let timeRange;
   let initDataUnsafe;
   let validBody;
 
@@ -37,12 +39,15 @@ describe(`POST ${apiUrl}`, () => {
     branch = Object.keys(settup)[0];
     wrongBranch = Object.keys(settup)[1];
     date = format(new Date(), 'yyyy-MM-dd');
+    userId = 1813610409;
+    timeRange = '05:00-06:00';
     initDataUnsafe = { user: { id: 1813610409 } };
+
     validBody = {
       branch,
       date,
-      userId: 1813610409,
-      timeRange: '05:00-06:00',
+      userId,
+      timeRange,
       initDataUnsafe
     };
 
@@ -62,24 +67,17 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 when any parameter is missing', async () => {
-      const timeRange = '00:00-01:00';
-      const userId = 4560;
-
-      const bodyData = [
-        { branch, date, timeRange, userId, initDataUnsafe },
-        { type: 'add', date, timeRange, userId, initDataUnsafe },
-        { type: 'add', branch, timeRange, userId, initDataUnsafe },
-        { type: 'add', branch, date, userId, initDataUnsafe },
-        { type: 'add', branch, date, timeRange, initDataUnsafe },
-        { type: 'add', branch, date, timeRange, userId },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { branch, date, timeRange, userId, initDataUnsafe },
+      { type: 'add', date, timeRange, userId, initDataUnsafe },
+      { type: 'add', branch, timeRange, userId, initDataUnsafe },
+      { type: 'add', branch, date, userId, initDataUnsafe },
+      { type: 'add', branch, date, timeRange, initDataUnsafe },
+      { type: 'add', branch, date, timeRange, userId },
+      {}
+    ])('should respond with status code 400 for incomplete body: %j', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
   });
 
