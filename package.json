@@ -27,7 +27,7 @@
     "mongodb": "^7.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.2",
+    "@biomejs/biome": "^2.5.3",
     "@shelf/jest-mongodb": "^6.0.2",
     "ajv": "^8.20.0",
     "jest": "^30.4.2",
