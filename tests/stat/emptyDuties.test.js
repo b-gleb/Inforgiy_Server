@@ -49,8 +49,6 @@ describe(`POST ${apiUrl}`, () => {
         ]
       }
     ];
-
-    getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
   beforeEach(() => {
