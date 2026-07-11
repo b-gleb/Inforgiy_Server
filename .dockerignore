@@ -20,6 +20,7 @@ pids
 lib-cov
 
 # Documentation
+build_api_docs.js
 api.yaml
 
 # Linters
@@ -140,5 +141,6 @@ dist
 .pnp.*
 
 # GitHub & Git
+.git
 .github
 .gitignore

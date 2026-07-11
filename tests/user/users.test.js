@@ -1,5 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import Ajv from 'ajv';
 import request from 'supertest';
+import { userSchema } from '../../schemas/user.schema.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 
@@ -23,45 +25,37 @@ const app = makeApp({
 const apiUrl = '/api/users';
 
 describe(`POST ${apiUrl}`, () => {
-  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const bodyData = [
-        { branch: Object.keys(settup)[0] },
-        { initDataUnsafe: { user: { id: 1230 } } },
-        {}
-      ];
+  let branch;
+  let validBody;
 
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
-    });
+  beforeAll(() => {
+    branch = Object.keys(settup)[0];
+    validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
+
+    validateInitData.mockReturnValue(true);
+    getUser.mockResolvedValue(generateAdmin(branch, 1230));
+    getUserCount.mockResolvedValue(1);
+    getBranchUsers.mockResolvedValue([
+      generateUser(branch, 4567),
+      generateAdmin(branch, 1230)
+    ]);
   });
 
-  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
-    let branch;
-    let validBody;
+  beforeEach(() => {
+    validateInitData.mockClear();
+    getUser.mockClear();
+    getUserCount.mockClear();
+    getBranchUsers.mockClear();
+  });
 
-    beforeAll(() => {
-      branch = Object.keys(settup)[0];
-      validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
-
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(0);
-      getBranchUsers.mockResolvedValue([]);
-    });
-
-    beforeEach(() => {
-      validateInitData.mockClear();
-      getUser.mockClear();
-      getUserCount.mockClear();
-      getBranchUsers.mockClear();
-    });
-
-    it('should respond with status code 200', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.statusCode).toBe(200);
+  describe('Validation, Authentication, Authorization', () => {
+    it.each([
+      { branch: Object.keys(settup)[0] },
+      { initDataUnsafe: { user: { id: 1230 } } },
+      {}
+    ])('should respond with status code 400 for incomplete body: %j', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 401 if unable to verify hash', async () => {
@@ -90,12 +84,38 @@ describe(`POST ${apiUrl}`, () => {
 
       errorSpy.mockRestore();
     });
+  });
+
+  describe('Response Validation', () => {
+    it('should respond with status code 200', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(200);
+    });
 
     it('should specify json in the content type header', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
+    it('should return payload matching an array of userSchema', async () => {
+      const ajv = new Ajv({ allErrors: true, strict: true });
+      const validSchema = ajv.compile({
+        type: 'array',
+        items: userSchema
+      });
+
+      const res = await request(app).post(apiUrl).send(validBody);
+
+      const valid = validSchema(res.body);
+      if (!valid) {
+        console.error(validSchema.errors);
+      }
+
+      expect(valid).toBe(true);
+    });
+  });
+
+  describe('Business Logic', () => {
     it('should call isRotaAdmin() once', async () => {
       const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
@@ -109,81 +129,15 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should not call getBranchUsers() when userCount matches cache', async () => {
+      getUserCount.mockResolvedValueOnce(2);
       const _res = await request(app).post(apiUrl).send(validBody);
       expect(getBranchUsers).toHaveBeenCalledTimes(0);
     });
 
     it('should call getBranchUsers() once when userCount differs from cache', async () => {
-      getUserCount.mockResolvedValueOnce(1);
       const _res = await request(app).post(apiUrl).send(validBody);
       expect(getBranchUsers).toHaveBeenCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch);
-    });
-  });
-
-  describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
-    let branch;
-    let validBody;
-
-    beforeAll(() => {
-      branch = Object.keys(settup)[0];
-      validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
-      validateInitData.mockReturnValue(true);
-      getUser.mockResolvedValue(generateAdmin(branch, 1230));
-      getUserCount.mockResolvedValue(1);
-      getBranchUsers.mockResolvedValue([
-        generateUser(branch, 4567),
-        generateAdmin(branch, 1230)
-      ]);
-    });
-
-    beforeEach(() => {
-      validateInitData.mockClear();
-      getUser.mockClear();
-      getUserCount.mockClear();
-      getBranchUsers.mockClear();
-    });
-
-    it('response should be an array of objects', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body).toBeInstanceOf(Array);
-      expect(res.body.every(item => typeof item === 'object' && item != null)).toBe(true);
-    });
-
-    it('response object should only have properties: "id", "username", "nick", "color"', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-
-      const expectedProps = ['id', 'username', 'nick', 'color'];
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
-    });
-
-    it('response object property "id" should be an integer', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body.every(item => Number.isInteger(item.id))).toBe(true);
-    });
-
-    it('response object property "username" should be a string beginning with @', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(
-        res.body.every(
-          item => typeof item.username === 'string' && item.username.startsWith('@')
-        )
-      ).toBe(true);
-    });
-
-    it('response object property "nick" should be a string', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body.every(item => typeof item.nick === 'string')).toBe(true);
-    });
-
-    it('response object property "color" should be an integer', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body.every(item => Number.isInteger(item.color))).toBe(true);
     });
   });
 });

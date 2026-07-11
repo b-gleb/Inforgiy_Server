@@ -1,0 +1,1483 @@
+/*
+File used to build swagger documentation
+*/
+import fs from 'node:fs';
+import path from 'node:path';
+import YAML from 'yaml';
+import { dateRangeSchema } from './schemas/dateRange.schema.js';
+import { departmentSchema } from './schemas/department.schema.js';
+import { departmentStatisticsSchema } from './schemas/departmentStatistics.schema.js';
+import { rotaSchema } from './schemas/rota.schema.js';
+import { userSchema } from './schemas/user.schema.js';
+
+export async function buildOpenApiDoc() {
+  return {
+    openapi: '3.1.1',
+    info: {
+      title: 'Inforgiy Web (server)',
+      description: 'Inforgiy Server API documentation.',
+      version: '1.5.1'
+    },
+    servers: [
+      {
+        url: 'https://inforgiy-server.fly.dev/api/'
+      }
+    ],
+    paths: {
+      '/ping': {
+        get: {
+          summary: 'Ping server',
+          description: 'Returns a simple pong response to verify the API is running.',
+          responses: {
+            200: {
+              description: 'A pong response',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'pong'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth': {
+        post: {
+          summary: 'Authorise user on ther server',
+          description:
+            'Authorise user on the server, validate initDataUnsafe and get the information needed for app launch.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['initDataUnsafe'],
+                  properties: {
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description:
+                'Returns a JSON object of user permissions including admin permissions',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      branches: {
+                        additionalProperties: {
+                          type: 'object',
+                          properties: {
+                            color: {
+                              type: 'integer',
+                              description: "Integer code for user's color",
+                              minimum: 0,
+                              maximum: 6,
+                              example: 3
+                            },
+                            maxDuties: {
+                              type: 'integer',
+                              description: 'Maximum number of users per hour slot',
+                              example: 3
+                            }
+                          }
+                        },
+                        example: {
+                          lns: {
+                            color: 0,
+                            maxDuties: 3
+                          },
+                          gp: {
+                            color: 1,
+                            maxDuties: 2
+                          }
+                        }
+                      },
+                      rotaAdmin: {
+                        type: 'array',
+                        items: {
+                          type: 'string',
+                          enum: ['lns', 'gp', 'di']
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User does not have any rota roles.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Forbidden'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - User does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/rota': {
+        get: {
+          tags: ['Rota'],
+          summary: 'Duties of a day',
+          description: 'Returns all duties for a branch for a specified day',
+          parameters: [
+            {
+              name: 'branch',
+              in: 'query',
+              description: 'Branch for which to return the rota',
+              required: true,
+              schema: {
+                $ref: '#/components/schemas/Branch'
+              }
+            },
+            {
+              name: 'date',
+              in: 'query',
+              description: 'Date for which to return the rota',
+              required: true,
+              schema: {
+                type: 'string',
+                format: 'date'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Returns rota information.',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/rota'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - Date does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Day not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/userDuties': {
+        get: {
+          tags: ['Rota'],
+          summary: 'Returns users duties',
+          description:
+            'Returns user duties for the specified branch within a given timeframe.',
+          parameters: [
+            {
+              name: 'branch',
+              in: 'query',
+              description: 'Branch for which to perform the search operation',
+              required: true,
+              schema: {
+                $ref: '#/components/schemas/Branch'
+              }
+            },
+            {
+              name: 'userId',
+              in: 'query',
+              description: 'User for which to perform the search',
+              required: true,
+              schema: {
+                type: 'integer',
+                format: 'int64'
+              }
+            },
+            {
+              name: 'startDate',
+              in: 'query',
+              description: 'Starting date for the search (inclusive)',
+              required: true,
+              schema: {
+                type: 'string',
+                format: 'date'
+              }
+            },
+            {
+              name: 'endDate',
+              in: 'query',
+              description: 'Last date for the search (inclusive)',
+              required: true,
+              schema: {
+                type: 'string',
+                format: 'date'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description:
+                'For each day a user is on duty within the range returns an array of JSON objects. \n\nIf the search produced no results (userId does not exist or no duties in the specified range) an empty array is returned.',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        date: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-01-01T00:00:00.000Z'
+                        },
+                        hours: {
+                          type: 'array',
+                          items: {
+                            type: 'integer',
+                            format: 'int8'
+                          },
+                          example: [8, 9, 13, 14, 15]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/updateRota': {
+        post: {
+          tags: ['Rota'],
+          summary: 'Update rota for a particilar day',
+          description: 'Adds or removes a user from rota for a particilar day.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: [
+                    'type',
+                    'branch',
+                    'date',
+                    'timeRange',
+                    'userId',
+                    'initDataUnsafe'
+                  ],
+                  properties: {
+                    type: {
+                      type: 'string',
+                      description: 'Defines the mode of operation to perform',
+                      enum: ['add', 'remove']
+                    },
+                    branch: {
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    date: {
+                      type: 'string',
+                      format: 'date',
+                      description: 'Date for which to perform the operation',
+                      example: '2025-01-01'
+                    },
+                    timeRange: {
+                      type: 'string',
+                      description:
+                        'Time range string indicating which time range the operation is performed on',
+                      example: '00:00-01:00'
+                    },
+                    userId: {
+                      type: 'integer',
+                      format: 'int64',
+                      description: 'ID of the user to add or remove from rota',
+                      example: 123456789
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            200: {
+              description: 'Rota updated successfully.',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/rota'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not authorized to perform this action.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - Date or user to add is not found.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Date/User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/addRotaMulti': {
+        post: {
+          tags: ['Rota'],
+          summary: 'Add user to rota over a range of dates',
+          description:
+            'Add the same user to the rota for the same time slot across a range of dates. You can choose whether to add the user only into empty slots or to override existing assignments regardless of slot occupancy.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: [
+                    'branch',
+                    'startDate',
+                    'endDate',
+                    'timeRanges',
+                    'daysOfWeek',
+                    'userId',
+                    'initDataUnsafe'
+                  ],
+                  properties: {
+                    branch: {
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    startDate: {
+                      type: 'string',
+                      format: 'date',
+                      description:
+                        'Start date (inclusive) at which to begin the mass adding operation',
+                      example: '2025-01-01'
+                    },
+                    endDate: {
+                      type: 'string',
+                      format: 'date',
+                      description:
+                        'End date (inclusive) at which to end the mass adding operation',
+                      example: '2025-01-01'
+                    },
+                    timeRanges: {
+                      type: 'array',
+                      description:
+                        'An array of timeRange elements indicating which slots the operation is to be performed on',
+                      items: {
+                        type: 'string',
+                        description:
+                          'Time range string indicating which time range the operation is performed on',
+                        example: '00:00-01:00'
+                      }
+                    },
+                    daysOfWeek: {
+                      type: 'array',
+                      description:
+                        'An array of intigers indicating on which days of the week in the time range the operation is to be performed. Monday = 0, Sunday = 6',
+                      items: {
+                        type: 'integer',
+                        example: 2
+                      }
+                    },
+                    userId: {
+                      type: 'integer',
+                      format: 'int64',
+                      description: 'ID of the user to mass add to rota',
+                      example: 123456789
+                    },
+                    allowOccupiedSlots: {
+                      type: 'boolean',
+                      description:
+                        'If true, allows users to be assigned to rota slots even if they are already taken. If false, the operation only fills unassigned slots.',
+                      default: true,
+                      example: true
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            200: {
+              description: 'Rota updated successfully.',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      modifiedCount: {
+                        type: 'integer',
+                        example: 4
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not authorized to perform this action.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - User does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/removeRotaMulti': {
+        post: {
+          tags: ['Rota'],
+          summary: 'Remove user from rota over a range of dates',
+          description:
+            'Remove the same user from rota for the same time slot across a range of dates.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: [
+                    'branch',
+                    'startDate',
+                    'endDate',
+                    'timeRanges',
+                    'daysOfWeek',
+                    'userId',
+                    'initDataUnsafe'
+                  ],
+                  properties: {
+                    branch: {
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    startDate: {
+                      type: 'string',
+                      format: 'date',
+                      description:
+                        'Start date (inclusive) at which to begin the mass adding operation',
+                      example: '2025-01-01'
+                    },
+                    endDate: {
+                      type: 'string',
+                      format: 'date',
+                      description:
+                        'End date (inclusive) at which to end the mass adding operation',
+                      example: '2025-01-01'
+                    },
+                    timeRanges: {
+                      type: 'array',
+                      description:
+                        'An array of timeRange elements indicating which slots the operation is to be performed on',
+                      items: {
+                        type: 'string',
+                        description:
+                          'Time range string indicating which time range the operation is performed on',
+                        example: '00:00-01:00'
+                      }
+                    },
+                    daysOfWeek: {
+                      type: 'array',
+                      description:
+                        'An array of intigers indicating on which days of the week in the time range the operation is to be performed. Monday = 0, Sunday = 6',
+                      items: {
+                        type: 'integer',
+                        example: 2
+                      }
+                    },
+                    userId: {
+                      type: 'integer',
+                      format: 'int64',
+                      description: 'ID of the user to mass add to rota',
+                      example: 123456789
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            200: {
+              description: 'Rota updated successfully.',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      modifiedCount: {
+                        type: 'integer',
+                        example: 4
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not authorized to perform this action.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/users': {
+        post: {
+          tags: ['Users'],
+          summary: 'All users of a branch',
+          description: 'Returns all users for a specified branch',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'initDataUnsafe'],
+                  properties: {
+                    branch: {
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: "Returns all users who have the branch's rota permission",
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/userObject'
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not rota admin.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/updateUser': {
+        post: {
+          tags: ['Users'],
+          summary: 'Update user rota access',
+          description: 'Grants access to rota information or changes user information.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'initDataUnsafe'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to perform the operation',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    userObj: {
+                      $ref: '#/components/schemas/userObject'
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            200: {
+              description: 'User role updated successfully.',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/userObject'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not authorized to perform this action.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - User does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/removeUser': {
+        post: {
+          tags: ['Users'],
+          summary: 'Remove access to rota',
+          description:
+            'Removes access to rota information from user without deleting such user form the database.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'userId', 'initDataUnsafe'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to perform the operation',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    userId: {
+                      type: 'integer',
+                      format: 'int64',
+                      description: 'The ID of the user to be modified',
+                      example: 123456789
+                    },
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            204: {
+              description: 'User role removed successfully (no content)'
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Unable to verify hash'
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden - User is not authorized to perform this action.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'You must be a rota admin'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - User does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/stats': {
+        post: {
+          tags: ['Statistics'],
+          summary: 'Duty hours by user and period',
+          description: 'Duty hours by user and period',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'userIds', 'dateRanges'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to perform the operation',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    userIds: {
+                      type: 'array',
+                      minItems: 1,
+                      items: {
+                        type: 'integer',
+                        format: 'int64',
+                        description: 'The ID of the user to calculate the stats for',
+                        example: 123456789
+                      }
+                    },
+                    dateRanges: {
+                      type: 'array',
+                      description:
+                        'An array of date ranges (inclusive) for which to calculate the statistics',
+                      items: {
+                        $ref: '#/components/schemas/dateRange'
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            required: true
+          },
+          responses: {
+            200: {
+              description: 'Array of statistics by user',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        user: {
+                          type: 'object',
+                          required: ['id', 'nick', 'color'],
+                          properties: {
+                            id: {
+                              type: 'integer',
+                              format: 'int64',
+                              description: 'User ID',
+                              example: 123456789
+                            },
+                            nick: {
+                              type: 'string',
+                              description: "User's nickname",
+                              example: 'Ulla'
+                            },
+                            color: {
+                              type: 'integer',
+                              description: "User's color ID",
+                              example: 1
+                            }
+                          }
+                        },
+                        data: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              dateRange: {
+                                $ref: '#/components/schemas/dateRange'
+                              },
+                              count: {
+                                type: 'integer',
+                                description: 'Count for that date range',
+                                example: 29
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  example: [
+                    {
+                      user: {
+                        id: 123,
+                        nick: 'Ulla',
+                        color: 1
+                      },
+                      data: [
+                        {
+                          dateRange: [
+                            '2025-01-01T00:00:00.000Z',
+                            '2025-01-31T00:00:00.000Z'
+                          ],
+                          count: 29
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - User does not exist.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'User not found'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/stats/cumulative': {
+        post: {
+          tags: ['Statistics'],
+          summary: 'Cumulative sum of hours for user',
+          description: 'Cumulative sum of hours across a date range',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'userId', 'dateRanges'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to perform the operation',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    userId: {
+                      type: 'integer',
+                      format: 'int64',
+                      description: 'The ID of the user to calculate the stats for',
+                      example: 123456789
+                    },
+                    dateRanges: {
+                      type: 'array',
+                      description:
+                        'An array of arrays of dates (inclusive) for which to calculate the statistics',
+                      items: {
+                        $ref: '#/components/schemas/dateRange'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'JSON object with cumulative statistics',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        userId: {
+                          type: 'integer',
+                          format: 'int64',
+                          example: 123456789
+                        },
+                        dateRange: {
+                          $ref: '#/components/schemas/dateRange'
+                        },
+                        data: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              date: {
+                                type: 'string',
+                                format: 'YYYY-MM-DD',
+                                example: '2025-01-01'
+                              },
+                              count: {
+                                type: 'integer',
+                                example: 5
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/stats/emptyDuties': {
+        post: {
+          tags: ['Statistics'],
+          summary: 'Number of empty duty slots for a branch',
+          description:
+            'Number of unoccupied slots for a branch across several date ranges',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'dateRanges'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to get the number of empty duties',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    dateRanges: {
+                      type: 'array',
+                      description:
+                        'An array of arrays of dates (inclusive) for which to calculate the statistic',
+                      items: {
+                        $ref: '#/components/schemas/dateRange'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'JSON object with empty duties statistics',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/departmentStatistics'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/stats/takenDuties': {
+        post: {
+          tags: ['Statistics'],
+          summary: 'Number of taken duty-person slots',
+          description:
+            'Number of duty-person slots for a branch across several date ranges',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'dateRanges'],
+                  properties: {
+                    branch: {
+                      description:
+                        'Branch for which to get the number of duty-person slots',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    dateRanges: {
+                      type: 'array',
+                      description:
+                        'An array of arrays of dates (inclusive) for which to calculate the statistic',
+                      items: {
+                        $ref: '#/components/schemas/dateRange'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description:
+                'JSON object with the number of duty-person slots for the requested dateRanges',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/departmentStatistics'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/stats/uniqueUsers': {
+        post: {
+          tags: ['Statistics'],
+          summary: 'Number of unique users in rota',
+          description: 'Number of unique users in rota across several date ranges',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['branch', 'dateRanges'],
+                  properties: {
+                    branch: {
+                      description: 'Branch for which to get the number of unique users',
+                      $ref: '#/components/schemas/Branch'
+                    },
+                    dateRanges: {
+                      type: 'array',
+                      description:
+                        'An array of arrays of dates (inclusive) for which to calculate the statistic',
+                      items: {
+                        $ref: '#/components/schemas/dateRange'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'JSON object with unique users statistics',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/departmentStatistics'
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example: 'Validation error message'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    components: {
+      schemas: {
+        Branch: departmentSchema,
+        userObject: userSchema,
+        rota: rotaSchema,
+        dateRange: dateRangeSchema,
+        departmentStatistics: departmentStatisticsSchema,
+        WebAppInitData: {
+          type: 'object',
+          required: ['auth_date', 'hash', 'signature'],
+          properties: {
+            query_id: {
+              type: 'string',
+              description:
+                'A unique identifier for the Mini App session, required for sending messages via the [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) method.'
+            },
+            user: {
+              $ref: '#/components/schemas/WebAppUser',
+              description: 'An object containing data about the current user.'
+            },
+            receiver: {
+              $ref: '#/components/schemas/WebAppUser',
+              description:
+                'An object containing data about the chat partner of the current user in the chat where the bot was launched via the attachment menu. Returned only for private chats and only for Mini Apps launched via the attachment menu.'
+            },
+            chat: {
+              type: 'object',
+              description:
+                'An object containing data about the chat where the bot was launched via the attachment menu. Returned for supergroups, channels and group chats – only for Mini Apps launched via the attachment menu.',
+              example: 'WebAppChat'
+            },
+            chat_type: {
+              type: 'string',
+              description:
+                'Type of the chat from which the Mini App was opened. Can be either “sender” for a private chat with the user opening the link, “private”, “group”, “supergroup”, or “channel”. Returned only for Mini Apps launched from direct links.',
+              example: 'private',
+              enum: ['sender', 'private', 'group', 'supergroup', 'channel']
+            },
+            chat_instance: {
+              type: 'string',
+              description:
+                'Global identifier, uniquely corresponding to the chat from which the Mini App was opened. Returned only for Mini Apps launched from a direct link.',
+              example: '3682667635294298985'
+            },
+            start_param: {
+              type: 'string',
+              description:
+                'The value of the startattach parameter, passed via link. Only returned for Mini Apps when launched from the attachment menu via link.\n\nThe value of the `start_param` parameter will also be passed in the GET-parameter `tgWebAppStartParam`, so the Mini App can load the correct interface right away.'
+            },
+            can_send_after: {
+              type: 'integer',
+              description:
+                'Time in seconds, after which a message can be sent via the [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) method.'
+            },
+            auth_date: {
+              type: 'integer',
+              description: 'Unix time when the form was opened.',
+              example: 1734382707
+            },
+            hash: {
+              type: 'string',
+              description:
+                'A hash of all passed parameters, which the bot server can use to [check their validity](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).'
+            },
+            signature: {
+              type: 'string',
+              description:
+                'A signature of all passed parameters (except hash), which the third party can use to [check their validity](https://core.telegram.org/bots/webapps#validating-data-for-third-party-use).'
+            }
+          }
+        },
+        WebAppUser: {
+          type: 'object',
+          required: ['id', 'first_name'],
+          properties: {
+            id: {
+              type: 'integer',
+              format: 'int64',
+              example: 431489551
+            },
+            is_bot: {
+              type: 'boolean',
+              description:
+                'True, if this user is a bot. Returns in the [receiver](https://core.telegram.org/bots/webapps#webappinitdata) field only.',
+              example: null
+            },
+            first_name: {
+              type: 'string',
+              description: 'First name of the user or bot.',
+              example: 'Gleb'
+            },
+            last_name: {
+              type: 'string',
+              description: 'Last name of the user or bot.',
+              example: ''
+            },
+            username: {
+              type: 'string',
+              description: 'Username of the user or bot.',
+              example: 'b_gleb'
+            },
+            language_code: {
+              type: 'string',
+              description:
+                "[IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) of the user's language. Returns in user field only.",
+              example: 'en'
+            },
+            is_premium: {
+              type: 'boolean',
+              description:
+                'True, if this user is a Telegram Premium user. Otherwise not returned',
+              example: true
+            },
+            added_to_attachment_menu: {
+              type: 'boolean',
+              description:
+                'True, if this user added the bot to the attachment menu. Otherwise not returned',
+              example: null
+            },
+            allows_write_to_pm: {
+              type: 'boolean',
+              description:
+                'True, if this user allowed the bot to message them. Otherwise not returned',
+              example: true
+            },
+            photo_url: {
+              type: 'string',
+              format: 'url',
+              description:
+                'URL of the user’s profile photo. The photo can be in .jpeg or .svg formats.',
+              example:
+                'https://t.me/i/userpic/320/f9lMcAEZ9LLk5VrnMlRoKpflnsKzXyvf3TG6wXthun8.svg'
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  const doc = await buildOpenApiDoc();
+  fs.writeFileSync('api.yaml', YAML.stringify(doc));
+}

@@ -9,7 +9,9 @@
     "dev": "nodemon src/server.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --coverageDirectory='coverage'",
-    "check": "npx @biomejs/biome check --write"
+    "check": "npx @biomejs/biome check --write",
+    "docs": "node build_api_docs.js",
+    "precommit": "npm run docs && npm run check && npm run test"
   },
   "keywords": [],
   "author": "Gleb Butyagin",
@@ -25,10 +27,12 @@
     "mongodb": "^7.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.2",
+    "@biomejs/biome": "^2.5.3",
     "@shelf/jest-mongodb": "^6.0.2",
+    "ajv": "^8.20.0",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "yaml": "^2.9.0"
   }
 }
