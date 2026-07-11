@@ -8,7 +8,7 @@ export const departmentStatisticsSchema = {
       dateRange: dateRangeSchema,
       count: {
         type: 'integer',
-        example: 9
+        examples: [9]
       }
     },
     additionalProperties: false,

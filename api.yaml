@@ -1007,10 +1007,10 @@ components:
       maxItems: 2
       items:
         type: string
-        format: date
+        format: date-time
       examples:
-        - 2025-01-01
-        - 2025-01-31
+        - - 2025-01-01
+          - 2025-01-31
     departmentStatistics:
       type: array
       items:
@@ -1019,7 +1019,8 @@ components:
           dateRange: *a2
           count:
             type: integer
-            example: 9
+            examples:
+              - 9
         additionalProperties: false
         required:
           - dateRange
