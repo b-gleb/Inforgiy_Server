@@ -49,11 +49,12 @@ describe(`POST ${apiUrl}`, () => {
         ]
       }
     ];
+
+    getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
   beforeEach(() => {
     getEmptyDuties.mockClear();
-    getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
   describe('Validation, Authentication, Authorization', () => {
