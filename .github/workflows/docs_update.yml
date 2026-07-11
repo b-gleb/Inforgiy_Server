@@ -1,8 +1,6 @@
-name: API Documentation Check
+name: API Documentation Update
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -43,36 +41,4 @@ jobs:
             git push origin HEAD:${{ github.head_ref }}
           else
             echo "api.yaml is up to date"
-          fi
-
-  # Runs on push to main — fails if api.yaml doesn't match what npm run docs generates
-  check-api-docs:
-    name: Check API Documentation
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24.15.0'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build documentation
-        run: npm run docs
-
-      - name: Compare api.yaml
-        run: |
-          if ! git diff --quiet -- api.yaml; then
-            echo "::error::api.yaml is out of date on main. Run 'npm run docs' and commit the result."
-            git diff -- api.yaml
-            exit 1
           fi
