@@ -4,6 +4,7 @@ info:
   description: Inforgiy Server API documentation.
   version: 1.5.1
 servers:
+  - url: https://inforgiy-server.fly.dev/api/
 paths:
   /ping:
     get:
