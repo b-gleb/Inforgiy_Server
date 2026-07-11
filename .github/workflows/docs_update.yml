@@ -1,4 +1,4 @@
-name: API Documentation Update
+name: API Documentation
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 jobs:
   # Runs on PRs targeting main — generates api.yaml and commits it back to the PR branch if stale
   update-api-docs:
-    name: Update API Documentation
+    name: Update
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
 

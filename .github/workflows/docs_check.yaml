@@ -1,4 +1,4 @@
-name: API Documentation Check
+name: API Documentation
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 jobs:
   # Runs on push to main — fails if api.yaml doesn't match what npm run docs generates
   check-api-docs:
-    name: Check API Documentation
+    name: Check
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
