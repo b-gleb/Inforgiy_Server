@@ -9,7 +9,9 @@
     "dev": "nodemon src/server.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --coverageDirectory='coverage'",
-    "check": "npx @biomejs/biome check --write"
+    "check": "npx @biomejs/biome check --write",
+    "docs": "node build_api_docs.js",
+    "precommit": "npm run docs && npm run check && npm run test"
   },
   "keywords": [],
   "author": "Gleb Butyagin",
