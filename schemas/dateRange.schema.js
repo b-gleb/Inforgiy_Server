@@ -4,7 +4,7 @@ export const dateRangeSchema = {
   maxItems: 2,
   items: {
     type: 'string',
-    format: 'date'
+    format: 'date-time'
   },
-  examples: ['2025-01-01', '2025-01-31']
+  examples: [['2025-01-01', '2025-01-31']]
 };
