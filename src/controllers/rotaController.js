@@ -3,7 +3,7 @@ import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
-  ensureUniqueArray, 
+  ensureUniqueArray,
   validateBranch,
   validateDayOfWeekArray,
   validateStartDateBeforeEndDate,
@@ -37,10 +37,7 @@ export default function makeRotaController(database) {
     }
 
     if (['lns', 'gp', 'di', 'orel', 'ryaz'].includes(value.branch)) {
-      const result = await converters.convertListRota(
-        value.branch,
-        dayEntry?.rota ?? {}
-      );
+      const result = await converters.convertListRota(value.branch, dayEntry?.rota ?? {});
       return res.json(result);
     } else {
       return res.json({});
@@ -122,10 +119,7 @@ export default function makeRotaController(database) {
       return res.status(404).send('Date not found');
     }
 
-    const isAdmin = await helpers.isRotaAdmin(
-      value.branch,
-      initDataUnsafe.user.id
-    );
+    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
 
     if (value.type === 'remove') {
       // Only admins can remove users from rota
@@ -147,9 +141,7 @@ export default function makeRotaController(database) {
 
       // Only admins can add someone else to rota
       if (value.userId !== initDataUnsafe.user.id && !isAdmin) {
-        return res
-          .status(403)
-          .send('You must be rota admin to add someone else');
+        return res.status(403).send('You must be rota admin to add someone else');
       }
 
       const timeSlot = dayEntry.rota[timeIndex];
@@ -166,12 +158,7 @@ export default function makeRotaController(database) {
       );
     }
 
-    res.json(
-      await converters.convertListRota(
-        value.branch,
-        updatedDayEntry?.rota ?? {}
-      )
-    );
+    res.json(await converters.convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
 
     await helpers.statistic(
       initDataUnsafe,
@@ -179,7 +166,6 @@ export default function makeRotaController(database) {
       `rota-${value.type}`,
       { date: value.date, time: value.timeRange, modify: value.userId }
     );
-    return;
   };
 
   /**
@@ -202,10 +188,12 @@ export default function makeRotaController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) return res.status(401).send('Unable to verify hash');
+    if (!validateInitData(initDataUnsafe))
+      return res.status(401).send('Unable to verify hash');
 
     const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
-    if (!isAdmin) return res.status(403).send('You must be a rota admin to multi add users to rota');
+    if (!isAdmin)
+      return res.status(403).send('You must be a rota admin to multi add users to rota');
 
     const userInBranch = await helpers.isUserInBranch(value.branch, value.userId);
     if (!userInBranch) return res.status(404).send('User to add to rota is not found');
@@ -252,10 +240,12 @@ export default function makeRotaController(database) {
     if (error) return res.status(400).send(error.details[0].message);
 
     const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) return res.status(401).send('Unable to verify hash');
+    if (!validateInitData(initDataUnsafe))
+      return res.status(401).send('Unable to verify hash');
 
     const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
-    if (!isAdmin) return res.status(403).send('You must be a rota admin to multi add users to rota');
+    if (!isAdmin)
+      return res.status(403).send('You must be a rota admin to multi add users to rota');
 
     // Logic
     const hours = value.timeRanges.map(range => Number(range.slice(0, 2)));

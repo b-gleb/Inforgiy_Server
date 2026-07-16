@@ -15,12 +15,12 @@ export const userSchema = {
     },
     nick: {
       type: 'string',
-      description: 'User\s short name of callsign. Used as a display name in the rota',
+      description: "User's short name of callsign. Used as a display name in the rota",
       examples: ['Глеб']
     },
     color: {
       type: 'integer',
-      description: 'Integer code for user\s display colour',
+      description: "Integer code for user's display colour",
       minimum: 0,
       maximum: 6,
       examples: [6]
