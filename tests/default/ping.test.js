@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { describe, expect } from '@jest/globals';
 import request from 'supertest';
 

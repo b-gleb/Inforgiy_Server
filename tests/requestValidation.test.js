@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { jest } from '@jest/globals';
 import settup from '../src/config/settup.json' with { type: 'json' };
 import {

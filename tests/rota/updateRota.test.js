@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import { format } from 'date-fns';
 import request from 'supertest';
