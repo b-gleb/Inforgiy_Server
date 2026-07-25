@@ -15,42 +15,36 @@ const app = makeApp({
   getEmptyDuties
 });
 
-const apiUrl = '/api/stats/emptyDuties';
 const ajv = new Ajv({ allErrors: true, strict: true });
 addFormats(ajv);
-
-describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let dateRanges;
-  let validBody;
-  let variableLengthBodyOptions;
-
-  beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    dateRanges = [
+const apiUrl = '/api/stats/emptyDuties';
+branch = Object.keys(settup)[0];
+const dateRanges = [
+  ['2025-01-01', '2025-01-31'],
+  ['2025-02-01', '2025-02-28']
+];
+const validBody = { branch, dateRanges };
+const variableLengthBodyOptions = [
+  { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+  {
+    ...validBody,
+    dateRanges: [
       ['2025-01-01', '2025-01-31'],
       ['2025-02-01', '2025-02-28']
-    ];
-    validBody = { branch, dateRanges };
-    variableLengthBodyOptions = [
-      { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
-      {
-        ...validBody,
-        dateRanges: [
-          ['2025-01-01', '2025-01-31'],
-          ['2025-02-01', '2025-02-28']
-        ]
-      },
-      {
-        ...validBody,
-        dateRanges: [
-          ['2025-01-01', '2025-01-31'],
-          ['2025-02-01', '2025-02-28'],
-          ['2025-03-01', '2025-03-31']
-        ]
-      }
-    ];
+    ]
+  },
+  {
+    ...validBody,
+    dateRanges: [
+      ['2025-01-01', '2025-01-31'],
+      ['2025-02-01', '2025-02-28'],
+      ['2025-03-01', '2025-03-31']
+    ]
+  }
+];
 
+describe(`POST ${apiUrl}`, () => {
+  beforeAll(() => {
     getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
@@ -105,35 +99,35 @@ describe(`POST ${apiUrl}`, () => {
       expect(valid).toBe(true);
     });
 
-    it('length of array should be the length of requested dateRanges', async () => {
-      for (const body of variableLengthBodyOptions) {
-        getEmptyDuties.mockClear();
-        getEmptyDuties.mockResolvedValueOnce(
-          generateEmptyDutiesStats(body.dateRanges, count)
-        );
+    it.each(
+      variableLengthBodyOptions
+    )('length of array should be the length of requested dateRanges for: %#', async body => {
+      getEmptyDuties.mockClear();
+      getEmptyDuties.mockResolvedValueOnce(
+        generateEmptyDutiesStats(body.dateRanges, count)
+      );
 
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.body.length).toBe(body.dateRanges.length);
-      }
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.body.length).toBe(body.dateRanges.length);
     });
   });
 
   describe('Business Logic', () => {
-    it('should call `getEmptyDuties` once', async () => {
-      for (const body of variableLengthBodyOptions) {
-        getEmptyDuties.mockClear();
-        getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
+    it.each(
+      variableLengthBodyOptions
+    )('should call `getEmptyDuties` once for: %#', async body => {
+      getEmptyDuties.mockClear();
+      getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
 
-        const _res = await request(app).post(apiUrl).send(body);
+      const _res = await request(app).post(apiUrl).send(body);
 
-        const expectedDateRanges = body.dateRanges.map(([start, end]) => [
-          new Date(start),
-          new Date(end)
-        ]);
+      const expectedDateRanges = body.dateRanges.map(([start, end]) => [
+        new Date(start),
+        new Date(end)
+      ]);
 
-        expect(getEmptyDuties).toHaveBeenCalledTimes(1);
-        expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
-      }
+      expect(getEmptyDuties).toHaveBeenCalledTimes(1);
+      expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
     });
   });
 });

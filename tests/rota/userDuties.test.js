@@ -35,19 +35,15 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETRS GET ${apiUrl}`, () => {
-    it('should respond with a status code 400 when any parameter is missing', async () => {
-      const bodyData = [
-        { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
-        { branch, startDate: '2025-01-01', endDate: '2025-01-08' },
-        { branch, userId: 1230, endDate: '2025-01-08' },
-        { branch, userId: 1230, startDate: '2025-01-01' },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).get(apiUrl).query(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
+      { branch, startDate: '2025-01-01', endDate: '2025-01-08' },
+      { branch, userId: 1230, endDate: '2025-01-08' },
+      { branch, userId: 1230, startDate: '2025-01-01' },
+      {}
+    ])('should respond with a status code 400 for missing parameter: %#', async body => {
+      const res = await request(app).get(apiUrl).query(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
