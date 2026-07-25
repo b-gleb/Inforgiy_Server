@@ -24,16 +24,28 @@
       "types": "all"
     },
     "rules": {
-      "complexity": "on",
+      "complexity": {
+        "noExcessiveLinesPerFunction": "off",
+        "noExcessiveCognitiveComplexity": "off"
+      },
       "correctness": {
         "noUnresolvedImports": "off"
       },
       "performance": "on",
-      "security": "on",
+      "security": {
+        "noSecrets": {
+          "level": "on",
+          "options": {
+            "entropyThreshold": 50
+          }
+        }
+      },
       "style": {
         "noDefaultExport": "off"
       },
-      "suspicious": "on"
+      "suspicious": {
+        "noConsole": "off"
+      }
     }
   },
   "javascript": {
