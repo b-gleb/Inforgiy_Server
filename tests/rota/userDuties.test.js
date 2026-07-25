@@ -12,6 +12,7 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/userDuties';
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
 describe(`GET ${apiUrl}`, () => {
   let branch;
@@ -115,7 +116,7 @@ describe(`GET ${apiUrl}`, () => {
       const res = await request(app).get(apiUrl).query(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
-        /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(item.date)
+        DATE_FORMAT_REGEX.test(item.date)
       );
 
       expect(res.body.every(item => typeof item.date === 'string')).toBe(true);

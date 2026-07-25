@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const URL_FORMAT_REGEX = /(https?:\/\/[^\s]+)/;
+
 export const validateInitData = initDataUnsafe => {
   const unixTime = Math.floor(Date.now() / 1000);
 
@@ -18,7 +20,7 @@ export const validateInitData = initDataUnsafe => {
         v = JSON.stringify(v);
       }
 
-      if (typeof v === 'string' && /(https?:\/\/[^\s]+)/.test(v)) {
+      if (typeof v === 'string' && URL_FORMAT_REGEX.test(v)) {
         v = v.replace(/\//g, '\\/');
       }
 

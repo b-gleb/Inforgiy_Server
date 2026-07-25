@@ -13,6 +13,7 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/stats/cumulative';
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
 describe(`POST ${apiUrl}`, () => {
   let branch;
@@ -184,7 +185,7 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
-        item.dateRange.every(range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range))
+        item.dateRange.every(range => DATE_FORMAT_REGEX.test(range))
       );
 
       expect(
@@ -216,7 +217,7 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
-        item.data.every(entry => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(entry.date))
+        item.data.every(entry => DATE_FORMAT_REGEX.test(entry.date))
       );
 
       expect(

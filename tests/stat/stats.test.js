@@ -15,6 +15,7 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/stats';
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
 describe(`POST ${apiUrl}`, () => {
   let branch;
@@ -278,7 +279,7 @@ describe(`POST ${apiUrl}`, () => {
 
       const allDatesMatchFormat = res.body.every(item =>
         item.data.every(subitem =>
-          subitem.dateRange.every(range => /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(range))
+          subitem.dateRange.every(range => DATE_FORMAT_REGEX.test(range))
         )
       );
 
