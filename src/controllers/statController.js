@@ -25,12 +25,15 @@ export default function makeStatController(database) {
     // Logic
     const stats = {};
 
-    for (const dateRange of value.dateRanges) {
-      const pipeline_output = await database.getDateRangeStats(
-        value.branch,
-        value.userIds,
-        dateRange
-      );
+    // Async obtain all pipeline outputs
+    const pipelineOutputs = await Promise.all(
+      value.dateRanges.map(dateRange =>
+        database.getDateRangeStats(value.branch, value.userIds, dateRange)
+      )
+    );
+
+    for (const [index, dateRange] of value.dateRanges.entries()) {
+      const pipeline_output = pipelineOutputs[index];
 
       // An array to account for all returned user ids
       const returnedUserIds = [];
@@ -62,21 +65,23 @@ export default function makeStatController(database) {
 
     // Conver userIds to nick names
     const allUserIds = Object.keys(stats);
-    const convertedStats = [];
 
-    for (const userId of allUserIds) {
-      const userObj = await converters.convertUserId(value.branch, Number(userId));
+    const userObjs = await Promise.all(
+      allUserIds.map(userId => converters.convertUserId(value.branch, Number(userId)))
+    );
 
-      if (!userObj) {
-        return res.status(404).send(`User not found (ID: ${userId})`);
-      } else {
-        const { id, nick, color } = userObj;
-        convertedStats.push({
-          user: { id, nick, color },
-          data: stats[userId]
-        });
-      }
+    const notFoundIndex = userObjs.findIndex(userObj => !userObj);
+    if (notFoundIndex !== -1) {
+      return res.status(404).send(`User not found (ID: ${allUserIds[notFoundIndex]})`);
     }
+
+    const convertedStats = allUserIds.map((userId, index) => {
+      const { id, nick, color } = userObjs[index];
+      return {
+        user: { id, nick, color },
+        data: stats[userId]
+      };
+    });
 
     res.json(convertedStats);
   };
