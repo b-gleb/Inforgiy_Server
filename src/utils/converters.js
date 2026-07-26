@@ -39,32 +39,28 @@ export default function makeCoverters(database) {
     Converts rota from DB by adding hour ranges and converting userIds into usernames
   */
   const convertListRota = async (branch, data) => {
-    const result = [];
-
-    for (let index = 0; index < 24; index++) {
-      // Create the time range string
+    // Build the labels and per-hour userId lists up front (synchronous)
+    const hours = Array.from({ length: 24 }, (_, index) => {
       const startHour = String(index).padStart(2, '0');
       const endHour = String(index + 1).padStart(2, '0');
-      const label = `${startHour}:00-${endHour}:00`;
+      return {
+        label: `${startHour}:00-${endHour}:00`,
+        userIds: data?.[index] ?? []
+      };
+    });
 
-      if (data?.[index]) {
-        // Process userIds asynchronously and convert them to usernames
-        const userArray = await Promise.all(
-          data[index].map(userId => convertUserId(branch, userId))
-        );
+    // Flatten all userIds across all hours into one array of conversion promises
+    const allConversions = await Promise.all(
+      hours.flatMap(({ userIds }) => userIds.map(userId => convertUserId(branch, userId)))
+    );
 
-        result.push({
-          users: userArray,
-          label: label
-        });
-      } else {
-        // Use an empty object if no data is available
-        result.push({
-          users: [],
-          label: label
-        });
-      }
-    }
+    // Walk through the flattened results, slicing them back out per hour
+    let cursor = 0;
+    const result = hours.map(({ label, userIds }) => {
+      const users = allConversions.slice(cursor, cursor + userIds.length);
+      cursor += userIds.length;
+      return { users, label };
+    });
 
     return result;
   };

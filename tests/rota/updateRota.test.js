@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import { format } from 'date-fns';
 import request from 'supertest';
@@ -159,7 +160,7 @@ describe(`POST ${apiUrl}`, () => {
         expect(addUserToRota).toHaveBeenCalledTimes(1);
         expect(removeUserFromRota).toHaveBeenCalledTimes(0);
         // biome-ignore format: prevent method split
-        expect(addUserToRota).toHaveBeenCalledWith(branch, '676d7f9f8300f637d426cee9', 5, [1813610409]);
+        expect(addUserToRota).toHaveBeenCalledWith(branch, 'database_id', 5, [1813610409]);
       });
     });
 
@@ -195,7 +196,7 @@ describe(`POST ${apiUrl}`, () => {
         expect(removeUserFromRota).toHaveBeenCalledTimes(1);
         expect(addUserToRota).toHaveBeenCalledTimes(0);
         // biome-ignore format: prevent method split
-        expect(removeUserFromRota).toHaveBeenCalledWith(branch, '676d7f9f8300f637d426cee9', 5, 1813610409);
+        expect(removeUserFromRota).toHaveBeenCalledWith(branch, 'database_id', 5, 1813610409);
       });
     });
   });

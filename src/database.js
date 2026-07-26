@@ -81,19 +81,21 @@ export async function addUserToRotaMulti({
 
     return { modifiedCount: updateObj.modifiedCount * hours.length };
   } else {
-    let modifiedCount = 0;
+    const updateResults = await Promise.all(
+      hours.map(hour =>
+        mongo_db
+          .collection(`rota_${branch}`)
+          .updateMany(
+            { ...baseQuery, [`rota.${hour}`]: [] },
+            { $addToSet: { [`rota.${hour}`]: userId } }
+          )
+      )
+    );
 
-    for (const hour of hours) {
-      const updateObj = await mongo_db
-        .collection(`rota_${branch}`)
-        .updateMany(
-          { ...baseQuery, [`rota.${hour}`]: [] },
-          { $addToSet: { [`rota.${hour}`]: userId } }
-        );
-
-      modifiedCount += updateObj.modifiedCount;
-    }
-
+    const modifiedCount = updateResults.reduce(
+      (sum, updateObj) => sum + updateObj.modifiedCount,
+      0
+    );
     return { modifiedCount };
   }
 }

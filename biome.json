@@ -14,16 +14,40 @@
     "bracketSpacing": true,
     "expand": "auto",
     "useEditorconfig": true,
-    "includes": [
-      "**",
-      "!**/build",
-      "!**/coverage",
-      "!**/api.yaml",
-      "!**/jest.config.js",
-      "!**/src/controllers/rotaController.js"
-    ]
+    "includes": ["**", "!**/build", "!**/coverage", "!**/api.yaml", "!**/jest.config.js"]
   },
-  "linter": { "enabled": true, "rules": { "preset": "none" } },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "test": "all",
+      "project": "all",
+      "types": "all"
+    },
+    "rules": {
+      "complexity": {
+        "noExcessiveLinesPerFunction": "off",
+        "noExcessiveCognitiveComplexity": "off"
+      },
+      "correctness": {
+        "noUnresolvedImports": "off"
+      },
+      "performance": "on",
+      "security": {
+        "noSecrets": {
+          "level": "on",
+          "options": {
+            "entropyThreshold": 50
+          }
+        }
+      },
+      "style": {
+        "noDefaultExport": "off"
+      },
+      "suspicious": {
+        "noConsole": "off"
+      }
+    }
+  },
   "javascript": {
     "formatter": {
       "jsxQuoteStyle": "double",
@@ -37,14 +61,12 @@
       "bracketSpacing": true
     }
   },
-  "html": {
-    "formatter": {
-      "indentScriptAndStyle": false,
-      "selfCloseVoidElements": "always"
-    }
-  },
   "assist": {
     "enabled": true,
-    "actions": { "source": { "organizeImports": "on" } }
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   }
 }

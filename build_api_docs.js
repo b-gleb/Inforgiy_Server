@@ -2,7 +2,6 @@
 File used to build swagger documentation
 */
 import fs from 'node:fs';
-import path from 'node:path';
 import YAML from 'yaml';
 import { dateRangeSchema } from './schemas/dateRange.schema.js';
 import { departmentSchema } from './schemas/department.schema.js';

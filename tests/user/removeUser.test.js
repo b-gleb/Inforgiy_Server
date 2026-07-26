@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
@@ -19,19 +20,15 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/removeUser';
+const branch = Object.keys(settup)[0];
+const validBody = {
+  branch,
+  userId: 4560,
+  initDataUnsafe: { user: { id: 1230 } }
+};
 
 describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let validBody;
-
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    validBody = {
-      branch,
-      userId: 4560,
-      initDataUnsafe: { user: { id: 1230 } }
-    };
-
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateAdmin(branch, 1230));
     removeUserPermission.mockResolvedValue({ matchedCount: 1 });
@@ -44,18 +41,14 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const bodyData = [
-        { userId: 4560, initDataUnsafe: { user: { id: 1230 } } },
-        { branch, initDataUnsafe: { user: { id: 1230 } } },
-        { branch, userId: 4560 },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userId: 4560, initDataUnsafe: { user: { id: 1230 } } },
+      { branch, initDataUnsafe: { user: { id: 1230 } } },
+      { branch, userId: 4560 },
+      {}
+    ])('should respond with status code 400 for missing parameter: %#', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
   });
 

@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -14,42 +15,37 @@ const app = makeApp({
   getUniqueUsers
 });
 
-const apiUrl = '/api/stats/uniqueUsers';
 const ajv = new Ajv({ allErrors: true, strict: true });
 addFormats(ajv);
+const apiUrl = '/api/stats/uniqueUsers';
 
-describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let dateRanges;
-  let validBody;
-  let variableLengthBodyOptions;
-
-  beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    dateRanges = [
+const branch = Object.keys(settup)[0];
+const dateRanges = [
+  ['2025-01-01', '2025-01-31'],
+  ['2025-02-01', '2025-02-28']
+];
+const validBody = { branch, dateRanges };
+const variableLengthBodyOptions = [
+  { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+  {
+    ...validBody,
+    dateRanges: [
       ['2025-01-01', '2025-01-31'],
       ['2025-02-01', '2025-02-28']
-    ];
-    validBody = { branch, dateRanges };
-    variableLengthBodyOptions = [
-      { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
-      {
-        ...validBody,
-        dateRanges: [
-          ['2025-01-01', '2025-01-31'],
-          ['2025-02-01', '2025-02-28']
-        ]
-      },
-      {
-        ...validBody,
-        dateRanges: [
-          ['2025-01-01', '2025-01-31'],
-          ['2025-02-01', '2025-02-28'],
-          ['2025-03-01', '2025-03-31']
-        ]
-      }
-    ];
+    ]
+  },
+  {
+    ...validBody,
+    dateRanges: [
+      ['2025-01-01', '2025-01-31'],
+      ['2025-02-01', '2025-02-28'],
+      ['2025-03-01', '2025-03-31']
+    ]
+  }
+];
 
+describe(`POST ${apiUrl}`, () => {
+  beforeAll(() => {
     getUniqueUsers.mockResolvedValue(generateUniqueUsersStats(dateRanges));
   });
 
@@ -104,35 +100,35 @@ describe(`POST ${apiUrl}`, () => {
       expect(valid).toBe(true);
     });
 
-    it('length of array should be the length of requested dateRanges', async () => {
-      for (const body of variableLengthBodyOptions) {
-        getUniqueUsers.mockClear();
-        getUniqueUsers.mockResolvedValueOnce(
-          generateUniqueUsersStats(body.dateRanges, count)
-        );
+    it.each(
+      variableLengthBodyOptions
+    )('length of array should be the length of requested dateRanges for: %#', async body => {
+      getUniqueUsers.mockClear();
+      getUniqueUsers.mockResolvedValueOnce(
+        generateUniqueUsersStats(body.dateRanges, count)
+      );
 
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.body.length).toBe(body.dateRanges.length);
-      }
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.body.length).toBe(body.dateRanges.length);
     });
   });
 
   describe('Business Logic', () => {
-    it('should call `getUniqueUsers` once', async () => {
-      for (const body of variableLengthBodyOptions) {
-        getUniqueUsers.mockClear();
-        getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges));
+    it.each(
+      variableLengthBodyOptions
+    )('should call `getUniqueUsers` once for : %#', async body => {
+      getUniqueUsers.mockClear();
+      getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges));
 
-        const _res = await request(app).post(apiUrl).send(body);
+      const _res = await request(app).post(apiUrl).send(body);
 
-        const expectedDateRanges = body.dateRanges.map(([start, end]) => [
-          new Date(start),
-          new Date(end)
-        ]);
+      const expectedDateRanges = body.dateRanges.map(([start, end]) => [
+        new Date(start),
+        new Date(end)
+      ]);
 
-        expect(getUniqueUsers).toHaveBeenCalledTimes(1);
-        expect(getUniqueUsers).toHaveBeenCalledWith(body.branch, expectedDateRanges);
-      }
+      expect(getUniqueUsers).toHaveBeenCalledTimes(1);
+      expect(getUniqueUsers).toHaveBeenCalledWith(body.branch, expectedDateRanges);
     });
   });
 });

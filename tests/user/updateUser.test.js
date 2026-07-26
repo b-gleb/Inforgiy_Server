@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
@@ -22,40 +23,34 @@ const app = makeApp({
 
 const apiUrl = '/api/updateUser';
 
+const branch = Object.keys(settup)[0];
+const existingUserObject = {
+  id: 1230,
+  username: '@username',
+  nick: 'Nick',
+  color: 0
+};
+
+const newUserObject = {
+  username: '@username',
+  nick: 'Nick',
+  color: 0
+};
+
+const updateUserBody = {
+  branch,
+  userObj: existingUserObject,
+  initDataUnsafe: { user: { id: 4560 } }
+};
+
+const addUserBody = {
+  branch,
+  userObj: newUserObject,
+  initDataUnsafe: { user: { id: 4560 } }
+};
+
 describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let updateUserBody;
-  let addUserBody;
-  let existingUserObject;
-  let newUserObject;
-
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    existingUserObject = {
-      id: 1230,
-      username: '@username',
-      nick: 'Nick',
-      color: 0
-    };
-
-    newUserObject = {
-      username: '@username',
-      nick: 'Nick',
-      color: 0
-    };
-
-    updateUserBody = {
-      branch,
-      userObj: existingUserObject,
-      initDataUnsafe: { user: { id: 4560 } }
-    };
-
-    addUserBody = {
-      branch,
-      userObj: newUserObject,
-      initDataUnsafe: { user: { id: 4560 } }
-    };
-
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateAdmin(branch, 4560));
     updateUser.mockResolvedValue(generateUser(branch, 1230));
@@ -70,27 +65,19 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const validUserObj = {
-        id: 1230,
-        username: '@username',
-        nick: 'Nick',
-        color: 0
-      };
-
-      // biome-ignore format: keep test cases on separate lines
-      const bodyData = [
-        { userObj: validUserObj, initDataUnsafe: { user: { id: 1230 } } },
-        { branch, initDataUnsafe: { user: { id: 1230 } } },
-        { branch, userObj: validUserObj },
-        { branch, userObj: { nick: 'Nick', color: 0 }, initDataUnsafe: { user: { id: 1230 } } },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userObj: existingUserObject, initDataUnsafe: { user: { id: 1230 } } },
+      { branch, initDataUnsafe: { user: { id: 1230 } } },
+      { branch, userObj: existingUserObject },
+      {
+        branch,
+        userObj: { nick: 'Nick', color: 0 },
+        initDataUnsafe: { user: { id: 1230 } }
+      },
+      {}
+    ])('should respond with status code 400 for missing parameter: %#', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
   });
 

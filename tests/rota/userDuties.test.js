@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
@@ -11,6 +12,7 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/userDuties';
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
 describe(`GET ${apiUrl}`, () => {
   let branch;
@@ -33,19 +35,15 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETRS GET ${apiUrl}`, () => {
-    it('should respond with a status code 400 when any parameter is missing', async () => {
-      const bodyData = [
-        { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
-        { branch, startDate: '2025-01-01', endDate: '2025-01-08' },
-        { branch, userId: 1230, endDate: '2025-01-08' },
-        { branch, userId: 1230, startDate: '2025-01-01' },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).get(apiUrl).query(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userId: 1230, startDate: '2025-01-01', endDate: '2025-01-08' },
+      { branch, startDate: '2025-01-01', endDate: '2025-01-08' },
+      { branch, userId: 1230, endDate: '2025-01-08' },
+      { branch, userId: 1230, startDate: '2025-01-01' },
+      {}
+    ])('should respond with a status code 400 for missing parameter: %#', async body => {
+      const res = await request(app).get(apiUrl).query(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with a status code 400 when startDate is larger than endDate', async () => {
@@ -114,7 +112,7 @@ describe(`GET ${apiUrl}`, () => {
       const res = await request(app).get(apiUrl).query(validBody);
 
       const allDatesMatchFormat = res.body.every(item =>
-        /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(item.date)
+        DATE_FORMAT_REGEX.test(item.date)
       );
 
       expect(res.body.every(item => typeof item.date === 'string')).toBe(true);
