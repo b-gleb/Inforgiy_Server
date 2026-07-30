@@ -17,21 +17,36 @@ const app = makeApp({
 const apiUrl = '/api/stats';
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
-describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let userIds;
-  let dateRanges;
-  let validBody;
-
-  beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    userIds = [1230, 4560];
-    dateRanges = [
+const branch = Object.keys(settup)[0];
+const userIds = [1230, 4560];
+const dateRanges = [
+  ['2025-01-01', '2025-01-31'],
+  ['2025-02-01', '2025-02-28']
+];
+const validBody = { branch, userIds, dateRanges };
+const variableLengthBodyOptions = [
+  { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
+  {
+    branch,
+    userIds,
+    dateRanges: [
       ['2025-01-01', '2025-01-31'],
       ['2025-02-01', '2025-02-28']
-    ];
-    validBody = { branch, userIds, dateRanges };
+    ]
+  },
+  {
+    branch,
+    userIds,
+    dateRanges: [
+      ['2025-01-01', '2025-01-31'],
+      ['2025-02-01', '2025-02-28'],
+      ['2025-03-01', '2025-03-31']
+    ]
+  }
+];
 
+describe(`POST ${apiUrl}`, () => {
+  beforeAll(() => {
     getUser.mockResolvedValue(generateUser(branch, 1230));
     getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
   });
@@ -42,18 +57,14 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const bodyData = [
-        { userIds, dateRanges },
-        { branch, dateRanges },
-        { branch, userIds },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userIds, dateRanges },
+      { branch, dateRanges },
+      { branch, userIds },
+      {}
+    ])('should respond with status code 400 for incomplete body: %j', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 400 if userIds is a valid id (not array of ids)', async () => {
@@ -94,41 +105,20 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async () => {
-      const bodyData = [
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
-        {
-          branch,
-          userIds,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28']
-          ]
-        },
-        {
-          branch,
-          userIds,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28'],
-            ['2025-03-01', '2025-03-31']
-          ]
-        }
-      ];
+    it.each(
+      variableLengthBodyOptions
+    )('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async body => {
+      getUser.mockClear();
+      getDateRangeStats.mockClear();
 
-      for (const body of bodyData) {
-        getUser.mockClear();
-        getDateRangeStats.mockClear();
+      getUser.mockResolvedValueOnce(generateUser(branch, 1230));
+      getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
 
-        getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
+      const _res = await request(app).post(apiUrl).send(body);
 
-        const _res = await request(app).post(apiUrl).send(body);
-
-        expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
-        expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
-        expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
-      }
+      expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
+      expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
+      expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
     });
   });
 
@@ -141,18 +131,14 @@ describe(`POST ${apiUrl}`, () => {
       );
     });
 
-    it('length of array should be the length of requested `userIds`', async () => {
-      const bodyData = [
-        { branch, dateRanges, userIds: [1230] },
-        { branch, dateRanges, userIds: [1230, 4560] },
-        { branch, dateRanges, userIds: [1230, 4560, 7890] }
-      ];
-
-      for (const body of bodyData) {
-        getDateRangeStats.mockResolvedValue(generateDateRangeStats(body.userIds));
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.body.length).toBe(body.userIds.length);
-      }
+    it.each([
+      { branch, dateRanges, userIds: [1230] },
+      { branch, dateRanges, userIds: [1230, 4560] },
+      { branch, dateRanges, userIds: [1230, 4560, 7890] }
+    ])('length of array should be the length of requested `userIds`', async body => {
+      getDateRangeStats.mockResolvedValue(generateDateRangeStats(body.userIds));
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.body.length).toBe(body.userIds.length);
     });
 
     it('array elements should have properties "user" and "data"', async () => {
@@ -210,32 +196,11 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.body.every(item => Array.isArray(item.data))).toBe(true);
     });
 
-    it('array element "data" should have be the length of requested `dataRanges`', async () => {
-      const bodyData = [
-        { branch, userIds, dateRanges: [['2025-01-01', '2025-01-31']] },
-        {
-          branch,
-          userIds,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28']
-          ]
-        },
-        {
-          branch,
-          userIds,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28'],
-            ['2025-03-01', '2025-03-31']
-          ]
-        }
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.body.every(item => item.data.length === body.dateRanges.length));
-      }
+    it.each(
+      variableLengthBodyOptions
+    )('array element "data" should have be the length of requested `dataRanges`', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.body.every(item => item.data.length === body.dateRanges.length));
     });
 
     it('"data" array element should be of type object', async () => {
