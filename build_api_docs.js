@@ -1304,7 +1304,7 @@ export async function buildOpenApiDoc() {
     },
     components: {
       schemas: {
-        Branch: departmentSchema,
+        Department: departmentSchema,
         userObject: userSchema,
         rota: rotaSchema,
         dateRange: dateRangeSchema,
