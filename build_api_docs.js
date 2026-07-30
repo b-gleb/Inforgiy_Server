@@ -160,6 +160,37 @@ export async function buildOpenApiDoc() {
           }
         }
       },
+      '/departments/{slug}': {
+        get: {
+          tags: ['Departments'],
+          summary: 'Get department by slug',
+          description: 'Retrieves a department by its unique slug.',
+          parameters: [
+            {
+              name: 'slug',
+              in: 'path',
+              required: true,
+              description: 'Unique department slug',
+              schema: departmentSlug
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Department retrieved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Department'
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found - Deparment with such slug does not exist'
+            }
+          }
+        }
+      },
       '/rota': {
         get: {
           tags: ['Rota'],
