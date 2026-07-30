@@ -1,5 +1,5 @@
-export const departmentSchema = {
+export const departmentSlug = {
   type: 'string',
-  description: 'Identifier of the department for which to perform the operation',
+  description: 'Unique identifier of the department',
   enum: ['lns', 'di', 'gp', 'orel', 'ryaz']
 };

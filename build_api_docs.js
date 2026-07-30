@@ -4,7 +4,7 @@ File used to build swagger documentation
 import fs from 'node:fs';
 import YAML from 'yaml';
 import { dateRangeSchema } from './schemas/dateRange.schema.js';
-import { departmentSchema } from './schemas/department.schema.js';
+import { departmentSchema, departmentSlug } from './schemas/department.schema.js';
 import { departmentStatisticsSchema } from './schemas/departmentStatistics.schema.js';
 import { rotaSchema } from './schemas/rota.schema.js';
 import { userSchema } from './schemas/user.schema.js';
@@ -171,9 +171,7 @@ export async function buildOpenApiDoc() {
               in: 'query',
               description: 'Branch for which to return the rota',
               required: true,
-              schema: {
-                $ref: '#/components/schemas/Branch'
-              }
+              schema: departmentSlug
             },
             {
               name: 'date',
@@ -234,9 +232,7 @@ export async function buildOpenApiDoc() {
               in: 'query',
               description: 'Branch for which to perform the search operation',
               required: true,
-              schema: {
-                $ref: '#/components/schemas/Branch'
-              }
+              schema: departmentSlug
             },
             {
               name: 'userId',
@@ -337,9 +333,7 @@ export async function buildOpenApiDoc() {
                       description: 'Defines the mode of operation to perform',
                       enum: ['add', 'remove']
                     },
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     date: {
                       type: 'string',
                       format: 'date',
@@ -446,9 +440,7 @@ export async function buildOpenApiDoc() {
                     'initDataUnsafe'
                   ],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     startDate: {
                       type: 'string',
                       format: 'date',
@@ -590,9 +582,7 @@ export async function buildOpenApiDoc() {
                     'initDataUnsafe'
                   ],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     startDate: {
                       type: 'string',
                       format: 'date',
@@ -708,9 +698,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     initDataUnsafe: {
                       $ref: '#/components/schemas/WebAppInitData'
                     }
@@ -781,10 +769,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userObj: {
                       $ref: '#/components/schemas/userObject'
                     },
@@ -868,10 +853,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userId', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userId: {
                       type: 'integer',
                       format: 'int64',
@@ -950,10 +932,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userIds', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userIds: {
                       type: 'array',
                       minItems: 1,
@@ -1088,10 +1067,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userId', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userId: {
                       type: 'integer',
                       format: 'int64',
@@ -1180,10 +1156,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to get the number of empty duties',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1236,11 +1209,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description:
-                        'Branch for which to get the number of duty-person slots',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1293,10 +1262,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to get the number of unique users',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
