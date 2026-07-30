@@ -114,48 +114,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User does not have any rota roles.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Forbidden'
-                  }
-                }
-              }
+              description: 'Forbidden - User does not have any rota roles.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -227,26 +195,10 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             404: {
-              description: 'Not Found - Date does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Day not found'
-                  }
-                }
-              }
+              description: 'Not Found - Date does not exist.'
             }
           }
         }
@@ -327,15 +279,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -404,48 +348,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - Date or user to add is not found.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Date/User not found'
-                  }
-                }
-              }
+              description: 'Not Found - Date or user to add is not found.'
             }
           }
         }
@@ -546,48 +458,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -681,37 +561,13 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             }
           }
         }
@@ -753,37 +609,13 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not rota admin.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not rota admin.'
             }
           }
         }
@@ -825,48 +657,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -905,48 +705,16 @@ export async function buildOpenApiDoc() {
               description: 'User role removed successfully (no content)'
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -1061,26 +829,10 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -1160,15 +912,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1213,15 +957,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1267,15 +1003,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1319,15 +1047,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
