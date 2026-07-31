@@ -15,21 +15,34 @@ const app = makeApp({
 const apiUrl = '/api/stats/cumulative';
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
-describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let userId;
-  let dateRanges;
-  let validBody;
-
-  beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    userId = 1230;
-    dateRanges = [
+const branch = Object.keys(settup)[0];
+const userId = 1230;
+const dateRanges = [
+  ['2025-01-01', '2025-01-31'],
+  ['2025-02-01', '2025-02-28']
+];
+const validBody = { branch, userId, dateRanges };
+const variableLengthBodyOptions = [
+  { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
+  {
+    ...validBody,
+    dateRanges: [
       ['2025-01-01', '2025-01-31'],
       ['2025-02-01', '2025-02-28']
-    ];
-    validBody = { branch, userId, dateRanges };
+    ]
+  },
+  {
+    ...validBody,
+    dateRanges: [
+      ['2025-01-01', '2025-01-31'],
+      ['2025-02-01', '2025-02-28'],
+      ['2025-03-01', '2025-03-31']
+    ]
+  }
+];
 
+describe(`POST ${apiUrl}`, () => {
+  beforeAll(() => {
     getCumulativeStats.mockResolvedValue(generateCumulativeStats(dateRanges));
   });
 
@@ -38,18 +51,14 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 if any of the parameters are missing', async () => {
-      const bodyData = [
-        { userId, dateRanges },
-        { branch, dateRanges },
-        { branch, userId },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { userId, dateRanges },
+      { branch, dateRanges },
+      { branch, userId },
+      {}
+    ])('should respond with status code 400 if any of the parameters are missing', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
@@ -71,46 +80,25 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it('should call getcumulativeStats() once', async () => {
-      const bodyData = [
-        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
-        {
-          ...validBody,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28']
-          ]
-        },
-        {
-          ...validBody,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28'],
-            ['2025-03-01', '2025-03-31']
-          ]
-        }
-      ];
+    it.each(
+      variableLengthBodyOptions
+    )('should call getcumulativeStats() once', async body => {
+      getCumulativeStats.mockClear();
+      getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
 
-      for (const body of bodyData) {
-        getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(
-          generateCumulativeStats(body.dateRanges)
-        );
+      const _res = await request(app).post(apiUrl).send(body);
 
-        const _res = await request(app).post(apiUrl).send(body);
+      const expectedDateRanges = body.dateRanges.map(([start, end]) => [
+        new Date(start),
+        new Date(end)
+      ]);
 
-        const expectedDateRanges = body.dateRanges.map(([start, end]) => [
-          new Date(start),
-          new Date(end)
-        ]);
-
-        expect(getCumulativeStats).toHaveBeenCalledTimes(1);
-        expect(getCumulativeStats).toHaveBeenCalledWith(
-          branch,
-          body.userId,
-          expectedDateRanges
-        );
-      }
+      expect(getCumulativeStats).toHaveBeenCalledTimes(1);
+      expect(getCumulativeStats).toHaveBeenCalledWith(
+        branch,
+        body.userId,
+        expectedDateRanges
+      );
     });
   });
 
@@ -124,35 +112,14 @@ describe(`POST ${apiUrl}`, () => {
       );
     });
 
-    it('length of the array should be equal to length of "dateRanges"', async () => {
-      const bodyData = [
-        { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
-        {
-          ...validBody,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28']
-          ]
-        },
-        {
-          ...validBody,
-          dateRanges: [
-            ['2025-01-01', '2025-01-31'],
-            ['2025-02-01', '2025-02-28'],
-            ['2025-03-01', '2025-03-31']
-          ]
-        }
-      ];
+    it.each(
+      variableLengthBodyOptions
+    )('length of the array should be equal to length of "dateRanges"', async body => {
+      getCumulativeStats.mockClear();
+      getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
 
-      for (const body of bodyData) {
-        getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(
-          generateCumulativeStats(body.dateRanges)
-        );
-
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.body.length).toBe(body.dateRanges.length);
-      }
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.body.length).toBe(body.dateRanges.length);
     });
 
     it('array object should have properties "userId", "dateRange" and "data"', async () => {

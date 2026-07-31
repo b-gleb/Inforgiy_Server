@@ -65,22 +65,18 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 400 when any of the parameters are missing', async () => {
-      const bodyData = [
-        { startDate, endDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
-        { branch, endDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
-        { branch, startDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
-        { branch, startDate, endDate, daysOfWeek, userId, initDataUnsafe },
-        { branch, startDate, endDate, timeRanges, userId, initDataUnsafe },
-        { branch, startDate, endDate, timeRanges, daysOfWeek, initDataUnsafe },
-        { branch, startDate, endDate, timeRanges, daysOfWeek, userId },
-        {}
-      ];
-
-      for (const body of bodyData) {
-        const res = await request(app).post(apiUrl).send(body);
-        expect(res.statusCode).toBe(400);
-      }
+    it.each([
+      { startDate, endDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
+      { branch, endDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
+      { branch, startDate, timeRanges, daysOfWeek, userId, initDataUnsafe },
+      { branch, startDate, endDate, daysOfWeek, userId, initDataUnsafe },
+      { branch, startDate, endDate, timeRanges, userId, initDataUnsafe },
+      { branch, startDate, endDate, timeRanges, daysOfWeek, initDataUnsafe },
+      { branch, startDate, endDate, timeRanges, daysOfWeek, userId },
+      {}
+    ])('should respond with status code 400 for incomplete body %j', async body => {
+      const res = await request(app).post(apiUrl).send(body);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 400 when startDate is larger than endDate', async () => {

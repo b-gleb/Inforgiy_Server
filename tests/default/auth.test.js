@@ -2,24 +2,13 @@
 import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import { generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
   validateInitData: jest.fn()
 }));
 const { validateInitData } = await import('../../src/utils/initDataValidation.js');
 const makeApp = (await import('../../src/app.js')).default;
-
-function generateUser(branch, id) {
-  return {
-    telegram: `@username_${id}`,
-    roles: {
-      [`rota_${branch}`]: {
-        nick: `Nick_${id}`,
-        c: 0
-      }
-    }
-  };
-}
 
 const getUser = jest.fn();
 
@@ -29,14 +18,12 @@ const app = makeApp({
 
 const apiUrl = '/api/auth';
 
+const initDataUnsafe = { user: { id: 1230 } };
+const validBody = { initDataUnsafe };
+const userData = generateUser('lns', 1230);
+
 describe(`POST ${apiUrl}`, () => {
-  let initDataUnsafe;
-  let validBody;
-
   beforeAll(() => {
-    initDataUnsafe = { user: { id: 1230 } };
-    validBody = { initDataUnsafe };
-
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
   });
@@ -119,34 +106,28 @@ describe(`POST ${apiUrl}`, () => {
       expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
     });
 
-    it('property "branches" should be an object of length equal to number of branches with access', async () => {
-      const userData = { nick: 'nick', c: 0 };
-
-      const userPermissions = [
-        {
-          telegram: '@username',
-          roles: { rota_lns: userData }
-        },
-        {
-          telegram: '@username',
-          roles: { rota_lns: userData, rota_di: userData }
-        },
-        {
-          telegram: '@username',
-          roles: { rota_lns: userData, rota_di: userData, rota_gp: userData }
-        }
-      ];
-
-      for (const permission of userPermissions) {
-        getUser.mockClear();
-        getUser.mockResolvedValueOnce(permission);
-
-        const res = await request(app).post(apiUrl).send(validBody);
-        expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(
-          true
-        );
-        expect(res.body.branches.length === permission.roles.length);
+    it.each([
+      {
+        telegram: '@username',
+        roles: { rota_lns: userData }
+      },
+      {
+        telegram: '@username',
+        roles: { rota_lns: userData, rota_di: userData }
+      },
+      {
+        telegram: '@username',
+        roles: { rota_lns: userData, rota_di: userData, rota_gp: userData }
       }
+    ])('property "branches" should be an object of length equal to number of branches with access', async permission => {
+      getUser.mockClear();
+      getUser.mockResolvedValueOnce(permission);
+
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(
+        true
+      );
+      expect(res.body.branches.length === permission.roles.length);
     });
 
     it('subobject of "branches" should have properties "color" and "maxDuties"', async () => {
@@ -175,44 +156,38 @@ describe(`POST ${apiUrl}`, () => {
       ).toBe(true);
     });
 
-    it('property "rotaAdmin" should be an array of length equal to number of branches with admin access', async () => {
-      const userData = { nick: 'nick', c: 0 };
-
-      const userPermissions = [
-        {
-          telegram: '@username',
-          roles: { rota_lns: userData, admin_rota_lns: null }
-        },
-        {
-          telegram: '@username',
-          roles: {
-            rota_lns: userData,
-            rota_di: userData,
-            admin_rota_lns: null,
-            admin_rota_di: null
-          }
-        },
-        {
-          telegram: '@username',
-          roles: {
-            rota_lns: userData,
-            rota_di: userData,
-            rota_gp: userData,
-            admin_rota_lns: null,
-            admin_rota_di: null,
-            admin_rota_gp: null
-          }
+    it.each([
+      {
+        telegram: '@username',
+        roles: { rota_lns: userData, admin_rota_lns: null }
+      },
+      {
+        telegram: '@username',
+        roles: {
+          rota_lns: userData,
+          rota_di: userData,
+          admin_rota_lns: null,
+          admin_rota_di: null
         }
-      ];
-
-      for (const permission of userPermissions) {
-        getUser.mockClear();
-        getUser.mockResolvedValueOnce(permission);
-
-        const res = await request(app).post(apiUrl).send(validBody);
-        expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
-        expect(res.body.rotaAdmin.length === permission.roles.length);
+      },
+      {
+        telegram: '@username',
+        roles: {
+          rota_lns: userData,
+          rota_di: userData,
+          rota_gp: userData,
+          admin_rota_lns: null,
+          admin_rota_di: null,
+          admin_rota_gp: null
+        }
       }
+    ])('property "rotaAdmin" should be an array of length equal to number of branches with admin access', async permission => {
+      getUser.mockClear();
+      getUser.mockResolvedValueOnce(permission);
+
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
+      expect(res.body.rotaAdmin.length === permission.roles.length);
     });
   });
 });
