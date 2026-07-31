@@ -2,11 +2,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import joiDate from '@joi/date';
+import { JoiDate } from '@joi/date';
 import BaseJoi from 'joi';
 import settup from '../config/settup.json' with { type: 'json' };
 
-const Joi = BaseJoi.extend(joiDate);
+const Joi = BaseJoi.extend(JoiDate);
 
 export const validateBranch = Joi.string().valid(...Object.keys(settup));
 export const validateUserId = Joi.number().integer().positive();
@@ -29,8 +29,8 @@ export const validateTimeRangeArray = Joi.array().min(1).max(24).items(validateT
 export const validateDateRange = Joi.array()
   .length(2)
   .items(
-    Joi.date().format('YYYY-MM-DD').utc().required(),
-    Joi.date().format('YYYY-MM-DD').utc().required()
+    Joi.date().format({ format: 'YYYY-MM-DD', utc: true }).required(),
+    Joi.date().format({ format: 'YYYY-MM-DD', utc: true }).required()
   )
   .custom((value, helpers) => {
     if (value[0] > value[1]) {
