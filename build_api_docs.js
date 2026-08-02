@@ -154,7 +154,7 @@ export async function buildOpenApiDoc() {
               }
             },
             404: {
-              description: 'Not Found - Deparment with such slug does not exist'
+              description: 'Not Found - Department with such slug does not exist'
             }
           }
         }

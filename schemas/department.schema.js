@@ -16,7 +16,7 @@ export const departmentSchema = {
     maxDuties: {
       type: 'integer',
       minimum: 0,
-      description: 'Maximumm number of duties allowed for the department',
+      description: 'Maximum number of duties allowed for the department',
       examples: [3]
     }
   },
