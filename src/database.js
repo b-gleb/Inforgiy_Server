@@ -21,6 +21,16 @@ export const initializeMongoDB = async () => {
   return mongo_client;
 };
 
+////////////////
+// DEPARTMENT //
+////////////////
+export async function getDepartmentBySlug(slug) {
+  const entry = await mongo_db
+    .collection('rota')
+    .findOne({ slug }, { projection: { _id: 0 } });
+  return entry;
+}
+
 //////////
 // ROTA //
 //////////
@@ -387,6 +397,8 @@ export async function logUsageStatistics(entry) {
 
 export default {
   initializeMongoDB,
+  // DEPARTMENT
+  getDepartmentBySlug,
   // ROTA
   getRota,
   getUserDuties,
