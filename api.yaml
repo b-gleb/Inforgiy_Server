@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Inforgiy Web (server)
   description: Inforgiy Server API documentation.
-  version: 1.5.1
+  version: 1.6.0
 servers:
   - url: https://inforgiy-server.fly.dev/api/
 paths:
@@ -73,32 +73,41 @@ paths:
                         - di
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User does not have any rota roles.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Forbidden
         "404":
           description: Not Found - User does not exist.
+  /departments/{slug}:
+    get:
+      tags:
+        - Departments
+      summary: Get department by slug
+      description: Retrieves a department by its unique slug.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Unique department slug
+          schema: &a1
+            type: string
+            description: Unique identifier of the department
+            enum:
+              - lns
+              - di
+              - gp
+              - orel
+              - ryaz
+      responses:
+        "200":
+          description: Department retrieved successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: User not found
+                $ref: "#/components/schemas/Department"
+        "404":
+          description: Not Found - Department with such slug does not exist
   /rota:
     get:
       tags:
@@ -110,8 +119,7 @@ paths:
           in: query
           description: Branch for which to return the rota
           required: true
-          schema:
-            $ref: "#/components/schemas/Branch"
+          schema: *a1
         - name: date
           in: query
           description: Date for which to return the rota
@@ -128,18 +136,8 @@ paths:
                 $ref: "#/components/schemas/rota"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "404":
           description: Not Found - Date does not exist.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Day not found
   /userDuties:
     get:
       tags:
@@ -151,8 +149,7 @@ paths:
           in: query
           description: Branch for which to perform the search operation
           required: true
-          schema:
-            $ref: "#/components/schemas/Branch"
+          schema: *a1
         - name: userId
           in: query
           description: User for which to perform the search
@@ -207,11 +204,6 @@ paths:
                         - 15
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
   /updateRota:
     post:
       tags:
@@ -237,8 +229,7 @@ paths:
                   enum:
                     - add
                     - remove
-                branch:
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 date:
                   type: string
                   format: date
@@ -266,32 +257,12 @@ paths:
                 $ref: "#/components/schemas/rota"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not authorized to perform this action.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
         "404":
           description: Not Found - Date or user to add is not found.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Date/User not found
   /addRotaMulti:
     post:
       tags:
@@ -314,8 +285,7 @@ paths:
                 - userId
                 - initDataUnsafe
               properties:
-                branch:
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 startDate:
                   type: string
                   format: date
@@ -371,32 +341,12 @@ paths:
                     example: 4
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not authorized to perform this action.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
         "404":
           description: Not Found - User does not exist.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User not found
   /removeRotaMulti:
     post:
       tags:
@@ -418,8 +368,7 @@ paths:
                 - userId
                 - initDataUnsafe
               properties:
-                branch:
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 startDate:
                   type: string
                   format: date
@@ -468,25 +417,10 @@ paths:
                     example: 4
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not authorized to perform this action.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
   /users:
     post:
       tags:
@@ -503,8 +437,7 @@ paths:
                 - branch
                 - initDataUnsafe
               properties:
-                branch:
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 initDataUnsafe:
                   $ref: "#/components/schemas/WebAppInitData"
       responses:
@@ -518,25 +451,10 @@ paths:
                   $ref: "#/components/schemas/userObject"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not rota admin.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
   /updateUser:
     post:
       tags:
@@ -552,9 +470,7 @@ paths:
                 - branch
                 - initDataUnsafe
               properties:
-                branch:
-                  description: Branch for which to perform the operation
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 userObj:
                   $ref: "#/components/schemas/userObject"
                 initDataUnsafe:
@@ -569,32 +485,12 @@ paths:
                 $ref: "#/components/schemas/userObject"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not authorized to perform this action.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
         "404":
           description: Not Found - User does not exist.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User not found
   /removeUser:
     post:
       tags:
@@ -612,9 +508,7 @@ paths:
                 - userId
                 - initDataUnsafe
               properties:
-                branch:
-                  description: Branch for which to perform the operation
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 userId:
                   type: integer
                   format: int64
@@ -628,32 +522,12 @@ paths:
           description: User role removed successfully (no content)
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "401":
           description: Unauthorized - Unable to verify hash.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Unable to verify hash
         "403":
           description: Forbidden - User is not authorized to perform this action.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You must be a rota admin
         "404":
           description: Not Found - User does not exist.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User not found
   /stats:
     post:
       tags:
@@ -670,9 +544,7 @@ paths:
                 - userIds
                 - dateRanges
               properties:
-                branch:
-                  description: Branch for which to perform the operation
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 userIds:
                   type: array
                   minItems: 1
@@ -741,18 +613,8 @@ paths:
                       count: 29
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
         "404":
           description: Not Found - User does not exist.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User not found
   /stats/cumulative:
     post:
       tags:
@@ -770,9 +632,7 @@ paths:
                 - userId
                 - dateRanges
               properties:
-                branch:
-                  description: Branch for which to perform the operation
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 userId:
                   type: integer
                   format: int64
@@ -814,11 +674,6 @@ paths:
                             example: 5
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
   /stats/emptyDuties:
     post:
       tags:
@@ -835,9 +690,7 @@ paths:
                 - branch
                 - dateRanges
               properties:
-                branch:
-                  description: Branch for which to get the number of empty duties
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
@@ -853,11 +706,6 @@ paths:
                 $ref: "#/components/schemas/departmentStatistics"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
   /stats/takenDuties:
     post:
       tags:
@@ -874,9 +722,7 @@ paths:
                 - branch
                 - dateRanges
               properties:
-                branch:
-                  description: Branch for which to get the number of duty-person slots
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
@@ -893,11 +739,6 @@ paths:
                 $ref: "#/components/schemas/departmentStatistics"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
   /stats/uniqueUsers:
     post:
       tags:
@@ -914,9 +755,7 @@ paths:
                 - branch
                 - dateRanges
               properties:
-                branch:
-                  description: Branch for which to get the number of unique users
-                  $ref: "#/components/schemas/Branch"
+                branch: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
@@ -932,23 +771,29 @@ paths:
                 $ref: "#/components/schemas/departmentStatistics"
         "400":
           description: Bad Request - Invalid input data.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Validation error message
 components:
   schemas:
-    Branch:
-      type: string
-      description: Identifier of the department for which to perform the operation
-      enum:
-        - lns
-        - di
-        - gp
-        - orel
-        - ryaz
-    userObject: &a1
+    Department:
+      type: object
+      properties:
+        slug: *a1
+        name:
+          type: string
+          description: Department name
+          examples:
+            - ЛНС
+        maxDuties:
+          type: integer
+          minimum: 0
+          description: Maximum number of duties allowed for the department
+          examples:
+            - 3
+      required:
+        - slug
+        - name
+        - maxDuties
+      additionalProperties: false
+    userObject: &a2
       type: object
       properties:
         id:
@@ -990,7 +835,7 @@ components:
         properties:
           users:
             type: array
-            items: *a1
+            items: *a2
             description: Array of user object for the timeslot
           label:
             type: string
@@ -1001,7 +846,7 @@ components:
           - users
           - label
         additionalProperties: false
-    dateRange: &a2
+    dateRange: &a3
       type: array
       minItems: 2
       maxItems: 2
@@ -1016,7 +861,7 @@ components:
       items:
         type: object
         properties:
-          dateRange: *a2
+          dateRange: *a3
           count:
             type: integer
             examples:

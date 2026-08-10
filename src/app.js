@@ -7,6 +7,7 @@ dotenv.config();
 
 // ROUTES
 import makeDefaultRoutes from './routes/defaultRoutes.js';
+import makeDepartmentRoutes from './routes/departmentRoutes.js';
 import makeRotaRoutes from './routes/rotaRoutes.js';
 import makeStatRoutes from './routes/statRoutes.js';
 import makeUserRoutes from './routes/userRoutes.js';
@@ -35,6 +36,7 @@ export default function makeApp(database) {
 
   app.use('/api', perMinuteLimiter, perHourLimiter);
   app.use('/api', makeDefaultRoutes(database));
+  app.use('/api', makeDepartmentRoutes(database));
   app.use('/api', makeRotaRoutes(database));
   app.use('/api', makeUserRoutes(database));
   app.use('/api', makeStatRoutes(database));

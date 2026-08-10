@@ -4,7 +4,7 @@ File used to build swagger documentation
 import fs from 'node:fs';
 import YAML from 'yaml';
 import { dateRangeSchema } from './schemas/dateRange.schema.js';
-import { departmentSchema } from './schemas/department.schema.js';
+import { departmentSchema, departmentSlug } from './schemas/department.schema.js';
 import { departmentStatisticsSchema } from './schemas/departmentStatistics.schema.js';
 import { rotaSchema } from './schemas/rota.schema.js';
 import { userSchema } from './schemas/user.schema.js';
@@ -15,7 +15,7 @@ export async function buildOpenApiDoc() {
     info: {
       title: 'Inforgiy Web (server)',
       description: 'Inforgiy Server API documentation.',
-      version: '1.5.1'
+      version: '1.6.0'
     },
     servers: [
       {
@@ -114,48 +114,47 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User does not have any rota roles.',
+              description: 'Forbidden - User does not have any rota roles.'
+            },
+            404: {
+              description: 'Not Found - User does not exist.'
+            }
+          }
+        }
+      },
+      '/departments/{slug}': {
+        get: {
+          tags: ['Departments'],
+          summary: 'Get department by slug',
+          description: 'Retrieves a department by its unique slug.',
+          parameters: [
+            {
+              name: 'slug',
+              in: 'path',
+              required: true,
+              description: 'Unique department slug',
+              schema: departmentSlug
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Department retrieved successfully',
               content: {
-                'text/plain': {
+                'application/json': {
                   schema: {
-                    type: 'string',
-                    example: 'Forbidden'
+                    $ref: '#/components/schemas/Department'
                   }
                 }
               }
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - Department with such slug does not exist'
             }
           }
         }
@@ -171,9 +170,7 @@ export async function buildOpenApiDoc() {
               in: 'query',
               description: 'Branch for which to return the rota',
               required: true,
-              schema: {
-                $ref: '#/components/schemas/Branch'
-              }
+              schema: departmentSlug
             },
             {
               name: 'date',
@@ -198,26 +195,10 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             404: {
-              description: 'Not Found - Date does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Day not found'
-                  }
-                }
-              }
+              description: 'Not Found - Date does not exist.'
             }
           }
         }
@@ -234,9 +215,7 @@ export async function buildOpenApiDoc() {
               in: 'query',
               description: 'Branch for which to perform the search operation',
               required: true,
-              schema: {
-                $ref: '#/components/schemas/Branch'
-              }
+              schema: departmentSlug
             },
             {
               name: 'userId',
@@ -300,15 +279,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -337,9 +308,7 @@ export async function buildOpenApiDoc() {
                       description: 'Defines the mode of operation to perform',
                       enum: ['add', 'remove']
                     },
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     date: {
                       type: 'string',
                       format: 'date',
@@ -379,48 +348,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - Date or user to add is not found.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Date/User not found'
-                  }
-                }
-              }
+              description: 'Not Found - Date or user to add is not found.'
             }
           }
         }
@@ -446,9 +383,7 @@ export async function buildOpenApiDoc() {
                     'initDataUnsafe'
                   ],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     startDate: {
                       type: 'string',
                       format: 'date',
@@ -523,48 +458,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -590,9 +493,7 @@ export async function buildOpenApiDoc() {
                     'initDataUnsafe'
                   ],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     startDate: {
                       type: 'string',
                       format: 'date',
@@ -660,37 +561,13 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             }
           }
         }
@@ -708,9 +585,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     initDataUnsafe: {
                       $ref: '#/components/schemas/WebAppInitData'
                     }
@@ -734,37 +609,13 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not rota admin.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not rota admin.'
             }
           }
         }
@@ -781,10 +632,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userObj: {
                       $ref: '#/components/schemas/userObject'
                     },
@@ -809,48 +657,16 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -868,10 +684,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userId', 'initDataUnsafe'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userId: {
                       type: 'integer',
                       format: 'int64',
@@ -892,48 +705,16 @@ export async function buildOpenApiDoc() {
               description: 'User role removed successfully (no content)'
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Unable to verify hash'
-                  }
-                }
-              }
+              description: 'Unauthorized - Unable to verify hash.'
             },
             403: {
-              description: 'Forbidden - User is not authorized to perform this action.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'You must be a rota admin'
-                  }
-                }
-              }
+              description: 'Forbidden - User is not authorized to perform this action.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -950,10 +731,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userIds', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userIds: {
                       type: 'array',
                       minItems: 1,
@@ -1051,26 +829,10 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             },
             404: {
-              description: 'Not Found - User does not exist.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'User not found'
-                  }
-                }
-              }
+              description: 'Not Found - User does not exist.'
             }
           }
         }
@@ -1088,10 +850,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'userId', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to perform the operation',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     userId: {
                       type: 'integer',
                       format: 'int64',
@@ -1153,15 +912,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1180,10 +931,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to get the number of empty duties',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1209,15 +957,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1236,11 +976,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description:
-                        'Branch for which to get the number of duty-person slots',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1267,15 +1003,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1293,10 +1021,7 @@ export async function buildOpenApiDoc() {
                   type: 'object',
                   required: ['branch', 'dateRanges'],
                   properties: {
-                    branch: {
-                      description: 'Branch for which to get the number of unique users',
-                      $ref: '#/components/schemas/Branch'
-                    },
+                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1322,15 +1047,7 @@ export async function buildOpenApiDoc() {
               }
             },
             400: {
-              description: 'Bad Request - Invalid input data.',
-              content: {
-                'text/plain': {
-                  schema: {
-                    type: 'string',
-                    example: 'Validation error message'
-                  }
-                }
-              }
+              description: 'Bad Request - Invalid input data.'
             }
           }
         }
@@ -1338,7 +1055,7 @@ export async function buildOpenApiDoc() {
     },
     components: {
       schemas: {
-        Branch: departmentSchema,
+        Department: departmentSchema,
         userObject: userSchema,
         rota: rotaSchema,
         dateRange: dateRangeSchema,
