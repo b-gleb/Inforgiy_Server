@@ -119,16 +119,19 @@ describe(`POST ${apiUrl}`, () => {
         telegram: '@username',
         roles: { rota_lns: userData, rota_di: userData, rota_gp: userData }
       }
-    ])('property "branches" should be an object of length equal to number of branches with access', async permission => {
-      getUser.mockClear();
-      getUser.mockResolvedValueOnce(permission);
+    ])(
+      'property "branches" should be an object of length equal to number of branches with access',
+      async permission => {
+        getUser.mockClear();
+        getUser.mockResolvedValueOnce(permission);
 
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(
-        true
-      );
-      expect(res.body.branches.length === permission.roles.length);
-    });
+        const res = await request(app).post(apiUrl).send(validBody);
+        expect(typeof res.body.branches === 'object' && res.body.branches !== null).toBe(
+          true
+        );
+        expect(res.body.branches.length === permission.roles.length);
+      }
+    );
 
     it('subobject of "branches" should have properties "color" and "maxDuties"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
@@ -181,13 +184,16 @@ describe(`POST ${apiUrl}`, () => {
           admin_rota_gp: null
         }
       }
-    ])('property "rotaAdmin" should be an array of length equal to number of branches with admin access', async permission => {
-      getUser.mockClear();
-      getUser.mockResolvedValueOnce(permission);
+    ])(
+      'property "rotaAdmin" should be an array of length equal to number of branches with admin access',
+      async permission => {
+        getUser.mockClear();
+        getUser.mockResolvedValueOnce(permission);
 
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
-      expect(res.body.rotaAdmin.length === permission.roles.length);
-    });
+        const res = await request(app).post(apiUrl).send(validBody);
+        expect(Array.isArray(res.body.rotaAdmin)).toBe(true);
+        expect(res.body.rotaAdmin.length === permission.roles.length);
+      }
+    );
   });
 });

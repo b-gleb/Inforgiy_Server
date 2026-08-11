@@ -51,6 +51,7 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
+    // biome-ignore format: keep each `it` block separate
     it.each([
       { userId, dateRanges },
       { branch, dateRanges },
@@ -80,26 +81,29 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it.each(
-      variableLengthBodyOptions
-    )('should call getcumulativeStats() once', async body => {
-      getCumulativeStats.mockClear();
-      getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+    it.each(variableLengthBodyOptions)(
+      'should call getcumulativeStats() once',
+      async body => {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(
+          generateCumulativeStats(body.dateRanges)
+        );
 
-      const _res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
-      const expectedDateRanges = body.dateRanges.map(([start, end]) => [
-        new Date(start),
-        new Date(end)
-      ]);
+        const expectedDateRanges = body.dateRanges.map(([start, end]) => [
+          new Date(start),
+          new Date(end)
+        ]);
 
-      expect(getCumulativeStats).toHaveBeenCalledTimes(1);
-      expect(getCumulativeStats).toHaveBeenCalledWith(
-        branch,
-        body.userId,
-        expectedDateRanges
-      );
-    });
+        expect(getCumulativeStats).toHaveBeenCalledTimes(1);
+        expect(getCumulativeStats).toHaveBeenCalledWith(
+          branch,
+          body.userId,
+          expectedDateRanges
+        );
+      }
+    );
   });
 
   describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
@@ -112,15 +116,18 @@ describe(`POST ${apiUrl}`, () => {
       );
     });
 
-    it.each(
-      variableLengthBodyOptions
-    )('length of the array should be equal to length of "dateRanges"', async body => {
-      getCumulativeStats.mockClear();
-      getCumulativeStats.mockResolvedValueOnce(generateCumulativeStats(body.dateRanges));
+    it.each(variableLengthBodyOptions)(
+      'length of the array should be equal to length of "dateRanges"',
+      async body => {
+        getCumulativeStats.mockClear();
+        getCumulativeStats.mockResolvedValueOnce(
+          generateCumulativeStats(body.dateRanges)
+        );
 
-      const res = await request(app).post(apiUrl).send(body);
-      expect(res.body.length).toBe(body.dateRanges.length);
-    });
+        const res = await request(app).post(apiUrl).send(body);
+        expect(res.body.length).toBe(body.dateRanges.length);
+      }
+    );
 
     it('array object should have properties "userId", "dateRange" and "data"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);

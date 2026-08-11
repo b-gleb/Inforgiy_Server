@@ -33,6 +33,7 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe('Validation, Authentication, Authorization', () => {
+    // biome-ignore format: keep each `it` block separate
     it.each([
       { branch },
       { date },
@@ -69,6 +70,11 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe('Response Validation', () => {
+    it('should respond with status code 200', async () => {
+      const res = await request(app).get(apiUrl).query(validBody);
+      expect(res.statusCode).toBe(200);
+    });
+
     it('should specify json in the content type header', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
