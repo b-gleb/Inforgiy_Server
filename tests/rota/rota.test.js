@@ -33,6 +33,7 @@ describe(`GET ${apiUrl}`, () => {
   });
 
   describe('Validation, Authentication, Authorization', () => {
+    // biome-ignore format: keep each `it` block separate
     it.each([
       { branch },
       { date },

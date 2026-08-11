@@ -53,6 +53,7 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe('Validation, Authentication, Authorization', () => {
+    // biome-ignore format: keep each `it` block separate
     it.each([
       { branch },
       { dateRanges },
@@ -99,35 +100,37 @@ describe(`POST ${apiUrl}`, () => {
       expect(valid).toBe(true);
     });
 
-    it.each(
-      variableLengthBodyOptions
-    )('length of array should be the length of requested dateRanges for: %#', async body => {
-      getEmptyDuties.mockClear();
-      getEmptyDuties.mockResolvedValueOnce(
-        generateEmptyDutiesStats(body.dateRanges, count)
-      );
+    it.each(variableLengthBodyOptions)(
+      'length of array should be the length of requested dateRanges for: %#',
+      async body => {
+        getEmptyDuties.mockClear();
+        getEmptyDuties.mockResolvedValueOnce(
+          generateEmptyDutiesStats(body.dateRanges, count)
+        );
 
-      const res = await request(app).post(apiUrl).send(body);
-      expect(res.body.length).toBe(body.dateRanges.length);
-    });
+        const res = await request(app).post(apiUrl).send(body);
+        expect(res.body.length).toBe(body.dateRanges.length);
+      }
+    );
   });
 
   describe('Business Logic', () => {
-    it.each(
-      variableLengthBodyOptions
-    )('should call `getEmptyDuties` once for: %#', async body => {
-      getEmptyDuties.mockClear();
-      getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
+    it.each(variableLengthBodyOptions)(
+      'should call `getEmptyDuties` once for: %#',
+      async body => {
+        getEmptyDuties.mockClear();
+        getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
 
-      const _res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
-      const expectedDateRanges = body.dateRanges.map(([start, end]) => [
-        new Date(start),
-        new Date(end)
-      ]);
+        const expectedDateRanges = body.dateRanges.map(([start, end]) => [
+          new Date(start),
+          new Date(end)
+        ]);
 
-      expect(getEmptyDuties).toHaveBeenCalledTimes(1);
-      expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
-    });
+        expect(getEmptyDuties).toHaveBeenCalledTimes(1);
+        expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
+      }
+    );
   });
 });

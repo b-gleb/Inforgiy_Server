@@ -57,6 +57,7 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
+    // biome-ignore format: keep each `it` block separate
     it.each([
       { userIds, dateRanges },
       { branch, dateRanges },
@@ -105,21 +106,22 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it.each(
-      variableLengthBodyOptions
-    )('should call function `getDateRangeStats` the same number of times as length of "dateRanges"', async body => {
-      getUser.mockClear();
-      getDateRangeStats.mockClear();
+    it.each(variableLengthBodyOptions)(
+      'should call function `getDateRangeStats` the same number of times as length of "dateRanges"',
+      async body => {
+        getUser.mockClear();
+        getDateRangeStats.mockClear();
 
-      getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-      getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
+        getUser.mockResolvedValueOnce(generateUser(branch, 1230));
+        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
 
-      const _res = await request(app).post(apiUrl).send(body);
+        const _res = await request(app).post(apiUrl).send(body);
 
-      expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
-      expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
-      expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
-    });
+        expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
+        expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
+        expect(getDateRangeStats.mock.calls[0][1]).toStrictEqual(userIds);
+      }
+    );
   });
 
   describe(`RESPONSE VALIDATION POST ${apiUrl}`, () => {
@@ -196,12 +198,13 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.body.every(item => Array.isArray(item.data))).toBe(true);
     });
 
-    it.each(
-      variableLengthBodyOptions
-    )('array element "data" should have be the length of requested `dataRanges`', async body => {
-      const res = await request(app).post(apiUrl).send(body);
-      expect(res.body.every(item => item.data.length === body.dateRanges.length));
-    });
+    it.each(variableLengthBodyOptions)(
+      'array element "data" should have be the length of requested `dataRanges`',
+      async body => {
+        const res = await request(app).post(apiUrl).send(body);
+        expect(res.body.every(item => item.data.length === body.dateRanges.length));
+      }
+    );
 
     it('"data" array element should be of type object', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
