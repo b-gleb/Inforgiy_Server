@@ -25,7 +25,8 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
     "joi": "^18.2.3",
-    "mongodb": "^7.5.0"
+    "mongodb": "^7.5.0",
+    "node-cache": "^5.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
