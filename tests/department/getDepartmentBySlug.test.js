@@ -3,6 +3,7 @@ import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
 import { departmentSchema } from '../../schemas/department.schema.js';
+import cache from '../../src/utils/cache.js';
 
 const makeApp = (await import('../../src/app.js')).default;
 const getDepartmentBySlug = jest.fn();
@@ -27,6 +28,7 @@ describe(`GET ${apiUrl}/{slug}`, () => {
 
   beforeEach(() => {
     getDepartmentBySlug.mockClear();
+    cache.flushAll();
   });
 
   describe('Response Validation', () => {
@@ -62,6 +64,14 @@ describe(`GET ${apiUrl}/{slug}`, () => {
 
   describe('Business Logic', () => {
     it('should call `getDepartmentBySlug` once with correct arguments', async () => {
+      await request(app).get(`${apiUrl}/lns`);
+
+      expect(getDepartmentBySlug).toHaveBeenCalledTimes(1);
+      expect(getDepartmentBySlug).toHaveBeenCalledWith('lns');
+    });
+
+    it('should pull from cache on second call, skipping database', async () => {
+      await request(app).get(`${apiUrl}/lns`);
       await request(app).get(`${apiUrl}/lns`);
 
       expect(getDepartmentBySlug).toHaveBeenCalledTimes(1);
