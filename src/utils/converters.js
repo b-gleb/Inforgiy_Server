@@ -1,36 +1,23 @@
-import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
+import cache, { longTTL } from './cache.js';
 
 export default function makeCoverters(database) {
   /**
     Converts userId into username. Checks cache values first
   */
   const convertUserId = async (branch, userId) => {
-    // Check cache
-    if (usersCache[branch][userId]) {
-      return usersCache[branch][userId];
+    const cacheKey = `get.user.${branch}.${userId}`;
+    let userObj = cache.get(cacheKey);
+
+    if (userObj === undefined) {
+      const userEntry = await database.getUser(userId);
+      userObj = {
+        id: userEntry.telegram_id,
+        username: userEntry.telegram,
+        nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
+        color: userEntry?.roles[`rota_${branch}`]?.c ?? null
+      };
+      cache.set(cacheKey, userObj, longTTL);
     }
-
-    // Get user from DB
-    const userEntry = await database.getUser(userId);
-
-    if (userEntry === null) {
-      return null;
-    }
-
-    // Save information to cache
-    usersCache[branch][userId] = {
-      username: userEntry.telegram,
-      nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
-      color: userEntry?.roles[`rota_${branch}`]?.c ?? null
-    };
-
-    // Self-destructing cache
-    setTimeout(() => {
-      delete usersCache[branch][userId];
-    }, usersCacheTTL).unref();
-
-    const userObj = usersCache[branch][userId];
-    userObj.id = userId;
 
     return userObj;
   };
