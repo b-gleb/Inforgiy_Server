@@ -75,7 +75,7 @@ export default function makeUserController(database) {
     const removedUser = await database.removeUserPermission(value.branch, value.userId);
 
     // Update cache
-    delete usersCache[value.branch][value.userId];
+    cache.del([`get.users.${value.branch}`, `get.user.${value.branch}.${value.userId}`]);
 
     if (removedUser.matchedCount === 1) {
       res.sendStatus(204);
