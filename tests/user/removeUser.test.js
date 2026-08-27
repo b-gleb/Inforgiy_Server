@@ -1,7 +1,8 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { afterEach, beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -35,7 +36,7 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
   });
 
   describe('Validation, Authentication, Authorization', () => {
@@ -98,6 +99,16 @@ describe(`POST ${apiUrl}`, () => {
       getUser.mockResolvedValueOnce(generateUser(branch, 1230));
       const _res = await request(app).post(apiUrl).send(validBody);
       expect(removeUserPermission).toHaveBeenCalledTimes(0);
+    });
+
+    it('should delete cached entries', async () => {
+      const delSpy = jest.spyOn(cache, 'del');
+      await request(app).post(apiUrl).send(validBody);
+
+      expect(delSpy).toHaveBeenCalledWith([
+        `get.users.${branch}`,
+        `get.user.${branch}.${validBody.userId}`
+      ]);
     });
   });
 });
