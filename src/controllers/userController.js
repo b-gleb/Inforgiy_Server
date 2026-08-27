@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
+import cache, { longTTL } from '../utils/cache.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
@@ -31,31 +31,24 @@ export default function makeUserController(database) {
     }
 
     // Logic
-    const userCount = await database.getUserCount(value.branch);
+    const cacheKey = `get.users.${value.branch}`;
+    let userArray = cache.get(cacheKey);
 
-    if (Object.entries(usersCache[value.branch]).length !== userCount) {
-      // Reset cache
-      usersCache[value.branch] = {};
+    if (userArray === undefined) {
+      const userEntries = await database.getBranchUsers(value.branch);
 
-      // Fetch data
-      const userArray = await database.getBranchUsers(value.branch);
+      userArray = userEntries.map(user => ({
+        id: user.telegram_id,
+        username: user.telegram,
+        nick: user?.roles[`rota_${value.branch}`]?.nick ?? user.telegram,
+        color: user?.roles[`rota_${value.branch}`]?.c ?? null
+      }));
 
-      // Save to cache
-      for (const user of userArray) {
-        usersCache[value.branch][user.telegram_id] = {
-          id: user.telegram_id,
-          username: user.telegram,
-          nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
-          color: user?.roles[`rota_${value.branch}`]?.c ?? null
-        };
-
-        setTimeout(() => {
-          delete usersCache[value.branch][user.telegram_id];
-        }, usersCacheTTL).unref();
-      }
+      // currently only saving all users to cache not individual ones, maybe needs changing
+      cache.set(cacheKey, userArray, longTTL);
     }
 
-    res.json(Object.values(usersCache[value.branch]));
+    res.json(userArray);
   };
 
   const removeUser = async (req, res) => {
