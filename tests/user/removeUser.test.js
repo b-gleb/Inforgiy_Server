@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
@@ -34,34 +34,19 @@ describe(`POST ${apiUrl}`, () => {
     removeUserPermission.mockResolvedValue({ matchedCount: 1 });
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    removeUserPermission.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks()
   });
 
-  describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
+  describe('Validation, Authentication, Authorization', () => {
     it.each([
       { userId: 4560, initDataUnsafe: { user: { id: 1230 } } },
       { branch, initDataUnsafe: { user: { id: 1230 } } },
       { branch, userId: 4560 },
       {}
-    ])('should respond with status code 400 for missing parameter: %#', async body => {
+    ])('should respond with status code 400 for missing parameter: %j', async body => {
       const res = await request(app).post(apiUrl).send(body);
       expect(res.statusCode).toBe(400);
-    });
-  });
-
-  describe(`VALID PARAMETERS POST ${apiUrl}`, () => {
-    it('should respond with status code 204', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.statusCode).toBe(204);
-    });
-
-    it('should respond with no content', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
-      expect(res.body).toEqual({});
-      expect(res.text).toBe('');
     });
 
     it('should respond with status code 401 if unable to verify hash', async () => {
@@ -75,6 +60,13 @@ describe(`POST ${apiUrl}`, () => {
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });
+  });
+
+  describe('Response Validation', () => {
+    it('should respond with status code 204', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.statusCode).toBe(204);
+    });
 
     it('should respond with status code 404 if user to modify is not found', async () => {
       removeUserPermission.mockResolvedValueOnce({ matchedCount: 0 });
@@ -82,6 +74,14 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.statusCode).toBe(404);
     });
 
+    it('should respond with no content', async () => {
+      const res = await request(app).post(apiUrl).send(validBody);
+      expect(res.body).toEqual({});
+      expect(res.text).toBe('');
+    });
+  });
+
+  describe('Business Logic', () => {
     it('should call isRotaAdmin() once', async () => {
       const _res = await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
