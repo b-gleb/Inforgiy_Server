@@ -10,13 +10,16 @@ export default function makeCoverters(database) {
 
     if (userObj === undefined) {
       const userEntry = await database.getUser(userId);
-      userObj = {
-        id: userEntry.telegram_id,
-        username: userEntry.telegram,
-        nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
-        color: userEntry?.roles[`rota_${branch}`]?.c ?? null
-      };
-      cache.set(cacheKey, userObj, longTTL);
+
+      if (userEntry !== null) {
+        userObj = {
+          id: userEntry.telegram_id,
+          username: userEntry.telegram,
+          nick: userEntry?.roles[`rota_${branch}`]?.nick ?? userEntry.telegram,
+          color: userEntry?.roles[`rota_${branch}`]?.c ?? null
+        };
+        cache.set(cacheKey, userObj, longTTL);
+      }
     }
 
     return userObj;
