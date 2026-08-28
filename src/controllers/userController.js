@@ -149,18 +149,23 @@ export default function makeUserController(database) {
       };
 
       res.json(userObj);
+
+      // delete cache
+      // TODO: When add/update logic is split cache needs to be updated instead of deleted
+      // complicated to do now, because of coupled logic
+      cache.del(`get.user.${value.branch}.${value.userObj.id}`);
+      cache.del(`get.users.${value.branch}`);
+
       await helpers.statistic(
         initDataUnsafe,
         value.branch.toUpperCase(),
         'rota-update-user',
         value.userObj
       );
+
     } else {
       return res.status(404).send('User not found');
     }
-
-    // Update cache
-    usersCache[value.branch][updatedUser.telegram_id] = userObj;
   };
 
   return {
