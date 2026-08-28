@@ -153,7 +153,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call addUserToRota() when adding a user to rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'add', ...validBody });
 
@@ -189,7 +189,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call removeUserFromRota() when removing user from rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'remove', ...validBody });
 

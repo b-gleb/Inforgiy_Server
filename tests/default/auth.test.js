@@ -74,19 +74,22 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `validateInitData` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
     });
 
     it('should call `getUser` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(initDataUnsafe.user.id);
     });
 
     it('should not call `getUser` if `validateInitData` failed', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
     });

@@ -134,20 +134,21 @@ describe(`POST ${apiUrl}`, () => {
         .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
         .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
 
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `getUser` twice (to check calling user and the user to add to rota)', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(2);
       expect(getUser).toHaveBeenNthCalledWith(1, 1230);
       expect(getUser).toHaveBeenLastCalledWith(4560);
     });
 
     it('should call `addUserToRotaMulti`', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(addUserToRotaMulti).toHaveBeenCalledTimes(1);
       expect(addUserToRotaMulti).toHaveBeenCalledWith({
         branch,

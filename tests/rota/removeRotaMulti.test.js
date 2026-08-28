@@ -117,13 +117,13 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `getUser` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `removeUserFromRotaMulti`', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(removeUserFromRotaMulti).toHaveBeenCalledTimes(1);
       expect(removeUserFromRotaMulti).toHaveBeenCalledWith({
         branch,

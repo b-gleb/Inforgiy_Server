@@ -52,7 +52,8 @@ describe('isRotaAdmin', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateAdmin(branch, userId));
-    const _res = await isRotaAdmin(branch, userId);
+    await isRotaAdmin(branch, userId);
+
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });
@@ -105,7 +106,8 @@ describe('isUserInBranch', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateUser(branch, userId));
-    const _res = await isUserInBranch(branch, userId);
+    await isUserInBranch(branch, userId);
+
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });

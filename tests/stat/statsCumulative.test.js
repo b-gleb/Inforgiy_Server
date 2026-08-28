@@ -84,12 +84,7 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call getcumulativeStats() once',
       async body => {
-        getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(
-          generateCumulativeStats(body.dateRanges)
-        );
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),
@@ -119,7 +114,6 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'length of the array should be equal to length of "dateRanges"',
       async body => {
-        getCumulativeStats.mockClear();
         getCumulativeStats.mockResolvedValueOnce(
           generateCumulativeStats(body.dateRanges)
         );

@@ -109,13 +109,7 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call function `getDateRangeStats` the same number of times as length of "dateRanges"',
       async body => {
-        getUser.mockClear();
-        getDateRangeStats.mockClear();
-
-        getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
