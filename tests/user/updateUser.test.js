@@ -1,8 +1,8 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import cache from '../../src/utils/cache.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -160,16 +160,16 @@ describe(`POST ${apiUrl}`, () => {
   ].forEach(({ name, body }) => {
     describe(`RESPONSE VALIDATION POST ${apiUrl} with ${name}`, () => {
       it('should delete single user cache', async () => {
-        const delSpy = jest.spyOn(cache, 'del')
+        const delSpy = jest.spyOn(cache, 'del');
         await request(app).post(apiUrl).send(body());
-        expect(delSpy).toHaveBeenCalledWith(`get.user.${branch}.${body().userObj.id}`)
+        expect(delSpy).toHaveBeenCalledWith(`get.user.${branch}.${body().userObj.id}`);
       });
 
       it('should delete department cache', async () => {
-        const delSpy = jest.spyOn(cache, 'del')
+        const delSpy = jest.spyOn(cache, 'del');
         await request(app).post(apiUrl).send(body());
 
-        expect(delSpy).toHaveBeenCalledWith(`get.users.${branch}`)
+        expect(delSpy).toHaveBeenCalledWith(`get.users.${branch}`);
       });
 
       it('response should be a json object with properties "id", "username", "nick", "color"', async () => {

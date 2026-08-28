@@ -162,7 +162,6 @@ export default function makeUserController(database) {
         'rota-update-user',
         value.userObj
       );
-
     } else {
       return res.status(404).send('User not found');
     }
