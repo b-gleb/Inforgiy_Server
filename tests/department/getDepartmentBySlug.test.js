@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
 import { departmentSchema } from '../../schemas/department.schema.js';
@@ -26,8 +26,8 @@ describe(`GET ${apiUrl}/{slug}`, () => {
     getDepartmentBySlug.mockResolvedValue(department);
   });
 
-  beforeEach(() => {
-    getDepartmentBySlug.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
     cache.flushAll();
   });
 

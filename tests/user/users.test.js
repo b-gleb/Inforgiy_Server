@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
 import { userSchema } from '../../schemas/user.schema.js';
@@ -40,10 +40,8 @@ describe(`POST ${apiUrl}`, () => {
     ]);
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    getBranchUsers.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
     cache.flushAll();
   });
 

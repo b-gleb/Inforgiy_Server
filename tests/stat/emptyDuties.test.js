@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import request from 'supertest';
@@ -48,8 +48,8 @@ describe(`POST ${apiUrl}`, () => {
     getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
-  beforeEach(() => {
-    getEmptyDuties.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('Validation, Authentication, Authorization', () => {

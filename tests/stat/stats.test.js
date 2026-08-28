@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateDateRangeStats, generateUser } from '../generators.js';
@@ -51,9 +51,8 @@ describe(`POST ${apiUrl}`, () => {
     getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
   });
 
-  beforeEach(() => {
-    getDateRangeStats.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {

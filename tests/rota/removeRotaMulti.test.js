@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { addDays } from 'date-fns';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
@@ -58,10 +58,8 @@ describe(`POST ${apiUrl}`, () => {
     getUser.mockResolvedValue(generateAdmin(Object.keys(settup)[0], 1230));
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    removeUserFromRotaMulti.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
