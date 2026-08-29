@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import request from 'supertest';
@@ -49,8 +49,8 @@ describe(`POST ${apiUrl}`, () => {
     getUniqueUsers.mockResolvedValue(generateUniqueUsersStats(dateRanges));
   });
 
-  beforeEach(() => {
-    getUniqueUsers.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('Validation, Authentication, Authorization', () => {
@@ -104,11 +104,9 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'length of array should be the length of requested dateRanges for: %#',
       async body => {
-        getUniqueUsers.mockClear();
         getUniqueUsers.mockResolvedValueOnce(
           generateUniqueUsersStats(body.dateRanges, count)
         );
-
         const res = await request(app).post(apiUrl).send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
       }
@@ -119,10 +117,8 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call `getUniqueUsers` once for : %#',
       async body => {
-        getUniqueUsers.mockClear();
         getUniqueUsers.mockResolvedValueOnce(generateUniqueUsersStats(body.dateRanges));
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),

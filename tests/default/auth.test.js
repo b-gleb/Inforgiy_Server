@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateUser } from '../generators.js';
@@ -28,9 +28,8 @@ describe(`POST ${apiUrl}`, () => {
     getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -74,19 +73,22 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `validateInitData` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
     });
 
     it('should call `getUser` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(initDataUnsafe.user.id);
     });
 
     it('should not call `getUser` if `validateInitData` failed', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
     });

@@ -176,6 +176,7 @@ export async function getUser(userId) {
     { telegram_id: userId },
     {
       projection: {
+        telegram_id: 1,
         telegram: 1,
         roles: 1,
         _id: 0

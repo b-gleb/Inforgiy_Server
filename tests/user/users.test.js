@@ -1,9 +1,10 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
 import { userSchema } from '../../schemas/user.schema.js';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -14,12 +15,10 @@ const { validateInitData } = await import('../../src/utils/initDataValidation.js
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
-const getUserCount = jest.fn();
 const getBranchUsers = jest.fn();
 
 const app = makeApp({
   getUser,
-  getUserCount,
   getBranchUsers
 });
 
@@ -35,18 +34,15 @@ describe(`POST ${apiUrl}`, () => {
 
     validateInitData.mockReturnValue(true);
     getUser.mockResolvedValue(generateAdmin(branch, 1230));
-    getUserCount.mockResolvedValue(1);
     getBranchUsers.mockResolvedValue([
       generateUser(branch, 4567),
       generateAdmin(branch, 1230)
     ]);
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    getUserCount.mockClear();
-    getBranchUsers.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
+    cache.flushAll();
   });
 
   describe('Validation, Authentication, Authorization', () => {
@@ -118,25 +114,21 @@ describe(`POST ${apiUrl}`, () => {
 
   describe('Business Logic', () => {
     it('should call isRotaAdmin() once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
-    it('should call getUserCount() once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
-      expect(getUserCount).toHaveBeenCalledTimes(1);
-      expect(getUserCount).toHaveBeenCalledWith(branch);
+    it('should call getBranchUsers() once', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      expect(getBranchUsers).toHaveBeenCalledTimes(1);
+      expect(getBranchUsers).toHaveBeenCalledWith(branch);
     });
 
-    it('should not call getBranchUsers() when userCount matches cache', async () => {
-      getUserCount.mockResolvedValueOnce(2);
-      const _res = await request(app).post(apiUrl).send(validBody);
-      expect(getBranchUsers).toHaveBeenCalledTimes(0);
-    });
+    it('should not call getBranchUsers() twice and pull from cache', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
 
-    it('should call getBranchUsers() once when userCount differs from cache', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
       expect(getBranchUsers).toHaveBeenCalledTimes(1);
       expect(getBranchUsers).toHaveBeenCalledWith(branch);
     });

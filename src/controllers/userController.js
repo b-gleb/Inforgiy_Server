@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { usersCache, usersCacheTTL } from '../cache/usersCache.js';
+import cache, { longTTL } from '../utils/cache.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 import {
@@ -31,31 +31,24 @@ export default function makeUserController(database) {
     }
 
     // Logic
-    const userCount = await database.getUserCount(value.branch);
+    const cacheKey = `get.users.${value.branch}`;
+    let userArray = cache.get(cacheKey);
 
-    if (Object.entries(usersCache[value.branch]).length !== userCount) {
-      // Reset cache
-      usersCache[value.branch] = {};
+    if (userArray === undefined) {
+      const userEntries = await database.getBranchUsers(value.branch);
 
-      // Fetch data
-      const userArray = await database.getBranchUsers(value.branch);
+      userArray = userEntries.map(user => ({
+        id: user.telegram_id,
+        username: user.telegram,
+        nick: user?.roles[`rota_${value.branch}`]?.nick ?? user.telegram,
+        color: user?.roles[`rota_${value.branch}`]?.c ?? null
+      }));
 
-      // Save to cache
-      for (const user of userArray) {
-        usersCache[value.branch][user.telegram_id] = {
-          id: user.telegram_id,
-          username: user.telegram,
-          nick: user?.roles[`rota_${value.branch}`]?.nick ?? userEntry.telegram,
-          color: user?.roles[`rota_${value.branch}`]?.c ?? null
-        };
-
-        setTimeout(() => {
-          delete usersCache[value.branch][user.telegram_id];
-        }, usersCacheTTL).unref();
-      }
+      // currently only saving all users to cache not individual ones, maybe needs changing
+      cache.set(cacheKey, userArray, longTTL);
     }
 
-    res.json(Object.values(usersCache[value.branch]));
+    res.json(userArray);
   };
 
   const removeUser = async (req, res) => {
@@ -82,7 +75,7 @@ export default function makeUserController(database) {
     const removedUser = await database.removeUserPermission(value.branch, value.userId);
 
     // Update cache
-    delete usersCache[value.branch][value.userId];
+    cache.del([`get.users.${value.branch}`, `get.user.${value.branch}.${value.userId}`]);
 
     if (removedUser.matchedCount === 1) {
       res.sendStatus(204);
@@ -156,6 +149,13 @@ export default function makeUserController(database) {
       };
 
       res.json(userObj);
+
+      // delete cache
+      // TODO: When add/update logic is split cache needs to be updated instead of deleted
+      // complicated to do now, because of coupled logic
+      cache.del(`get.user.${value.branch}.${value.userObj.id}`);
+      cache.del(`get.users.${value.branch}`);
+
       await helpers.statistic(
         initDataUnsafe,
         value.branch.toUpperCase(),
@@ -165,9 +165,6 @@ export default function makeUserController(database) {
     } else {
       return res.status(404).send('User not found');
     }
-
-    // Update cache
-    usersCache[value.branch][updatedUser.telegram_id] = userObj;
   };
 
   return {

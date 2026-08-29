@@ -1,7 +1,8 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -57,11 +58,8 @@ describe(`POST ${apiUrl}`, () => {
     addUserPermission.mockResolvedValue(generateUser(branch, 1230));
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    updateUser.mockClear();
-    addUserPermission.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -118,13 +116,13 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call isRotaAdmin() once', async () => {
-      const _res = await request(app).post(apiUrl).send(updateUserBody);
+      await request(app).post(apiUrl).send(updateUserBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(4560);
     });
 
     it('should call updateUser() once when updating permissions of user with rota access', async () => {
-      const _res = await request(app).post(apiUrl).send(updateUserBody);
+      await request(app).post(apiUrl).send(updateUserBody);
       expect(updateUser).toHaveBeenCalledTimes(1);
       expect(updateUser).toHaveBeenCalledWith(
         branch,
@@ -135,12 +133,12 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should not call addUserPermission() when updating permissions of user with rota access', async () => {
-      const _res = await request(app).post(apiUrl).send(updateUserBody);
+      await request(app).post(apiUrl).send(updateUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(0);
     });
 
     it('should call addUserPermission() once when adding a new user to rota', async () => {
-      const _res = await request(app).post(apiUrl).send(addUserBody);
+      await request(app).post(apiUrl).send(addUserBody);
       expect(addUserPermission).toHaveBeenCalledTimes(1);
       expect(addUserPermission).toHaveBeenCalledWith(
         branch,
@@ -151,7 +149,7 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should not call updateUser() when adding a new user to rota', async () => {
-      const _res = await request(app).post(apiUrl).send(addUserBody);
+      await request(app).post(apiUrl).send(addUserBody);
       expect(updateUser).toHaveBeenCalledTimes(0);
     });
   });
@@ -161,6 +159,19 @@ describe(`POST ${apiUrl}`, () => {
     { name: 'addUserBody', body: () => addUserBody }
   ].forEach(({ name, body }) => {
     describe(`RESPONSE VALIDATION POST ${apiUrl} with ${name}`, () => {
+      it('should delete single user cache', async () => {
+        const delSpy = jest.spyOn(cache, 'del');
+        await request(app).post(apiUrl).send(body());
+        expect(delSpy).toHaveBeenCalledWith(`get.user.${branch}.${body().userObj.id}`);
+      });
+
+      it('should delete department cache', async () => {
+        const delSpy = jest.spyOn(cache, 'del');
+        await request(app).post(apiUrl).send(body());
+
+        expect(delSpy).toHaveBeenCalledWith(`get.users.${branch}`);
+      });
+
       it('response should be a json object with properties "id", "username", "nick", "color"', async () => {
         const res = await request(app).post(apiUrl).send(body());
 

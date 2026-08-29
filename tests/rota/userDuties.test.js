@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { rotaDBEntry } from './mocks.js';
@@ -30,8 +30,8 @@ describe(`GET ${apiUrl}`, () => {
     getUserDuties.mockResolvedValue([rotaDBEntry]);
   });
 
-  beforeEach(() => {
-    getUserDuties.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETRS GET ${apiUrl}`, () => {
@@ -71,7 +71,7 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for user duties', async () => {
-      const _res = await request(app).get(apiUrl).query(validBody);
+      await request(app).get(apiUrl).query(validBody);
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(

@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { format } from 'date-fns';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
@@ -59,12 +59,8 @@ describe(`POST ${apiUrl}`, () => {
     addUserToRota.mockResolvedValue(rotaDBEntry);
   });
 
-  beforeEach(() => {
-    getRota.mockClear();
-    removeUserFromRota.mockClear();
-    addUserToRota.mockClear();
-    validateInitData.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -153,7 +149,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call addUserToRota() when adding a user to rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'add', ...validBody });
 
@@ -189,7 +185,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call removeUserFromRota() when removing user from rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'remove', ...validBody });
 

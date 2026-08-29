@@ -336,7 +336,7 @@ describe('validateStartDateBeforeEndDate', () => {
       endDate: new Date(2025, 0, 1)
     };
 
-    const _result = validateStartDateBeforeEndDate(value, helpers);
+    validateStartDateBeforeEndDate(value, helpers);
     expect(helpers.message).toHaveBeenCalledWith(errorMessage);
   });
 
@@ -346,7 +346,7 @@ describe('validateStartDateBeforeEndDate', () => {
       endDate: new Date(2025, 1, 1)
     };
 
-    const _result = validateStartDateBeforeEndDate(value, helpers);
+    validateStartDateBeforeEndDate(value, helpers);
     expect(helpers.message).toHaveBeenCalledWith(errorMessage);
   });
 });

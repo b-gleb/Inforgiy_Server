@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
 import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateDateRangeStats, generateUser } from '../generators.js';
@@ -51,9 +51,8 @@ describe(`POST ${apiUrl}`, () => {
     getDateRangeStats.mockResolvedValue(generateDateRangeStats(userIds));
   });
 
-  beforeEach(() => {
-    getDateRangeStats.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -109,13 +108,7 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call function `getDateRangeStats` the same number of times as length of "dateRanges"',
       async body => {
-        getUser.mockClear();
-        getDateRangeStats.mockClear();
-
-        getUser.mockResolvedValueOnce(generateUser(branch, 1230));
-        getDateRangeStats.mockResolvedValueOnce(generateDateRangeStats(userIds));
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         expect(getDateRangeStats).toHaveBeenCalledTimes(body.dateRanges.length);
         expect(getDateRangeStats.mock.calls[0][0]).toBe(branch);
