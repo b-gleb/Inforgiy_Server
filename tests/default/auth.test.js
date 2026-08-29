@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import cache from '../../src/utils/cache.js';
 import { generateUser } from '../generators.js';
 
@@ -28,7 +27,7 @@ const userData = generateUser('lns', 1230);
 describe(`POST ${apiUrl}`, () => {
   beforeAll(() => {
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
+    getUser.mockResolvedValue(generateUser('lns', 1230));
     getDepartments.mockResolvedValue([
       {
         slug: 'lns',

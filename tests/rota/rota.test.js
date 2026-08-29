@@ -4,7 +4,6 @@ import Ajv from 'ajv';
 import { format, lastDayOfYear } from 'date-fns';
 import request from 'supertest';
 import { rotaSchema } from '../../schemas/rota.schema.js';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 
 const makeApp = (await import('../../src/app.js')).default;
 const getRota = jest.fn();
@@ -21,7 +20,7 @@ describe(`GET ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     date = format(lastDayOfYear(new Date()), 'yyyy-MM-dd');
     validBody = { branch, date };
 

@@ -1,6 +1,5 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { jest } from '@jest/globals';
-import settup from '../src/config/settup.json' with { type: 'json' };
 import {
   validateBranch,
   validateColor,
@@ -14,8 +13,8 @@ import {
 } from '../src/utils/responseValidation.js';
 
 describe('validateBranch', () => {
-  it('should accept branches from settup keys', () => {
-    for (const branch of Object.keys(settup)) {
+  it('should accept all possible branches', () => {
+    for (const branch of ['lns', 'gp', 'di', 'orel', 'ryaz']) {
       const { error, value } = validateBranch.validate(branch);
       expect(error).toBeUndefined();
       expect(value).toBeDefined();

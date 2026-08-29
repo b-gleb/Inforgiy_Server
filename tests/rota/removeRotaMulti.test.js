@@ -2,7 +2,6 @@
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { addDays } from 'date-fns';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -32,7 +31,7 @@ describe(`POST ${apiUrl}`, () => {
   let initDataUnsafe;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     startDate = new Date();
     endDate = addDays(startDate, 30);
     timeRanges = ['00:00-01:00', '23:00-24:00'];
@@ -55,7 +54,7 @@ describe(`POST ${apiUrl}`, () => {
       matchedCout: 5,
       modifiedCount: 5
     });
-    getUser.mockResolvedValue(generateAdmin(Object.keys(settup)[0], 1230));
+    getUser.mockResolvedValue(generateAdmin(branch, 1230));
   });
 
   afterEach(() => {
@@ -98,7 +97,7 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should respond with status code 403 if non admin calls the endpoint', async () => {
-      getUser.mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230));
+      getUser.mockResolvedValueOnce(generateUser(branch, 1230));
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });

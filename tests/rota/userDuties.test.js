@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { rotaDBEntry } from './mocks.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -19,7 +18,7 @@ describe(`GET ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     validBody = {
       branch,
       userId: 1813610409,

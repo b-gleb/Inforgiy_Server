@@ -4,7 +4,6 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import request from 'supertest';
 import { departmentStatisticsSchema } from '../../schemas/departmentStatistics.schema.js';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateEmptyDutiesStats } from '../generators.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -18,7 +17,7 @@ const app = makeApp({
 const ajv = new Ajv({ allErrors: true, strict: true });
 addFormats(ajv);
 const apiUrl = '/api/stats/emptyDuties';
-branch = Object.keys(settup)[0];
+branch = 'lns';
 const dateRanges = [
   ['2025-01-01', '2025-01-31'],
   ['2025-02-01', '2025-02-28']

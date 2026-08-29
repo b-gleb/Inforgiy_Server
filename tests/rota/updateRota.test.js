@@ -2,7 +2,6 @@
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { format } from 'date-fns';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 import { rotaDBEntry } from './mocks.js';
 
@@ -37,8 +36,8 @@ describe(`POST ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
     date = format(new Date(), 'yyyy-MM-dd');
     userId = 1813610409;
     timeRange = '05:00-06:00';

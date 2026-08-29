@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateDateRangeStats, generateUser } from '../generators.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -17,7 +16,7 @@ const app = makeApp({
 const apiUrl = '/api/stats';
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
-const branch = Object.keys(settup)[0];
+const branch = 'lns';
 const userIds = [1230, 4560];
 const dateRanges = [
   ['2025-01-01', '2025-01-31'],
