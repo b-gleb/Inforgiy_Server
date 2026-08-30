@@ -1,7 +1,7 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -11,9 +11,11 @@ const { validateInitData } = await import('../../src/utils/initDataValidation.js
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
+const getDepartments = jest.fn();
 
 const app = makeApp({
-  getUser
+  getUser,
+  getDepartments
 });
 
 const apiUrl = '/api/auth';
@@ -25,11 +27,24 @@ const userData = generateUser('lns', 1230);
 describe(`POST ${apiUrl}`, () => {
   beforeAll(() => {
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
+    getUser.mockResolvedValue(generateUser('lns', 1230));
+    getDepartments.mockResolvedValue([
+      {
+        slug: 'lns',
+        name: 'ЛНС',
+        maxDuties: 7
+      },
+      {
+        slug: 'di',
+        name: 'ДИ',
+        maxDuties: 4
+      }
+    ]);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    cache.flushAll();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -91,6 +106,29 @@ describe(`POST ${apiUrl}`, () => {
 
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
+    });
+
+    it('should call `getDepartments` once', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(1);
+    });
+
+    it('should obtain departments from cache on second call', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call `getDepartments` if `validateInitData` failed', async () => {
+      validateInitData.mockReturnValueOnce(false);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not call `getDepartments` if `getUser` did not find any users', async () => {
+      getUser.mockResolvedValueOnce(null);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(0);
     });
   });
 

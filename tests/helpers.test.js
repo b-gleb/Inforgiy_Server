@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { parseISO } from 'date-fns';
-import settup from '../src/config/settup.json' with { type: 'json' };
 import makeHelpers from '../src/utils/helpers.js';
 import { generateAdmin, generateUser } from './generators.js';
 
@@ -18,8 +17,8 @@ describe('isRotaAdmin', () => {
 
   beforeAll(() => {
     userId = 1230;
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
   });
 
   afterEach(() => {
@@ -66,8 +65,8 @@ describe('isUserInBranch', () => {
 
   beforeAll(() => {
     userId = 1230;
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
   });
 
   afterEach(() => {

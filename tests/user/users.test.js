@@ -3,7 +3,6 @@ import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
 import { userSchema } from '../../schemas/user.schema.js';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
@@ -29,7 +28,7 @@ describe(`POST ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     validBody = { branch, initDataUnsafe: { user: { id: 1230 } } };
 
     validateInitData.mockReturnValue(true);
@@ -46,14 +45,13 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   describe('Validation, Authentication, Authorization', () => {
-    it.each([
-      { branch: Object.keys(settup)[0] },
-      { initDataUnsafe: { user: { id: 1230 } } },
-      {}
-    ])('should respond with status code 400 for incomplete body: %j', async body => {
-      const res = await request(app).post(apiUrl).send(body);
-      expect(res.statusCode).toBe(400);
-    });
+    it.each([{ branch }, { initDataUnsafe: { user: { id: 1230 } } }, {}])(
+      'should respond with status code 400 for incomplete body: %j',
+      async body => {
+        const res = await request(app).post(apiUrl).send(body);
+        expect(res.statusCode).toBe(400);
+      }
+    );
 
     it('should respond with status code 401 if unable to verify hash', async () => {
       validateInitData.mockReturnValueOnce(false);
