@@ -21,21 +21,21 @@
     "@joi/date": "^3.0.0",
     "cors": "^2.8.6",
     "date-fns": "^4.4.0",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
-    "joi": "^18.2.8",
+    "joi": "^18.2.9",
     "mongodb": "^7.6.0",
     "node-cache": "^5.1.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.11",
+    "@biomejs/biome": "^2.5.14",
     "@shelf/jest-mongodb": "^6.0.2",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "jest": "^30.5.1",
+    "jest": "^30.5.2",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.1"
   }
 }
