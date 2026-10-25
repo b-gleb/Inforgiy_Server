@@ -140,10 +140,10 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have properties "branches", "rotaAdmin"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      const expectedProps = ['branches', 'rotaAdmin'].sort();
-      const actualProps = Object.keys(res.body).sort();
+      const expectedProps = new Set(['branches', 'rotaAdmin']);
+      const actualProps = new Set(Object.keys(res.body));
 
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(actualProps).toEqual(expectedProps);
     });
 
     it.each([
@@ -176,13 +176,10 @@ describe(`POST ${apiUrl}`, () => {
     it('subobject of "branches" should have properties "color" and "maxDuties"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['color', 'maxDuties'].sort();
-      const allHaveExpectedProps = Object.values(res.body.branches).every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['color', 'maxDuties']);
+      for (const [name, branch] of Object.entries(res.body.branches)) {
+        expect([name, new Set(Object.keys(branch))]).toEqual([name, expectedProps]);
+      }
     });
 
     it('property "color" of subobject "branches" should be an integer', async () => {

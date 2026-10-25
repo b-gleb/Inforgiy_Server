@@ -98,13 +98,10 @@ describe(`GET ${apiUrl}`, () => {
     it('array element should have properties "date" and "hours"', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
 
-      const expectedProps = ['date', 'hours'];
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['date', 'hours']);
+      for (const item of res.body) {
+        expect(new Set(Object.keys(item))).toEqual(expectedProps);
+      }
     });
 
     it('array element property "date" should be of type date', async () => {

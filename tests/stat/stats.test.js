@@ -138,13 +138,10 @@ describe(`POST ${apiUrl}`, () => {
     it('array elements should have properties "user" and "data"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['user', 'data'].sort();
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['user', 'data']);
+      for (const item of res.body) {
+        expect(new Set(Object.keys(item))).toEqual(expectedProps);
+      }
     });
 
     it('array element "user" should be of type object', async () => {
@@ -157,13 +154,10 @@ describe(`POST ${apiUrl}`, () => {
     it('array element "user" should have properties "id", "nick", "color"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['id', 'nick', 'color'].sort();
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item.user).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['id', 'nick', 'color']);
+      for (const item of res.body) {
+        expect(new Set(Object.keys(item.user))).toEqual(expectedProps);
+      }
     });
 
     it('property "id" of object "user" object should be of a positive integer', async () => {
@@ -211,15 +205,13 @@ describe(`POST ${apiUrl}`, () => {
     it('"data" array element should have properties "dateRange" and "count"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['dateRange', 'count'].sort();
-      const allHaveExpectedProps = res.body.every(item =>
-        item.data.every(subitem => {
-          const actualProps = Object.keys(subitem).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        })
-      );
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['dateRange', 'count']);
+      for (const item of res.body) {
+        expect(Array.isArray(item.data)).toBe(true);
+        for (const subitem of item.data) {
+          expect(new Set(Object.keys(subitem))).toEqual(expectedProps);
+        }
+      }
     });
 
     it('"dateRange" property to be of type array of length 2', async () => {
