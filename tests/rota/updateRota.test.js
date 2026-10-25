@@ -213,13 +213,10 @@ describe(`POST ${apiUrl}`, () => {
           .post(apiUrl)
           .send({ type, ...validBody });
 
-        const expectedProps = ['users', 'label'].sort();
-        const allHaveExpectedProps = res.body.every(item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        });
-
-        expect(allHaveExpectedProps).toBe(true);
+        const expectedProps = new Set(['users', 'label']);
+        for (const item of res.body) {
+          expect(new Set(Object.keys(item))).toEqual(expectedProps);
+        }
       });
 
       it('array element "users" should be of type object', async () => {

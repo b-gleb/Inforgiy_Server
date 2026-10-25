@@ -174,11 +174,11 @@ describe(`POST ${apiUrl}`, () => {
       it('response should be a json object with properties "id", "username", "nick", "color"', async () => {
         const res = await request(app).post(apiUrl).send(body());
 
-        const expectedProps = ['id', 'username', 'nick', 'color'].sort();
-        const actualProps = Object.keys(res.body).sort();
+        const expectedProps = new Set(['id', 'username', 'nick', 'color']);
+        const actualProps = new Set(Object.keys(res.body));
 
         expect(res.body).toBeInstanceOf(Object);
-        expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+        expect(actualProps).toEqual(expectedProps);
       });
 
       it('object property "id" should be an integer', async () => {

@@ -171,9 +171,9 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have property "modifiedCount"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      const expectedProps = ['modifiedCount'].sort();
-      const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      const expectedProps = new Set(['modifiedCount']);
+      const actualProps = new Set(Object.keys(res.body));
+      expect(actualProps).toEqual(expectedProps);
     });
   });
 });
