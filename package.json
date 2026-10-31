@@ -29,7 +29,7 @@
     "node-cache": "^5.1.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.3",
+    "@biomejs/biome": "^2.6.4",
     "@shelf/jest-mongodb": "^6.0.2",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
