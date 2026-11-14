@@ -21,11 +21,11 @@
     "@joi/date": "^3.0.0",
     "cors": "^2.8.6",
     "date-fns": "^4.4.0",
-    "dotenv": "^18.0.9",
+    "dotenv": "^18.0.10",
     "express": "^5.3.0",
-    "express-rate-limit": "^8.7.3",
+    "express-rate-limit": "^8.7.4",
     "joi": "^18.3.2",
-    "mongodb": "^7.8.0",
+    "mongodb": "^7.9.0",
     "node-cache": "^5.1.2"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "ajv-formats": "^3.0.1",
     "jest": "^30.5.2",
     "nodemon": "^3.1.14",
-    "supertest": "^7.3.1",
+    "supertest": "^7.3.2",
     "yaml": "^2.9.1"
   }
 }
