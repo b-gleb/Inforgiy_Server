@@ -20,8 +20,7 @@ pids
 lib-cov
 
 # Documentation
-build_api_docs.js
-api.yaml
+docs/
 
 # Linters
 biome.json

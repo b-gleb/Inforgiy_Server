@@ -3,11 +3,11 @@ File used to build swagger documentation
 */
 import fs from 'node:fs';
 import YAML from 'yaml';
-import { dateRangeSchema } from './schemas/dateRange.schema.js';
-import { departmentSchema, departmentSlug } from './schemas/department.schema.js';
-import { departmentStatisticsSchema } from './schemas/departmentStatistics.schema.js';
-import { rotaSchema } from './schemas/rota.schema.js';
-import { userSchema } from './schemas/user.schema.js';
+import { dateRangeSchema } from '../schemas/dateRange.schema.js';
+import { departmentSchema, departmentSlug } from '../schemas/department.schema.js';
+import { departmentStatisticsSchema } from '../schemas/departmentStatistics.schema.js';
+import { rotaSchema } from '../schemas/rota.schema.js';
+import { userSchema } from '../schemas/user.schema.js';
 
 export async function buildOpenApiDoc() {
   return {
@@ -1195,5 +1195,5 @@ export async function buildOpenApiDoc() {
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const doc = await buildOpenApiDoc();
-  fs.writeFileSync('api.yaml', YAML.stringify(doc));
+  fs.writeFileSync('docs/api.yaml', YAML.stringify(doc));
 }
