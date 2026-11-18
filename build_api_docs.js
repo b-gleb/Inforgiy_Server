@@ -6,6 +6,7 @@ import YAML from 'yaml';
 import { dateRangeSchema } from './schemas/dateRange.schema.js';
 import { departmentSchema, departmentSlug } from './schemas/department.schema.js';
 import { departmentStatisticsSchema } from './schemas/departmentStatistics.schema.js';
+import { jwtResponseSchema } from './schemas/JwtResponse.schema.js';
 import { rotaSchema } from './schemas/rota.schema.js';
 import { userSchema } from './schemas/user.schema.js';
 
@@ -110,6 +111,51 @@ export async function buildOpenApiDoc() {
                       }
                     }
                   }
+                }
+              }
+            },
+            400: {
+              description: 'Bad Request - Invalid input data.'
+            },
+            401: {
+              description: 'Unauthorized - Unable to verify hash.'
+            },
+            403: {
+              description: 'Forbidden - User does not have any rota roles.'
+            },
+            404: {
+              description: 'Not Found - User does not exist.'
+            }
+          }
+        }
+      },
+      '/auth/telegram-webapp': {
+        post: {
+          summary: 'Authenticate Telegram WebApp user and issue JWT',
+          description:
+            'Validates initDataUnsafe and issues a signed JWT if user has access to rota.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['initDataUnsafe'],
+                  properties: {
+                    initDataUnsafe: {
+                      $ref: '#/components/schemas/WebAppInitData'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Authentication successful',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/jwtResponse' }
                 }
               }
             },
@@ -1069,6 +1115,7 @@ export async function buildOpenApiDoc() {
         rota: rotaSchema,
         dateRange: dateRangeSchema,
         departmentStatistics: departmentStatisticsSchema,
+        jwtResponse: jwtResponseSchema,
         WebAppInitData: {
           type: 'object',
           required: ['auth_date', 'hash', 'signature'],
