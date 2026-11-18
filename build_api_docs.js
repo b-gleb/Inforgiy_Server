@@ -1054,6 +1054,15 @@ export async function buildOpenApiDoc() {
       }
     },
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            "Paste the token returned from /auth/login. Swagger UI adds the 'Bearer ' prefix."
+        }
+      },
       schemas: {
         Department: departmentSchema,
         userObject: userSchema,
