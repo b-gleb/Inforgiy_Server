@@ -6,7 +6,7 @@ import YAML from 'yaml';
 import { dateRangeSchema } from '../schemas/dateRange.schema.js';
 import { departmentSchema, departmentSlug } from '../schemas/department.schema.js';
 import { departmentStatisticsSchema } from '../schemas/departmentStatistics.schema.js';
-import { jwtResponseSchema } from '../schemas/JwtResponse.schema.js';
+import { jwtResponseSchema } from '../schemas/jwtResponse.schema.js';
 import { rotaSchema } from '../schemas/rota.schema.js';
 import { userSchema } from '../schemas/user.schema.js';
 
