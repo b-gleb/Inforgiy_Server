@@ -1,8 +1,7 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
 import { addDays } from 'date-fns';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -32,7 +31,7 @@ describe(`POST ${apiUrl}`, () => {
   let initDataUnsafe;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     startDate = new Date();
     endDate = addDays(startDate, 30);
     timeRanges = ['00:00-01:00', '23:00-24:00'];
@@ -55,12 +54,14 @@ describe(`POST ${apiUrl}`, () => {
   });
 
   beforeEach(() => {
-    validateInitData.mockClear();
     getUser.mockReset();
-    addUserToRotaMulti.mockClear();
     getUser
-      .mockResolvedValueOnce(generateAdmin(Object.keys(settup)[0], 1230))
-      .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
+      .mockResolvedValueOnce(generateAdmin('lns', 1230))
+      .mockResolvedValueOnce(generateUser('lns', 4560));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -101,8 +102,8 @@ describe(`POST ${apiUrl}`, () => {
     it('should respond with status code 403 if non admin calls the endpoint', async () => {
       getUser.mockReset();
       getUser
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
+        .mockResolvedValueOnce(generateUser('lns', 1230))
+        .mockResolvedValueOnce(generateUser('lns', 4560));
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });
@@ -117,7 +118,7 @@ describe(`POST ${apiUrl}`, () => {
     it('should respond with status code 404 if unable to find user', async () => {
       getUser.mockReset();
       getUser
-        .mockResolvedValueOnce(generateAdmin(Object.keys(settup)[0], 1230))
+        .mockResolvedValueOnce(generateAdmin('lns', 1230))
         .mockResolvedValueOnce(null);
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(404);
@@ -131,23 +132,24 @@ describe(`POST ${apiUrl}`, () => {
     it('should call `getUser` once if non admin calls the endpoint', async () => {
       getUser.mockReset();
       getUser
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230))
-        .mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 4560));
+        .mockResolvedValueOnce(generateUser('lns', 1230))
+        .mockResolvedValueOnce(generateUser('lns', 4560));
 
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `getUser` twice (to check calling user and the user to add to rota)', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(2);
       expect(getUser).toHaveBeenNthCalledWith(1, 1230);
       expect(getUser).toHaveBeenLastCalledWith(4560);
     });
 
     it('should call `addUserToRotaMulti`', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(addUserToRotaMulti).toHaveBeenCalledTimes(1);
       expect(addUserToRotaMulti).toHaveBeenCalledWith({
         branch,
@@ -169,9 +171,9 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have property "modifiedCount"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      const expectedProps = ['modifiedCount'].sort();
-      const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      const expectedProps = new Set(['modifiedCount']);
+      const actualProps = new Set(Object.keys(res.body));
+      expect(actualProps).toEqual(expectedProps);
     });
   });
 });

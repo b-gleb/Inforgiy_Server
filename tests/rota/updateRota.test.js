@@ -1,8 +1,7 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { format } from 'date-fns';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 import { rotaDBEntry } from './mocks.js';
 
@@ -37,8 +36,8 @@ describe(`POST ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
     date = format(new Date(), 'yyyy-MM-dd');
     userId = 1813610409;
     timeRange = '05:00-06:00';
@@ -59,12 +58,8 @@ describe(`POST ${apiUrl}`, () => {
     addUserToRota.mockResolvedValue(rotaDBEntry);
   });
 
-  beforeEach(() => {
-    getRota.mockClear();
-    removeUserFromRota.mockClear();
-    addUserToRota.mockClear();
-    validateInitData.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -153,7 +148,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call addUserToRota() when adding a user to rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'add', ...validBody });
 
@@ -189,7 +184,7 @@ describe(`POST ${apiUrl}`, () => {
       });
 
       it('should call removeUserFromRota() when removing user from rota', async () => {
-        const _res = await request(app)
+        await request(app)
           .post(apiUrl)
           .send({ type: 'remove', ...validBody });
 
@@ -218,13 +213,10 @@ describe(`POST ${apiUrl}`, () => {
           .post(apiUrl)
           .send({ type, ...validBody });
 
-        const expectedProps = ['users', 'label'].sort();
-        const allHaveExpectedProps = res.body.every(item => {
-          const actualProps = Object.keys(item).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        });
-
-        expect(allHaveExpectedProps).toBe(true);
+        const expectedProps = new Set(['users', 'label']);
+        for (const item of res.body) {
+          expect(new Set(Object.keys(item))).toEqual(expectedProps);
+        }
       });
 
       it('array element "users" should be of type object', async () => {

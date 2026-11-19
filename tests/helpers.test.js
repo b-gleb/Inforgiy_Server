@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { parseISO } from 'date-fns';
-import settup from '../src/config/settup.json' with { type: 'json' };
 import makeHelpers from '../src/utils/helpers.js';
 import { generateAdmin, generateUser } from './generators.js';
 
@@ -18,12 +17,12 @@ describe('isRotaAdmin', () => {
 
   beforeAll(() => {
     userId = 1230;
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
   });
 
-  beforeEach(() => {
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it("should return true if 'admin_rota_' present for the specified branch", async () => {
@@ -52,7 +51,8 @@ describe('isRotaAdmin', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateAdmin(branch, userId));
-    const _res = await isRotaAdmin(branch, userId);
+    await isRotaAdmin(branch, userId);
+
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });
@@ -65,12 +65,12 @@ describe('isUserInBranch', () => {
 
   beforeAll(() => {
     userId = 1230;
-    branch = Object.keys(settup)[0];
-    wrongBranch = Object.keys(settup)[1];
+    branch = 'lns';
+    wrongBranch = 'di';
   });
 
-  beforeEach(() => {
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should return true if user is in branch', async () => {
@@ -105,7 +105,8 @@ describe('isUserInBranch', () => {
 
   it('should call `getUser` once', async () => {
     getUser.mockResolvedValueOnce(generateUser(branch, userId));
-    const _res = await isUserInBranch(branch, userId);
+    await isUserInBranch(branch, userId);
+
     expect(getUser).toHaveBeenCalledTimes(1);
     expect(getUser).toHaveBeenCalledWith(userId);
   });

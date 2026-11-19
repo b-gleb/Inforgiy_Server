@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import settup from '../config/settup.json' with { type: 'json' };
+import cache, { longTTL } from '../utils/cache.js';
 import makeHelpers from '../utils/helpers.js';
 import { validateInitData } from '../utils/initDataValidation.js';
 
@@ -42,15 +42,25 @@ export default function makeDefaultController(database) {
       return res.status(404).send('User not found');
     }
 
-    Object.keys(settup).forEach(branch => {
-      const rotaKey = `rota_${branch}`;
-      const adminKey = `admin_rota_${branch}`;
+    // Obtain array of departments and its properties
+    const cacheKey = 'get.departments';
+    let departmentArray = cache.get(cacheKey);
+    if (departmentArray === undefined) {
+      departmentArray = await database.getDepartments();
+      cache.set(cacheKey, departmentArray, longTTL);
+    }
+
+    // Verify which departments the user has access to
+    departmentArray.forEach(departmentEntry => {
+      const departmentSlug = departmentEntry.slug;
+      const rotaKey = `rota_${departmentSlug}`;
+      const adminKey = `admin_rota_${departmentSlug}`;
 
       // Check for rota keys and add to userBranches if present
       if (userEntry.roles[rotaKey] !== undefined) {
-        userBranches[branch] = {
+        userBranches[departmentSlug] = {
           color: userEntry.roles[rotaKey]?.c ?? 0,
-          maxDuties: settup[branch].maxDuties
+          maxDuties: departmentEntry.maxDuties
         };
 
         hasRoles = true;
@@ -58,7 +68,7 @@ export default function makeDefaultController(database) {
 
       // Check for admin keys and add to rotaAdmin if present
       if (userEntry.roles[adminKey] !== undefined) {
-        rotaAdmin.push(branch);
+        rotaAdmin.push(departmentSlug);
       }
     });
 

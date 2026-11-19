@@ -1,7 +1,7 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
+import cache from '../../src/utils/cache.js';
 import { generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -11,9 +11,11 @@ const { validateInitData } = await import('../../src/utils/initDataValidation.js
 const makeApp = (await import('../../src/app.js')).default;
 
 const getUser = jest.fn();
+const getDepartments = jest.fn();
 
 const app = makeApp({
-  getUser
+  getUser,
+  getDepartments
 });
 
 const apiUrl = '/api/auth';
@@ -25,12 +27,24 @@ const userData = generateUser('lns', 1230);
 describe(`POST ${apiUrl}`, () => {
   beforeAll(() => {
     validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(generateUser(Object.keys(settup)[0], 1230));
+    getUser.mockResolvedValue(generateUser('lns', 1230));
+    getDepartments.mockResolvedValue([
+      {
+        slug: 'lns',
+        name: 'ЛНС',
+        maxDuties: 7
+      },
+      {
+        slug: 'di',
+        name: 'ДИ',
+        maxDuties: 4
+      }
+    ]);
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
+    cache.flushAll();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -74,21 +88,47 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `validateInitData` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
     });
 
     it('should call `getUser` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(initDataUnsafe.user.id);
     });
 
     it('should not call `getUser` if `validateInitData` failed', async () => {
       validateInitData.mockReturnValueOnce(false);
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+
       expect(validateInitData).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledTimes(0);
+    });
+
+    it('should call `getDepartments` once', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(1);
+    });
+
+    it('should obtain departments from cache on second call', async () => {
+      await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call `getDepartments` if `validateInitData` failed', async () => {
+      validateInitData.mockReturnValueOnce(false);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not call `getDepartments` if `getUser` did not find any users', async () => {
+      getUser.mockResolvedValueOnce(null);
+      await request(app).post(apiUrl).send(validBody);
+      expect(getDepartments).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -100,10 +140,10 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have properties "branches", "rotaAdmin"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      const expectedProps = ['branches', 'rotaAdmin'].sort();
-      const actualProps = Object.keys(res.body).sort();
+      const expectedProps = new Set(['branches', 'rotaAdmin']);
+      const actualProps = new Set(Object.keys(res.body));
 
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      expect(actualProps).toEqual(expectedProps);
     });
 
     it.each([
@@ -136,13 +176,10 @@ describe(`POST ${apiUrl}`, () => {
     it('subobject of "branches" should have properties "color" and "maxDuties"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['color', 'maxDuties'].sort();
-      const allHaveExpectedProps = Object.values(res.body.branches).every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['color', 'maxDuties']);
+      for (const [name, branch] of Object.entries(res.body.branches)) {
+        expect([name, new Set(Object.keys(branch))]).toEqual([name, expectedProps]);
+      }
     });
 
     it('property "color" of subobject "branches" should be an integer', async () => {

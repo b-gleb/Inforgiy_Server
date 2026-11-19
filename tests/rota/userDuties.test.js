@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { rotaDBEntry } from './mocks.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -19,7 +18,7 @@ describe(`GET ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     validBody = {
       branch,
       userId: 1813610409,
@@ -30,8 +29,8 @@ describe(`GET ${apiUrl}`, () => {
     getUserDuties.mockResolvedValue([rotaDBEntry]);
   });
 
-  beforeEach(() => {
-    getUserDuties.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETRS GET ${apiUrl}`, () => {
@@ -71,7 +70,7 @@ describe(`GET ${apiUrl}`, () => {
     });
 
     it('should query the database for user duties', async () => {
-      const _res = await request(app).get(apiUrl).query(validBody);
+      await request(app).get(apiUrl).query(validBody);
 
       expect(getUserDuties).toHaveBeenCalledTimes(1);
       expect(getUserDuties).toHaveBeenCalledWith(
@@ -99,13 +98,10 @@ describe(`GET ${apiUrl}`, () => {
     it('array element should have properties "date" and "hours"', async () => {
       const res = await request(app).get(apiUrl).query(validBody);
 
-      const expectedProps = ['date', 'hours'];
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps.sort());
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['date', 'hours']);
+      for (const item of res.body) {
+        expect(new Set(Object.keys(item))).toEqual(expectedProps);
+      }
     });
 
     it('array element property "date" should be of type date', async () => {

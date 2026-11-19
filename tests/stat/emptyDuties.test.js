@@ -1,10 +1,9 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import request from 'supertest';
 import { departmentStatisticsSchema } from '../../schemas/departmentStatistics.schema.js';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateEmptyDutiesStats } from '../generators.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -18,7 +17,7 @@ const app = makeApp({
 const ajv = new Ajv({ allErrors: true, strict: true });
 addFormats(ajv);
 const apiUrl = '/api/stats/emptyDuties';
-branch = Object.keys(settup)[0];
+branch = 'lns';
 const dateRanges = [
   ['2025-01-01', '2025-01-31'],
   ['2025-02-01', '2025-02-28']
@@ -48,8 +47,8 @@ describe(`POST ${apiUrl}`, () => {
     getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
 
-  beforeEach(() => {
-    getEmptyDuties.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('Validation, Authentication, Authorization', () => {
@@ -103,11 +102,9 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'length of array should be the length of requested dateRanges for: %#',
       async body => {
-        getEmptyDuties.mockClear();
         getEmptyDuties.mockResolvedValueOnce(
           generateEmptyDutiesStats(body.dateRanges, count)
         );
-
         const res = await request(app).post(apiUrl).send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
       }
@@ -118,10 +115,8 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call `getEmptyDuties` once for: %#',
       async body => {
-        getEmptyDuties.mockClear();
         getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),

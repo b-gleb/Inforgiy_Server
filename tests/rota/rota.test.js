@@ -1,10 +1,9 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import { format, lastDayOfYear } from 'date-fns';
 import request from 'supertest';
 import { rotaSchema } from '../../schemas/rota.schema.js';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 
 const makeApp = (await import('../../src/app.js')).default;
 const getRota = jest.fn();
@@ -21,15 +20,15 @@ describe(`GET ${apiUrl}`, () => {
   let validBody;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     date = format(lastDayOfYear(new Date()), 'yyyy-MM-dd');
     validBody = { branch, date };
 
     getRota.mockResolvedValue({});
   });
 
-  beforeEach(() => {
-    getRota.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('Validation, Authentication, Authorization', () => {
@@ -97,7 +96,7 @@ describe(`GET ${apiUrl}`, () => {
 
   describe('Business Logic', () => {
     it('should query the database for day rota', async () => {
-      const _res = await request(app).get(apiUrl).query(validBody);
+      await request(app).get(apiUrl).query(validBody);
       expect(getRota).toHaveBeenCalledTimes(1);
       expect(getRota).toHaveBeenCalledWith(branch, new Date(date));
     });

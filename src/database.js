@@ -24,6 +24,11 @@ export const initializeMongoDB = async () => {
 ////////////////
 // DEPARTMENT //
 ////////////////
+export async function getDepartments() {
+  const cursor = mongo_db.collection('rota').find({}, { projection: { _id: 0 } });
+  return await cursor.toArray();
+}
+
 export async function getDepartmentBySlug(slug) {
   const entry = await mongo_db
     .collection('rota')
@@ -176,6 +181,7 @@ export async function getUser(userId) {
     { telegram_id: userId },
     {
       projection: {
+        telegram_id: 1,
         telegram: 1,
         roles: 1,
         _id: 0
@@ -398,6 +404,7 @@ export async function logUsageStatistics(entry) {
 export default {
   initializeMongoDB,
   // DEPARTMENT
+  getDepartments,
   getDepartmentBySlug,
   // ROTA
   getRota,

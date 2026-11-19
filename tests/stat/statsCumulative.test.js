@@ -1,7 +1,6 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateCumulativeStats } from '../generators.js';
 
 const makeApp = (await import('../../src/app.js')).default;
@@ -15,7 +14,7 @@ const app = makeApp({
 const apiUrl = '/api/stats/cumulative';
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
-const branch = Object.keys(settup)[0];
+const branch = 'lns';
 const userId = 1230;
 const dateRanges = [
   ['2025-01-01', '2025-01-31'],
@@ -46,8 +45,8 @@ describe(`POST ${apiUrl}`, () => {
     getCumulativeStats.mockResolvedValue(generateCumulativeStats(dateRanges));
   });
 
-  beforeEach(() => {
-    getCumulativeStats.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -84,12 +83,7 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'should call getcumulativeStats() once',
       async body => {
-        getCumulativeStats.mockClear();
-        getCumulativeStats.mockResolvedValueOnce(
-          generateCumulativeStats(body.dateRanges)
-        );
-
-        const _res = await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),
@@ -119,7 +113,6 @@ describe(`POST ${apiUrl}`, () => {
     it.each(variableLengthBodyOptions)(
       'length of the array should be equal to length of "dateRanges"',
       async body => {
-        getCumulativeStats.mockClear();
         getCumulativeStats.mockResolvedValueOnce(
           generateCumulativeStats(body.dateRanges)
         );
@@ -132,13 +125,10 @@ describe(`POST ${apiUrl}`, () => {
     it('array object should have properties "userId", "dateRange" and "data"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['userId', 'dateRange', 'data'].sort();
-      const allHaveExpectedProps = res.body.every(item => {
-        const actualProps = Object.keys(item).sort();
-        return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-      });
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['userId', 'dateRange', 'data']);
+      for (const item of res.body) {
+        expect(new Set(Object.keys(item))).toEqual(expectedProps);
+      }
     });
 
     it('property "userId" should be of type integer', async () => {
@@ -176,15 +166,12 @@ describe(`POST ${apiUrl}`, () => {
     it('elements of "data" array should have properties "date", "count"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
 
-      const expectedProps = ['date', 'count'].sort();
-      const allHaveExpectedProps = res.body.every(item =>
-        item.data.every(subitem => {
-          const actualProps = Object.keys(subitem).sort();
-          return JSON.stringify(actualProps) === JSON.stringify(expectedProps);
-        })
-      );
-
-      expect(allHaveExpectedProps).toBe(true);
+      const expectedProps = new Set(['date', 'count']);
+      for (const item of res.body) {
+        for (const subitem of item.data) {
+          expect(new Set(Object.keys(subitem))).toEqual(expectedProps);
+        }
+      }
     });
 
     it('property "date" should be a date string', async () => {

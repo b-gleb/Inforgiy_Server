@@ -1,14 +1,11 @@
+import { JoiDate } from '@joi/date';
 import dotenv from 'dotenv';
+import BaseJoi from 'joi';
 
 dotenv.config();
-
-import { JoiDate } from '@joi/date';
-import BaseJoi from 'joi';
-import settup from '../config/settup.json' with { type: 'json' };
-
 const Joi = BaseJoi.extend(JoiDate);
 
-export const validateBranch = Joi.string().valid(...Object.keys(settup));
+export const validateBranch = Joi.string().valid('lns', 'gp', 'di', 'orel', 'ryaz');
 export const validateUserId = Joi.number().integer().positive();
 export const validateColor = Joi.number().integer().min(0).max(6).default(0);
 export const validateDayOfWeek = Joi.number().integer().min(0).max(6);

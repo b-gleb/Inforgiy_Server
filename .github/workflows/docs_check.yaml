@@ -2,7 +2,7 @@ name: API Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   # Runs on push to main — fails if api.yaml doesn't match what npm run docs generates
@@ -17,11 +17,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
         with:
-          node-version: '24.15.0'
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.22.3
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -31,8 +34,8 @@ jobs:
 
       - name: Compare api.yaml
         run: |
-          if ! git diff --quiet -- api.yaml; then
-            echo "::error::api.yaml is out of date on main. Run 'npm run docs' and commit the result."
-            git diff -- api.yaml
+          if ! git diff --quiet -- docs/api.yaml; then
+            echo "::error::docs/api.yaml is out of date on main. Run 'npm run docs' and commit the result."
+            git diff -- docs/api.yaml
             exit 1
           fi

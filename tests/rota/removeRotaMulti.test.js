@@ -1,8 +1,7 @@
 // biome-ignore lint/correctness/noUndeclaredDependencies: @jest/globals is exported by the jest package.
-import { beforeAll, beforeEach, describe, expect, jest } from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import { addDays } from 'date-fns';
 import request from 'supertest';
-import settup from '../../src/config/settup.json' with { type: 'json' };
 import { generateAdmin, generateUser } from '../generators.js';
 
 jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
@@ -32,7 +31,7 @@ describe(`POST ${apiUrl}`, () => {
   let initDataUnsafe;
 
   beforeAll(() => {
-    branch = Object.keys(settup)[0];
+    branch = 'lns';
     startDate = new Date();
     endDate = addDays(startDate, 30);
     timeRanges = ['00:00-01:00', '23:00-24:00'];
@@ -55,13 +54,11 @@ describe(`POST ${apiUrl}`, () => {
       matchedCout: 5,
       modifiedCount: 5
     });
-    getUser.mockResolvedValue(generateAdmin(Object.keys(settup)[0], 1230));
+    getUser.mockResolvedValue(generateAdmin(branch, 1230));
   });
 
-  beforeEach(() => {
-    validateInitData.mockClear();
-    getUser.mockClear();
-    removeUserFromRotaMulti.mockClear();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
@@ -100,7 +97,7 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should respond with status code 403 if non admin calls the endpoint', async () => {
-      getUser.mockResolvedValueOnce(generateUser(Object.keys(settup)[0], 1230));
+      getUser.mockResolvedValueOnce(generateUser(branch, 1230));
       const res = await request(app).post(apiUrl).send(validBody);
       expect(res.statusCode).toBe(403);
     });
@@ -117,13 +114,13 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should call `getUser` once', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(getUser).toHaveBeenCalledTimes(1);
       expect(getUser).toHaveBeenCalledWith(1230);
     });
 
     it('should call `removeUserFromRotaMulti`', async () => {
-      const _res = await request(app).post(apiUrl).send(validBody);
+      await request(app).post(apiUrl).send(validBody);
       expect(removeUserFromRotaMulti).toHaveBeenCalledTimes(1);
       expect(removeUserFromRotaMulti).toHaveBeenCalledWith({
         branch,
@@ -144,9 +141,9 @@ describe(`POST ${apiUrl}`, () => {
 
     it('response object should have property "modifiedCount"', async () => {
       const res = await request(app).post(apiUrl).send(validBody);
-      const expectedProps = ['modifiedCount'].sort();
-      const actualProps = Object.keys(res.body).sort();
-      expect(JSON.stringify(actualProps) === JSON.stringify(expectedProps)).toBe(true);
+      const expectedProps = new Set(['modifiedCount']);
+      const actualProps = new Set(Object.keys(res.body));
+      expect(actualProps).toEqual(expectedProps);
     });
   });
 });
