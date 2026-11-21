@@ -40,11 +40,10 @@ describe(`GET ${apiUrl()}`, () => {
       expect(res.statusCode).toBe(200);
     });
 
-    it('should respond with status code 404 if department not found', async () => {
+    it('should respond with status code 400 if invalid department is provided', async () => {
       getDepartmentBySlug.mockResolvedValueOnce(null);
       const res = await request(app).get(apiUrl(invalidDepartment));
-
-      expect(res.statusCode).toBe(404);
+      expect(res.statusCode).toBe(400);
     });
 
     it('should specify json in the content type header', async () => {

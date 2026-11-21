@@ -1,4 +1,6 @@
+import Joi from 'joi';
 import cache, { longTTL } from '../utils/cache.js';
+import { validateBranch } from '../utils/responseValidation.js';
 
 export default function makeDepartmentController(database) {
   const getDepartments = async (_req, res) => {
@@ -27,20 +29,22 @@ export default function makeDepartmentController(database) {
   };
 
   const getDepartmentBySlug = async (req, res) => {
-    const slug = req.params.slug;
-    const cacheKey = `get.department.${slug}`;
+    const paramsSchema = Joi.object({
+      departmentSlug: validateBranch.required()
+    });
+
+    const { error: paramsError, value: params } = paramsSchema.validate(req.params ?? {});
+    if (paramsError) return res.status(400).send(paramsError.details[0].message);
+
+    const cacheKey = `get.department.${params.departmentSlug}`;
     let departmentEntry = cache.get(cacheKey);
 
     if (departmentEntry === undefined) {
-      departmentEntry = await database.getDepartmentBySlug(slug);
+      departmentEntry = await database.getDepartmentBySlug(params.departmentSlug);
       cache.set(cacheKey, departmentEntry, longTTL);
     }
 
-    if (departmentEntry === null) {
-      return res.status(404).send('Department not found');
-    } else {
-      return res.json(departmentEntry);
-    }
+    return res.json(departmentEntry);
   };
 
   return {
