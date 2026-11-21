@@ -15,6 +15,10 @@ export default function makeStatRoutes(database) {
     '/departments/:departmentSlug/statistics/taken-duties',
     statController.takenDuties
   );
+  router.post(
+    '/departments/:departmentSlug/statistics/unique-users',
+    statController.uniqueUsers
+  );
 
   return router;
 }
