@@ -131,6 +131,28 @@ export async function buildOpenApiDoc() {
           }
         }
       },
+      '/departments': {
+        get: {
+          tags: ['Departments'],
+          summary: 'Get all departments',
+          description: 'Gets information about all departments.',
+          responses: {
+            200: {
+              description: 'Departments retrieved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/department'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/departments/{departmentSlug}': {
         get: {
           tags: ['Departments'],
@@ -151,7 +173,7 @@ export async function buildOpenApiDoc() {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Department'
+                    $ref: '#/components/schemas/department'
                   }
                 }
               }
@@ -1055,7 +1077,7 @@ export async function buildOpenApiDoc() {
     },
     components: {
       schemas: {
-        Department: departmentSchema,
+        department: departmentSchema,
         userObject: userSchema,
         rota: rotaSchema,
         dateRange: dateRangeSchema,

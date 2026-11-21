@@ -80,6 +80,21 @@ paths:
           description: Forbidden - User does not have any rota roles.
         "404":
           description: Not Found - User does not exist.
+  /departments:
+    get:
+      tags:
+        - Departments
+      summary: Get all departments
+      description: Gets information about all departments.
+      responses:
+        "200":
+          description: Departments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/department"
   /departments/{departmentSlug}:
     get:
       tags:
@@ -106,7 +121,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Department"
+                $ref: "#/components/schemas/department"
         "404":
           description: Not Found - Department with such slug does not exist
   /rota:
@@ -768,7 +783,7 @@ paths:
           description: Bad Request - Invalid input data.
 components:
   schemas:
-    Department:
+    department:
       type: object
       properties:
         slug: *a1
