@@ -917,21 +917,21 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/emptyDuties': {
+      '/departments/{departmentSlug}/statistics/empty-duties': {
         post: {
           tags: ['Statistics'],
-          summary: 'Number of empty duty slots for a branch',
+          summary: 'Number of empty duty slots for a department',
           description:
-            'Number of unoccupied slots for a branch across several date ranges',
+            'Number of unoccupied slots for a department across several date ranges',
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['department', 'dateRanges'],
                   properties: {
-                    branch: departmentSlug,
+                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
