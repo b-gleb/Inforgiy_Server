@@ -116,8 +116,8 @@ export default function makeStatController(database) {
   const emptyDuties = async (req, res) => {
     // Validation
     const paramsSchema = Joi.object({
-      departmentSlug: validateBranch.required(),
-    })
+      departmentSlug: validateBranch.required()
+    });
     const bodySchema = Joi.object({
       dateRanges: Joi.array().min(1).items(validateDateRange).required()
     });
@@ -129,7 +129,10 @@ export default function makeStatController(database) {
     if (bodyError) return res.status(400).send(bodyError.details[0].message);
 
     // Logic
-    const pipeline_output = await database.getEmptyDuties(params.departmentSlug, body.dateRanges);
+    const pipeline_output = await database.getEmptyDuties(
+      params.departmentSlug,
+      body.dateRanges
+    );
 
     const result = body.dateRanges.map((range, idx) => ({
       dateRange: range,
