@@ -11,6 +11,10 @@ export default function makeStatRoutes(database) {
     '/departments/:departmentSlug/statistics/empty-duties',
     statController.emptyDuties
   );
+  router.post(
+    '/departments/:departmentSlug/statistics/taken-duties',
+    statController.takenDuties
+  );
 
   return router;
 }
