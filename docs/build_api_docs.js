@@ -160,7 +160,7 @@ export async function buildOpenApiDoc() {
           description: 'Retrieves a department by its unique slug.',
           parameters: [
             {
-              name: 'slug',
+              name: 'departmentSlug',
               in: 'path',
               required: true,
               description: 'Unique department slug',
