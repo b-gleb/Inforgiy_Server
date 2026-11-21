@@ -706,12 +706,12 @@ paths:
                 $ref: "#/components/schemas/departmentStatistics"
         "400":
           description: Bad Request - Invalid input data.
-  /stats/takenDuties:
+  /departments/{departmentSlug}/statistics/taken-duties:
     post:
       tags:
         - Statistics
       summary: Number of taken duty-person slots
-      description: Number of duty-person slots for a branch across several date ranges
+      description: Number of duty-person slots for a department across several date ranges
       requestBody:
         required: true
         content:
@@ -719,10 +719,10 @@ paths:
             schema:
               type: object
               required:
-                - branch
+                - department
                 - dateRanges
               properties:
-                branch: *a1
+                department: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the

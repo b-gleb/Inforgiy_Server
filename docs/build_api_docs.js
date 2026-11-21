@@ -962,21 +962,21 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/takenDuties': {
+      '/departments/{departmentSlug}/statistics/taken-duties': {
         post: {
           tags: ['Statistics'],
           summary: 'Number of taken duty-person slots',
           description:
-            'Number of duty-person slots for a branch across several date ranges',
+            'Number of duty-person slots for a department across several date ranges',
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['department', 'dateRanges'],
                   properties: {
-                    branch: departmentSlug,
+                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
