@@ -15,7 +15,7 @@ export async function buildOpenApiDoc() {
     info: {
       title: 'Inforgiy Web (server)',
       description: 'Inforgiy Server API documentation.',
-      version: '1.6.1'
+      version: '1.6.2'
     },
     servers: [
       {
