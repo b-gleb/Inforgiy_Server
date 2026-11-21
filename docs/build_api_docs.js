@@ -19,6 +19,9 @@ export async function buildOpenApiDoc() {
     },
     servers: [
       {
+        url: 'http://localhost:5000/api/'
+      },
+      {
         url: 'https://inforgiy-server.fly.dev/api/'
       }
     ],
@@ -929,9 +932,8 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['department', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -974,9 +976,8 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['department', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1008,7 +1009,7 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/department/{departmentSlug}/statistics/unique-users': {
+      '/departments/{departmentSlug}/statistics/unique-users': {
         post: {
           tags: ['Statistics'],
           summary: 'Number of unique users in rota',
@@ -1019,9 +1020,8 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['department', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:

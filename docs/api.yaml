@@ -4,6 +4,7 @@ info:
   description: Inforgiy Server API documentation.
   version: 1.6.0
 servers:
+  - url: http://localhost:5000/api/
   - url: https://inforgiy-server.fly.dev/api/
 paths:
   /ping:
@@ -687,10 +688,8 @@ paths:
             schema:
               type: object
               required:
-                - department
                 - dateRanges
               properties:
-                department: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
@@ -719,10 +718,8 @@ paths:
             schema:
               type: object
               required:
-                - department
                 - dateRanges
               properties:
-                department: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
@@ -739,7 +736,7 @@ paths:
                 $ref: "#/components/schemas/departmentStatistics"
         "400":
           description: Bad Request - Invalid input data.
-  /department/{departmentSlug}/statistics/unique-users:
+  /departments/{departmentSlug}/statistics/unique-users:
     post:
       tags:
         - Statistics
@@ -752,10 +749,8 @@ paths:
             schema:
               type: object
               required:
-                - department
                 - dateRanges
               properties:
-                department: *a1
                 dateRanges:
                   type: array
                   description: An array of arrays of dates (inclusive) for which to calculate the
