@@ -16,13 +16,17 @@ const app = makeApp({
 
 const ajv = new Ajv({ allErrors: true, strict: true });
 addFormats(ajv);
-const apiUrl = '/api/stats/emptyDuties';
-branch = 'lns';
+
+const validDepartment = 'lns';
+const invalidDepartment = 'invalid-department';
+const apiUrl = (departmentSlug = validDepartment) =>
+  `/api/departments/${departmentSlug}/statistics/empty-duties`;
+
 const dateRanges = [
   ['2025-01-01', '2025-01-31'],
   ['2025-02-01', '2025-02-28']
 ];
-const validBody = { branch, dateRanges };
+const validBody = { dateRanges };
 const variableLengthBodyOptions = [
   { ...validBody, dateRanges: [['2025-01-01', '2025-01-31']] },
   {
@@ -42,7 +46,7 @@ const variableLengthBodyOptions = [
   }
 ];
 
-describe(`POST ${apiUrl}`, () => {
+describe(`POST ${apiUrl()}`, () => {
   beforeAll(() => {
     getEmptyDuties.mockResolvedValue(generateEmptyDutiesStats(dateRanges));
   });
@@ -54,18 +58,23 @@ describe(`POST ${apiUrl}`, () => {
   describe('Validation, Authentication, Authorization', () => {
     // biome-ignore format: keep each `it` block separate
     it.each([
-      { branch },
-      { dateRanges },
-      {}
+      {},
+      null,
+      undefined
     ])('should respond with status code 400 for incomplete body: %j', async body => {
-      const res = await request(app).post(apiUrl).send(body);
+      const res = await request(app).post(apiUrl()).send(body);
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('should respond with status code 400 if invalid department is provided in params', async () => {
+      const res = await request(app).post(apiUrl(invalidDepartment)).send(validBody);
       expect(res.statusCode).toBe(400);
     });
 
     it('should respond with status code 400 if dateRanges is a valid date range (not array of date ranges)', async () => {
       const res = await request(app)
-        .post(apiUrl)
-        .send({ branch, dateRanges: ['2025-01-01', '2025-01-31'] });
+        .post(apiUrl())
+        .send({ dateRanges: ['2025-01-01', '2025-01-31'] });
       expect(res.statusCode).toBe(400);
     });
   });
@@ -78,19 +87,19 @@ describe(`POST ${apiUrl}`, () => {
     });
 
     it('should return status code 200', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const res = await request(app).post(apiUrl()).send(validBody);
       expect(res.statusCode).toBe(200);
     });
 
     it('should specify json in the content type header', async () => {
-      const res = await request(app).post(apiUrl).send(validBody);
+      const res = await request(app).post(apiUrl()).send(validBody);
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should return payload matching departmentStatisticsSchema', async () => {
       const validSchema = ajv.compile(departmentStatisticsSchema);
 
-      const res = await request(app).post(apiUrl).send(validBody);
+      const res = await request(app).post(apiUrl()).send(validBody);
       const valid = validSchema(res.body);
       if (!valid) {
         console.error(validSchema.errors);
@@ -105,7 +114,7 @@ describe(`POST ${apiUrl}`, () => {
         getEmptyDuties.mockResolvedValueOnce(
           generateEmptyDutiesStats(body.dateRanges, count)
         );
-        const res = await request(app).post(apiUrl).send(body);
+        const res = await request(app).post(apiUrl()).send(body);
         expect(res.body.length).toBe(body.dateRanges.length);
       }
     );
@@ -116,7 +125,7 @@ describe(`POST ${apiUrl}`, () => {
       'should call `getEmptyDuties` once for: %#',
       async body => {
         getEmptyDuties.mockResolvedValueOnce(generateEmptyDutiesStats(body.dateRanges));
-        await request(app).post(apiUrl).send(body);
+        await request(app).post(apiUrl()).send(body);
 
         const expectedDateRanges = body.dateRanges.map(([start, end]) => [
           new Date(start),
@@ -124,7 +133,7 @@ describe(`POST ${apiUrl}`, () => {
         ]);
 
         expect(getEmptyDuties).toHaveBeenCalledTimes(1);
-        expect(getEmptyDuties).toHaveBeenCalledWith(body.branch, expectedDateRanges);
+        expect(getEmptyDuties).toHaveBeenCalledWith(validDepartment, expectedDateRanges);
       }
     );
   });

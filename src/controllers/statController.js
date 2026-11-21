@@ -115,18 +115,23 @@ export default function makeStatController(database) {
 
   const emptyDuties = async (req, res) => {
     // Validation
-    const validationSchema = Joi.object({
-      branch: validateBranch.required(),
+    const paramsSchema = Joi.object({
+      departmentSlug: validateBranch.required(),
+    })
+    const bodySchema = Joi.object({
       dateRanges: Joi.array().min(1).items(validateDateRange).required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    const { error: paramsError, value: params } = paramsSchema.validate(req.params ?? {});
+    if (paramsError) return res.status(400).send(paramsError.details[0].message);
+
+    const { error: bodyError, value: body } = bodySchema.validate(req.body ?? {});
+    if (bodyError) return res.status(400).send(bodyError.details[0].message);
 
     // Logic
-    const pipeline_output = await database.getEmptyDuties(value.branch, value.dateRanges);
+    const pipeline_output = await database.getEmptyDuties(params.departmentSlug, body.dateRanges);
 
-    const result = value.dateRanges.map((range, idx) => ({
+    const result = body.dateRanges.map((range, idx) => ({
       dateRange: range,
       count: pipeline_output[`range_${idx}`][0]?.count ?? 0
     }));
