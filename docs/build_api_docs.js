@@ -15,9 +15,12 @@ export async function buildOpenApiDoc() {
     info: {
       title: 'Inforgiy Web (server)',
       description: 'Inforgiy Server API documentation.',
-      version: '1.6.0'
+      version: '1.6.1'
     },
     servers: [
+      {
+        url: 'http://localhost:5000/api/'
+      },
       {
         url: 'https://inforgiy-server.fly.dev/api/'
       }
@@ -128,7 +131,7 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/departments/{slug}': {
+      '/departments/{departmentSlug}': {
         get: {
           tags: ['Departments'],
           summary: 'Get department by slug',
@@ -917,21 +920,20 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/emptyDuties': {
+      '/departments/{departmentSlug}/statistics/empty-duties': {
         post: {
           tags: ['Statistics'],
-          summary: 'Number of empty duty slots for a branch',
+          summary: 'Number of empty duty slots for a department',
           description:
-            'Number of unoccupied slots for a branch across several date ranges',
+            'Number of unoccupied slots for a department across several date ranges',
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -962,21 +964,20 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/takenDuties': {
+      '/departments/{departmentSlug}/statistics/taken-duties': {
         post: {
           tags: ['Statistics'],
           summary: 'Number of taken duty-person slots',
           description:
-            'Number of duty-person slots for a branch across several date ranges',
+            'Number of duty-person slots for a department across several date ranges',
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
@@ -1008,7 +1009,7 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/uniqueUsers': {
+      '/departments/{departmentSlug}/statistics/unique-users': {
         post: {
           tags: ['Statistics'],
           summary: 'Number of unique users in rota',
@@ -1019,9 +1020,8 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['dateRanges'],
                   properties: {
-                    branch: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
