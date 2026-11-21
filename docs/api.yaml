@@ -79,7 +79,7 @@ paths:
           description: Forbidden - User does not have any rota roles.
         "404":
           description: Not Found - User does not exist.
-  /departments/{slug}:
+  /departments/{departmentSlug}:
     get:
       tags:
         - Departments

@@ -128,7 +128,7 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/departments/{slug}': {
+      '/departments/{departmentSlug}': {
         get: {
           tags: ['Departments'],
           summary: 'Get department by slug',
