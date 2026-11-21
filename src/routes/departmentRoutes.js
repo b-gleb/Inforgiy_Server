@@ -5,7 +5,7 @@ export default function makeDepartmentRoutes(database) {
   const router = express.Router();
   const departmentController = makeDepartmentController(database);
 
-  router.get('/departments/:slug', departmentController.getDepartmentBySlug);
+  router.get('/departments', departmentController.getDepartments);
 
   return router;
 }
