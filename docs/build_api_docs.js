@@ -1008,7 +1008,7 @@ export async function buildOpenApiDoc() {
           }
         }
       },
-      '/stats/uniqueUsers': {
+      '/department/{departmentSlug}/statistics/unique-users': {
         post: {
           tags: ['Statistics'],
           summary: 'Number of unique users in rota',
@@ -1019,9 +1019,9 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'dateRanges'],
+                  required: ['department', 'dateRanges'],
                   properties: {
-                    branch: departmentSlug,
+                    department: departmentSlug,
                     dateRanges: {
                       type: 'array',
                       description:
