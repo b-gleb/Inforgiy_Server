@@ -29,7 +29,8 @@
         "noExcessiveCognitiveComplexity": "off"
       },
       "correctness": {
-        "noUnresolvedImports": "off"
+        "noUnresolvedImports": "off",
+        "noUndeclaredVariables": "error"
       },
       "performance": "on",
       "security": {

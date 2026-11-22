@@ -12,8 +12,11 @@ const app = makeApp({
   getDepartmentBySlug
 });
 
-const apiUrl = '/api/departments';
 const ajv = new Ajv({ allErrors: true, strict: true });
+
+const validDepartment = 'lns';
+const invalidDepartment = 'invalid-department';
+const apiUrl = (departmentSlug = validDepartment) => `/api/departments/${departmentSlug}`;
 
 const department = {
   slug: 'lns',
@@ -21,7 +24,7 @@ const department = {
   maxDuties: 7
 };
 
-describe(`GET ${apiUrl}/{slug}`, () => {
+describe(`GET ${apiUrl()}`, () => {
   beforeAll(() => {
     getDepartmentBySlug.mockResolvedValue(department);
   });
@@ -33,25 +36,24 @@ describe(`GET ${apiUrl}/{slug}`, () => {
 
   describe('Response Validation', () => {
     it('should respond with status code 200', async () => {
-      const res = await request(app).get(`${apiUrl}/lns`);
+      const res = await request(app).get(apiUrl());
       expect(res.statusCode).toBe(200);
     });
 
-    it('should respond with status code 404 if department not found', async () => {
+    it('should respond with status code 400 if invalid department is provided', async () => {
       getDepartmentBySlug.mockResolvedValueOnce(null);
-      const res = await request(app).get(`${apiUrl}/not-found`);
-
-      expect(res.statusCode).toBe(404);
+      const res = await request(app).get(apiUrl(invalidDepartment));
+      expect(res.statusCode).toBe(400);
     });
 
     it('should specify json in the content type header', async () => {
-      const res = await request(app).get(`${apiUrl}/lns`);
+      const res = await request(app).get(apiUrl());
       expect(res.header['content-type']).toEqual(expect.stringContaining('json'));
     });
 
     it('should return payload matching departmentSchema', async () => {
       const validSchema = ajv.compile(departmentSchema);
-      const res = await request(app).get(`${apiUrl}/lns`);
+      const res = await request(app).get(apiUrl());
 
       const valid = validSchema(res.body);
       if (!valid) {
@@ -64,15 +66,15 @@ describe(`GET ${apiUrl}/{slug}`, () => {
 
   describe('Business Logic', () => {
     it('should call `getDepartmentBySlug` once with correct arguments', async () => {
-      await request(app).get(`${apiUrl}/lns`);
+      await request(app).get(apiUrl());
 
       expect(getDepartmentBySlug).toHaveBeenCalledTimes(1);
       expect(getDepartmentBySlug).toHaveBeenCalledWith('lns');
     });
 
     it('should pull from cache on second call, skipping database', async () => {
-      await request(app).get(`${apiUrl}/lns`);
-      await request(app).get(`${apiUrl}/lns`);
+      await request(app).get(apiUrl());
+      await request(app).get(apiUrl());
 
       expect(getDepartmentBySlug).toHaveBeenCalledTimes(1);
       expect(getDepartmentBySlug).toHaveBeenCalledWith('lns');
