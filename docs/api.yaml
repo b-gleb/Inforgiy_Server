@@ -496,7 +496,7 @@ paths:
         "400":
           description: Bad Request - Invalid input data.
         "401":
-          description: Unauthorized - Unable to verify hash.
+          description: Unauthorized - Invalid or expired token
         "403":
           description: Forbidden - User is not rota admin.
       security:
@@ -514,13 +514,10 @@ paths:
               type: object
               required:
                 - branch
-                - initDataUnsafe
               properties:
                 branch: *a1
                 userObj:
                   $ref: "#/components/schemas/userObject"
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
         required: true
       responses:
         "200":
@@ -532,11 +529,13 @@ paths:
         "400":
           description: Bad Request - Invalid input data.
         "401":
-          description: Unauthorized - Unable to verify hash.
+          description: Unauthorized - Invalid or expired token
         "403":
           description: Forbidden - User is not authorized to perform this action.
         "404":
           description: Not Found - User does not exist.
+      security:
+        - bearerAuth: []
   /removeUser:
     post:
       tags:
@@ -552,7 +551,6 @@ paths:
               required:
                 - branch
                 - userId
-                - initDataUnsafe
               properties:
                 branch: *a1
                 userId:
@@ -560,8 +558,6 @@ paths:
                   format: int64
                   description: The ID of the user to be modified
                   example: 123456789
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
         required: true
       responses:
         "204":
@@ -569,11 +565,13 @@ paths:
         "400":
           description: Bad Request - Invalid input data.
         "401":
-          description: Unauthorized - Unable to verify hash.
+          description: Unauthorized - Invalid or expired token.
         "403":
           description: Forbidden - User is not authorized to perform this action.
         "404":
           description: Not Found - User does not exist.
+      security:
+        - bearerAuth: []
   /stats:
     post:
       tags:

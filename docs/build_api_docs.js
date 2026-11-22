@@ -680,7 +680,7 @@ export async function buildOpenApiDoc() {
               description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.'
+              description: 'Unauthorized - Invalid or expired token'
             },
             403: {
               description: 'Forbidden - User is not rota admin.'
@@ -701,14 +701,11 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'initDataUnsafe'],
+                  required: ['branch'],
                   properties: {
                     branch: departmentSlug,
                     userObj: {
                       $ref: '#/components/schemas/userObject'
-                    },
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
                     }
                   }
                 }
@@ -731,7 +728,7 @@ export async function buildOpenApiDoc() {
               description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.'
+              description: 'Unauthorized - Invalid or expired token'
             },
             403: {
               description: 'Forbidden - User is not authorized to perform this action.'
@@ -739,7 +736,10 @@ export async function buildOpenApiDoc() {
             404: {
               description: 'Not Found - User does not exist.'
             }
-          }
+          },
+          security: [
+            {bearerAuth: []}
+          ]
         }
       },
       '/removeUser': {
@@ -753,7 +753,7 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'userId', 'initDataUnsafe'],
+                  required: ['branch', 'userId'],
                   properties: {
                     branch: departmentSlug,
                     userId: {
@@ -761,9 +761,6 @@ export async function buildOpenApiDoc() {
                       format: 'int64',
                       description: 'The ID of the user to be modified',
                       example: 123456789
-                    },
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
                     }
                   }
                 }
@@ -779,7 +776,7 @@ export async function buildOpenApiDoc() {
               description: 'Bad Request - Invalid input data.'
             },
             401: {
-              description: 'Unauthorized - Unable to verify hash.'
+              description: 'Unauthorized - Invalid or expired token.'
             },
             403: {
               description: 'Forbidden - User is not authorized to perform this action.'
@@ -787,7 +784,10 @@ export async function buildOpenApiDoc() {
             404: {
               description: 'Not Found - User does not exist.'
             }
-          }
+          },
+          security: [
+            {bearerAuth: []}
+          ]
         }
       },
       '/stats': {
