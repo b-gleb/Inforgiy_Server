@@ -4,6 +4,9 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 export const signToken = payload => {
+  // Changes to expires in require modifications
+  //  - in docs for the endpoint
+  //  - in endpoint code
   return jwt.sign(payload, process.env.TOKEN, {
     expiresIn: '1h',
     audience: 'inforgiy-web'
