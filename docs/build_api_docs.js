@@ -654,12 +654,9 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: ['branch', 'initDataUnsafe'],
+                  required: ['branch'],
                   properties: {
-                    branch: departmentSlug,
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
-                    }
+                    branch: departmentSlug
                   }
                 }
               }
@@ -688,7 +685,10 @@ export async function buildOpenApiDoc() {
             403: {
               description: 'Forbidden - User is not rota admin.'
             }
-          }
+          },
+          security: [
+            {bearerAuth: []}
+          ]
         }
       },
       '/updateUser': {

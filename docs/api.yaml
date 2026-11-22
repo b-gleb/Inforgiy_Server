@@ -482,11 +482,8 @@ paths:
               type: object
               required:
                 - branch
-                - initDataUnsafe
               properties:
                 branch: *a1
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
       responses:
         "200":
           description: Returns all users who have the branch's rota permission
@@ -502,6 +499,8 @@ paths:
           description: Unauthorized - Unable to verify hash.
         "403":
           description: Forbidden - User is not rota admin.
+      security:
+        - bearerAuth: []
   /updateUser:
     post:
       tags:
