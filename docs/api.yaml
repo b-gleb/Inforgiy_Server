@@ -818,8 +818,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Paste the token returned from /auth/login. Swagger UI adds the
-        'Bearer ' prefix.
+      description: Paste the token returned from /auth/telegram-webapp
   schemas:
     department:
       type: object

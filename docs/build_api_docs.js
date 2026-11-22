@@ -1128,7 +1128,7 @@ export async function buildOpenApiDoc() {
           scheme: 'bearer',
           bearerFormat: 'JWT',
           description:
-            "Paste the token returned from /auth/login. Swagger UI adds the 'Bearer ' prefix."
+            "Paste the token returned from /auth/telegram-webapp"
         }
       },
       schemas: {
