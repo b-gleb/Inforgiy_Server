@@ -54,4 +54,12 @@ describe('verifyToken', () => {
     const decoded = verifyToken(token);
     expect(decoded).toBeNull();
   });
+
+  it('should return null for an expired token', () => {
+    const token = jwt.sign({ id: 123, username: 'test' }, 'test-secret-token', {
+      expiresIn: -10
+    });
+    const decoded = verifyToken(token);
+    expect(decoded).toBeNull();
+  });
 });
