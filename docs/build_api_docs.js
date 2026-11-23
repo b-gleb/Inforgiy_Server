@@ -686,9 +686,7 @@ export async function buildOpenApiDoc() {
               description: 'Forbidden - User is not rota admin.'
             }
           },
-          security: [
-            {bearerAuth: []}
-          ]
+          security: [{ bearerAuth: [] }]
         }
       },
       '/updateUser': {
@@ -737,9 +735,7 @@ export async function buildOpenApiDoc() {
               description: 'Not Found - User does not exist.'
             }
           },
-          security: [
-            {bearerAuth: []}
-          ]
+          security: [{ bearerAuth: [] }]
         }
       },
       '/removeUser': {
@@ -785,9 +781,7 @@ export async function buildOpenApiDoc() {
               description: 'Not Found - User does not exist.'
             }
           },
-          security: [
-            {bearerAuth: []}
-          ]
+          security: [{ bearerAuth: [] }]
         }
       },
       '/stats': {
@@ -1127,8 +1121,7 @@ export async function buildOpenApiDoc() {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description:
-            "Paste the token returned from /auth/telegram-webapp"
+          description: 'Paste the token returned from /auth/telegram-webapp'
         }
       },
       schemas: {
