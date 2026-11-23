@@ -31,9 +31,7 @@ describe('verifyToken', () => {
   it('should decode a token signed by signToken and return the original payload plus iat and exp', () => {
     const payload = {
       id: 123,
-      username: 'test',
-      branches: { lns: { color: 0 } },
-      rotaAdmin: ['lns']
+      username: 'test'
     };
     const token = signToken(payload);
     const decoded = verifyToken(token);
@@ -41,8 +39,7 @@ describe('verifyToken', () => {
     expect(decoded).not.toBeNull();
     expect(decoded.id).toBe(123);
     expect(decoded.username).toBe('test');
-    expect(decoded.branches).toEqual({ lns: { color: 0 } });
-    expect(decoded.rotaAdmin).toEqual(['lns']);
+    expect(decoded.aud).toBe('inforgiy-web');
     expect(decoded.iat).toBeDefined();
     expect(decoded.exp).toBeDefined();
   });
