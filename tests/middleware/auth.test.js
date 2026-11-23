@@ -24,9 +24,7 @@ const app = makeApp();
 describe('authenticate middleware', () => {
   const mockPayload = {
     id: 1230,
-    username: 'test',
-    branches: { lns: { color: 0, maxDuties: 3 } },
-    rotaAdmin: ['lns']
+    username: 'test'
   };
 
   beforeAll(() => {
