@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import cache, { longTTL } from '../utils/cache.js';
 import makeHelpers from '../utils/helpers.js';
-import { validateInitData } from '../utils/initDataValidation.js';
 import {
   validateBranch,
   validateColor,
@@ -14,19 +13,13 @@ export default function makeUserController(database) {
   const users = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
-      branch: validateBranch.required(),
-      initDataUnsafe: Joi.any().required()
+      branch: validateBranch.required()
     });
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) {
-      return res.status(401).send('Unable to verify hash');
-    }
-
-    if (!(await helpers.isRotaAdmin(value.branch, value.initDataUnsafe.user.id))) {
+    if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {
       return res.status(403).send('You must be a rota admin');
     }
 
@@ -55,19 +48,13 @@ export default function makeUserController(database) {
     // Validation
     const validationSchema = Joi.object({
       branch: validateBranch.required(),
-      userId: validateUserId.required(),
-      initDataUnsafe: Joi.any().required()
+      userId: validateUserId.required()
     });
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) {
-      return res.status(401).send('Unable to verify hash');
-    }
-
-    if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
+    if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {
       return res.status(403).send('You must be a rota admin');
     }
 
@@ -79,12 +66,9 @@ export default function makeUserController(database) {
 
     if (removedUser.matchedCount === 1) {
       res.sendStatus(204);
-      await helpers.statistic(
-        initDataUnsafe,
-        value.branch.toUpperCase(),
-        'rota-remove-user',
-        { modify: value.userId }
-      );
+      await helpers.statistic(req.user, value.branch.toUpperCase(), 'rota-remove-user', {
+        modify: value.userId
+      });
     } else {
       res.status(404).send('User not found');
     }
@@ -101,19 +85,13 @@ export default function makeUserController(database) {
         color: validateColor
       })
         .or('id', 'username')
-        .required(),
-      initDataUnsafe: Joi.any().required()
+        .required()
     });
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) {
-      return res.status(401).send('Unable to verify hash');
-    }
-
-    if (!(await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id))) {
+    if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {
       return res.status(403).send('You must be a rota admin');
     }
 
@@ -157,7 +135,7 @@ export default function makeUserController(database) {
       cache.del(`get.users.${value.branch}`);
 
       await helpers.statistic(
-        initDataUnsafe,
+        req.user,
         value.branch.toUpperCase(),
         'rota-update-user',
         value.userObj
