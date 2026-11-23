@@ -47,20 +47,20 @@ export default function makeHelpers(database) {
     }
   };
 
-  const statistic = async (initDataUnsafe, action, sub_action = null, misc = null) => {
+  const statistic = async (user, action, sub_action = null, misc = null) => {
     if (process.env.ENV === 'TEST') {
       return;
     }
 
-    const userRegion = await database.getUserRegion(initDataUnsafe.user.id);
+    const userRegion = await database.getUserRegion(user.id);
 
     const newEntry = {
       date: new Date(),
       action: action,
       sub_action: sub_action,
       misc: misc,
-      user_id: initDataUnsafe.user.id,
-      username: initDataUnsafe.user.username,
+      user_id: user.id,
+      username: user.username,
       user_region: userRegion
     };
 
