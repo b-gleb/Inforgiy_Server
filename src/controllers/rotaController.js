@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import makeCoverters from '../utils/converters.js';
 import makeHelpers from '../utils/helpers.js';
-import { validateInitData } from '../utils/initDataValidation.js';
 import {
   ensureUniqueArray,
   validateBranch,
@@ -93,17 +92,11 @@ export default function makeRotaController(database) {
       branch: validateBranch.required(),
       date: Joi.date().required(),
       timeRange: validateTimeRange.required(),
-      userId: validateUserId.required(),
-      initDataUnsafe: Joi.any().required()
+      userId: validateUserId.required()
     });
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe)) {
-      return res.status(401).send('Unable to verify hash');
-    }
 
     try {
       timeIndex = Number(value.timeRange.slice(0, 2));
@@ -119,7 +112,7 @@ export default function makeRotaController(database) {
       return res.status(404).send('Date not found');
     }
 
-    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
+    const isAdmin = await helpers.isRotaAdmin(value.branch, req.user.id);
 
     if (value.type === 'remove') {
       // Only admins can remove users from rota
@@ -140,7 +133,7 @@ export default function makeRotaController(database) {
       }
 
       // Only admins can add someone else to rota
-      if (value.userId !== initDataUnsafe.user.id && !isAdmin) {
+      if (value.userId !== req.user.id && !isAdmin) {
         return res.status(403).send('You must be rota admin to add someone else');
       }
 
@@ -160,12 +153,11 @@ export default function makeRotaController(database) {
 
     res.json(await converters.convertListRota(value.branch, updatedDayEntry?.rota ?? {}));
 
-    await helpers.statistic(
-      initDataUnsafe,
-      value.branch.toUpperCase(),
-      `rota-${value.type}`,
-      { date: value.date, time: value.timeRange, modify: value.userId }
-    );
+    await helpers.statistic(req.user, value.branch.toUpperCase(), `rota-${value.type}`, {
+      date: value.date,
+      time: value.timeRange,
+      modify: value.userId
+    });
   };
 
   /**
@@ -180,18 +172,13 @@ export default function makeRotaController(database) {
       timeRanges: validateTimeRangeArray.custom(ensureUniqueArray).required(),
       daysOfWeek: validateDayOfWeekArray.custom(ensureUniqueArray).required(),
       userId: validateUserId.required(),
-      allowOccupiedSlots: Joi.bool().default(true),
-      initDataUnsafe: Joi.any().required()
+      allowOccupiedSlots: Joi.bool().default(true)
     }).custom(validateStartDateBeforeEndDate);
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe))
-      return res.status(401).send('Unable to verify hash');
-
-    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
+    const isAdmin = await helpers.isRotaAdmin(value.branch, req.user.id);
     if (!isAdmin)
       return res.status(403).send('You must be a rota admin to multi add users to rota');
 
@@ -214,7 +201,7 @@ export default function makeRotaController(database) {
     res.json({ modifiedCount: updateObj.modifiedCount });
 
     await helpers.statistic(
-      initDataUnsafe,
+      req.user,
       value.branch.toUpperCase(),
       'rota-add-multi',
       value
@@ -232,18 +219,13 @@ export default function makeRotaController(database) {
       endDate: Joi.date().required(),
       timeRanges: validateTimeRangeArray.custom(ensureUniqueArray).required(),
       daysOfWeek: validateDayOfWeekArray.custom(ensureUniqueArray).required(),
-      userId: validateUserId.required(),
-      initDataUnsafe: Joi.any().required()
+      userId: validateUserId.required()
     }).custom(validateStartDateBeforeEndDate);
 
     const { error, value } = validationSchema.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const initDataUnsafe = helpers.formatInitData(req.body.initDataUnsafe);
-    if (!validateInitData(initDataUnsafe))
-      return res.status(401).send('Unable to verify hash');
-
-    const isAdmin = await helpers.isRotaAdmin(value.branch, initDataUnsafe.user.id);
+    const isAdmin = await helpers.isRotaAdmin(value.branch, req.user.id);
     if (!isAdmin)
       return res.status(403).send('You must be a rota admin to multi add users to rota');
 
@@ -262,7 +244,7 @@ export default function makeRotaController(database) {
     res.json({ modifiedCount: updateObj.modifiedCount });
 
     await helpers.statistic(
-      initDataUnsafe,
+      req.user,
       value.branch.toUpperCase(),
       'rota-remove-multi',
       value
