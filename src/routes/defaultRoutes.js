@@ -7,6 +7,7 @@ export default function makeDefaultRoutes(database) {
 
   router.get('/ping', defaultController.ping);
   router.post('/auth', defaultController.auth);
+  router.post('/auth/telegram-webapp', defaultController.telegramWebappAuth);
 
   return router;
 }

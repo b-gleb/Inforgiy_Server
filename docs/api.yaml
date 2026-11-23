@@ -80,6 +80,37 @@ paths:
           description: Forbidden - User does not have any rota roles.
         "404":
           description: Not Found - User does not exist.
+  /auth/telegram-webapp:
+    post:
+      summary: Authenticate Telegram WebApp user and issue JWT
+      description: Validates initDataUnsafe and issues a signed JWT if user has access
+        to rota.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - initDataUnsafe
+              properties:
+                initDataUnsafe:
+                  $ref: "#/components/schemas/WebAppInitData"
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/jwtResponse"
+        "400":
+          description: Bad Request - Invalid input data.
+        "401":
+          description: Unauthorized - Unable to verify hash.
+        "403":
+          description: Forbidden - User does not have any rota roles.
+        "404":
+          description: Not Found - User does not exist.
   /departments:
     get:
       tags:
@@ -782,6 +813,13 @@ paths:
         "400":
           description: Bad Request - Invalid input data.
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Paste the token returned from /auth/login. Swagger UI adds the
+        'Bearer ' prefix.
   schemas:
     department:
       type: object
@@ -880,6 +918,26 @@ components:
         required:
           - dateRange
           - count
+    jwtResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Signed JWT to send in the Authorization header
+        tokenType:
+          type: string
+          examples:
+            - Bearer
+        expiresIn:
+          type: integer
+          description: Token lifetime in seconds
+          examples:
+            - 3600
+      additionalProperties: false
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
     WebAppInitData:
       type: object
       required:
