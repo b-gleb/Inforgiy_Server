@@ -16,7 +16,7 @@ export default function makeUserController(database) {
       branch: validateBranch.required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {
@@ -51,7 +51,7 @@ export default function makeUserController(database) {
       userId: validateUserId.required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {
@@ -88,7 +88,7 @@ export default function makeUserController(database) {
         .required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     if (!(await helpers.isRotaAdmin(value.branch, req.user.id))) {

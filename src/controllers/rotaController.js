@@ -95,7 +95,7 @@ export default function makeRotaController(database) {
       userId: validateUserId.required()
     });
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     try {
@@ -175,7 +175,7 @@ export default function makeRotaController(database) {
       allowOccupiedSlots: Joi.bool().default(true)
     }).custom(validateStartDateBeforeEndDate);
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     const isAdmin = await helpers.isRotaAdmin(value.branch, req.user.id);
@@ -222,7 +222,7 @@ export default function makeRotaController(database) {
       userId: validateUserId.required()
     }).custom(validateStartDateBeforeEndDate);
 
-    const { error, value } = validationSchema.validate(req.body);
+    const { error, value } = validationSchema.validate(req.body ?? {});
     if (error) return res.status(400).send(error.details[0].message);
 
     const isAdmin = await helpers.isRotaAdmin(value.branch, req.user.id);
