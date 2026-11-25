@@ -5,10 +5,11 @@ import request from 'supertest';
 import { generateAdmin, generateUser } from '../generators.js';
 import { rotaDBEntry } from './mocks.js';
 
-jest.unstable_mockModule('../../src/utils/initDataValidation.js', () => ({
-  validateInitData: jest.fn()
+jest.unstable_mockModule('../../src/utils/jwt.js', () => ({
+  signToken: jest.fn(),
+  verifyToken: jest.fn()
 }));
-const { validateInitData } = await import('../../src/utils/initDataValidation.js');
+const { verifyToken } = await import('../../src/utils/jwt.js');
 
 const makeApp = (await import('../../src/app.js')).default;
 
@@ -25,34 +26,26 @@ const app = makeApp({
 });
 
 const apiUrl = '/api/updateRota';
+const callerId = 1813610409;
+const mockUser = { id: callerId, username: 'test_user' };
+const authToken = 'Bearer valid-token';
+const branch = 'lns';
+const wrongBranch = 'di';
+const date = format(new Date(), 'yyyy-MM-dd');
+const userId = 1813610409;
+const timeRange = '05:00-06:00';
+
+const validBody = {
+  branch,
+  date,
+  userId,
+  timeRange
+};
 
 describe(`POST ${apiUrl}`, () => {
-  let branch;
-  let wrongBranch;
-  let date;
-  let userId;
-  let timeRange;
-  let initDataUnsafe;
-  let validBody;
-
   beforeAll(() => {
-    branch = 'lns';
-    wrongBranch = 'di';
-    date = format(new Date(), 'yyyy-MM-dd');
-    userId = 1813610409;
-    timeRange = '05:00-06:00';
-    initDataUnsafe = { user: { id: 1813610409 } };
-
-    validBody = {
-      branch,
-      date,
-      userId,
-      timeRange,
-      initDataUnsafe
-    };
-
-    validateInitData.mockReturnValue(true);
-    getUser.mockResolvedValue(generateAdmin(branch, validBody.initDataUnsafe.user.id));
+    verifyToken.mockReturnValue(mockUser);
+    getUser.mockResolvedValue(generateAdmin(branch, callerId));
     getRota.mockResolvedValue(rotaDBEntry);
     removeUserFromRota.mockResolvedValue(rotaDBEntry);
     addUserToRota.mockResolvedValue(rotaDBEntry);
@@ -62,17 +55,39 @@ describe(`POST ${apiUrl}`, () => {
     jest.clearAllMocks();
   });
 
+  describe(`Authentication POST ${apiUrl}`, () => {
+    it('should respond with status code 401 if no Authorization header is provided', async () => {
+      const res = await request(app)
+        .post(apiUrl)
+        .send({ type: 'add', ...validBody });
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('should respond with status code 401 if token is invalid or expired', async () => {
+      verifyToken.mockReturnValueOnce(null);
+      const res = await request(app)
+        .post(apiUrl)
+        .set('Authorization', authToken)
+        .send({ type: 'add', ...validBody });
+      expect(res.statusCode).toBe(401);
+    });
+  });
+
   describe(`INVALID PARAMETERS POST ${apiUrl}`, () => {
     it.each([
-      { branch, date, timeRange, userId, initDataUnsafe },
-      { type: 'add', date, timeRange, userId, initDataUnsafe },
-      { type: 'add', branch, timeRange, userId, initDataUnsafe },
-      { type: 'add', branch, date, userId, initDataUnsafe },
-      { type: 'add', branch, date, timeRange, initDataUnsafe },
-      { type: 'add', branch, date, timeRange, userId },
-      {}
+      { branch, date, timeRange, userId },
+      { type: 'add', date, timeRange, userId },
+      { type: 'add', branch, timeRange, userId },
+      { type: 'add', branch, date, userId },
+      { type: 'add', branch, date, timeRange },
+      {},
+      null,
+      undefined
     ])('should respond with status code 400 for incomplete body: %j', async body => {
-      const res = await request(app).post(apiUrl).send(body);
+      const res = await request(app)
+        .post(apiUrl)
+        .set('Authorization', authToken)
+        .send(body);
       expect(res.statusCode).toBe(400);
     });
   });
@@ -82,22 +97,16 @@ describe(`POST ${apiUrl}`, () => {
       it('should respond with status code 200', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
         expect(res.statusCode).toBe(200);
-      });
-
-      it('should respond with status code 401 if unable to verify hash', async () => {
-        validateInitData.mockReturnValueOnce(false);
-        const res = await request(app)
-          .post(apiUrl)
-          .send({ type, ...validBody });
-        expect(res.statusCode).toBe(401);
       });
 
       it('should respond with status code 404 if trying to modify date which does not exist', async () => {
         getRota.mockResolvedValueOnce(null);
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
         expect(res.statusCode).toBe(404);
       });
@@ -105,6 +114,7 @@ describe(`POST ${apiUrl}`, () => {
       it('should specify json in the content type header', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
 
         expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
@@ -113,24 +123,26 @@ describe(`POST ${apiUrl}`, () => {
 
     describe('Adding a user to rota', () => {
       it('should respond with status code 403 if non admin user tries to add not themselves to rota', async () => {
-        getUser.mockResolvedValueOnce(null);
+        getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ ...validBody, type: 'add', userId: 1230 });
 
         expect(res.statusCode).toBe(403);
         expect(getUser).toHaveBeenCalledTimes(2);
-        expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(getUser).toHaveBeenCalledWith(callerId);
         expect(addUserToRota).toHaveBeenCalledTimes(0);
       });
 
       it('should respond with status code 404 if adding a user not assigned to current rota', async () => {
         getUser
-          .mockResolvedValueOnce(generateAdmin(validBody.branch, initDataUnsafe.user.id))
+          .mockResolvedValueOnce(generateAdmin(validBody.branch, callerId))
           .mockResolvedValueOnce(generateUser(wrongBranch, validBody.userId));
 
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'add', ...validBody });
 
         expect(res.statusCode).toBe(404);
@@ -143,6 +155,7 @@ describe(`POST ${apiUrl}`, () => {
         getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'add', ...validBody });
         expect(res.statusCode).toBe(200);
       });
@@ -150,6 +163,7 @@ describe(`POST ${apiUrl}`, () => {
       it('should call addUserToRota() when adding a user to rota', async () => {
         await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'add', ...validBody });
 
         expect(addUserToRota).toHaveBeenCalledTimes(1);
@@ -161,17 +175,16 @@ describe(`POST ${apiUrl}`, () => {
 
     describe('Removing a user from rota', () => {
       it('should respond with status code 200 if removing a user not assigned to current rota', async () => {
-        getUser.mockResolvedValueOnce(
-          generateAdmin(branch, validBody.initDataUnsafe.user.id)
-        );
+        getUser.mockResolvedValueOnce(generateAdmin(branch, callerId));
 
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'remove', ...validBody });
 
         expect(res.statusCode).toBe(200);
         expect(getUser).toHaveBeenCalledTimes(1);
-        expect(getUser).toHaveBeenCalledWith(validBody.initDataUnsafe.user.id);
+        expect(getUser).toHaveBeenCalledWith(callerId);
         expect(removeUserFromRota).toHaveBeenCalledTimes(1);
       });
 
@@ -179,6 +192,7 @@ describe(`POST ${apiUrl}`, () => {
         getUser.mockResolvedValueOnce({ telegram: '@username', roles: {} });
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'remove', ...validBody });
         expect(res.statusCode).toBe(403);
       });
@@ -186,6 +200,7 @@ describe(`POST ${apiUrl}`, () => {
       it('should call removeUserFromRota() when removing user from rota', async () => {
         await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type: 'remove', ...validBody });
 
         expect(removeUserFromRota).toHaveBeenCalledTimes(1);
@@ -202,6 +217,7 @@ describe(`POST ${apiUrl}`, () => {
       it('response should be an array of length 24', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
 
         expect(res.body).toBeInstanceOf(Array);
@@ -211,6 +227,7 @@ describe(`POST ${apiUrl}`, () => {
       it('array elements should have properties "users" and "label"', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
 
         const expectedProps = new Set(['users', 'label']);
@@ -222,6 +239,7 @@ describe(`POST ${apiUrl}`, () => {
       it('array element "users" should be of type object', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
 
         expect(
@@ -232,6 +250,7 @@ describe(`POST ${apiUrl}`, () => {
       it('array element property "label" should be of type string', async () => {
         const res = await request(app)
           .post(apiUrl)
+          .set('Authorization', authToken)
           .send({ type, ...validBody });
 
         expect(res.body.every(item => typeof item.label === 'string')).toBe(true);
