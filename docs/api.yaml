@@ -489,7 +489,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/userObject"
+                  $ref: "#/components/schemas/departmentMember"
         "400":
           description: Bad Request - Invalid input data.
         "401":
@@ -514,7 +514,7 @@ paths:
               properties:
                 branch: *a1
                 userObj:
-                  $ref: "#/components/schemas/userObject"
+                  $ref: "#/components/schemas/departmentMember"
         required: true
       responses:
         "200":
@@ -522,7 +522,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userObject"
+                $ref: "#/components/schemas/departmentMember"
         "400":
           description: Bad Request - Invalid input data.
         "401":
@@ -834,7 +834,7 @@ components:
         - name
         - maxDuties
       additionalProperties: false
-    userObject: &a2
+    departmentMember: &a2
       type: object
       properties:
         id:

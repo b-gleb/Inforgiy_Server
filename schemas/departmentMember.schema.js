@@ -1,4 +1,4 @@
-export const userSchema = {
+export const departmentMember = {
   type: 'object',
   properties: {
     id: {

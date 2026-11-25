@@ -5,10 +5,10 @@ import fs from 'node:fs';
 import YAML from 'yaml';
 import { dateRangeSchema } from '../schemas/dateRange.schema.js';
 import { departmentSchema, departmentSlug } from '../schemas/department.schema.js';
+import { departmentMember } from '../schemas/departmentMember.schema.js';
 import { departmentStatisticsSchema } from '../schemas/departmentStatistics.schema.js';
 import { jwtResponseSchema } from '../schemas/jwtResponse.schema.js';
 import { rotaSchema } from '../schemas/rota.schema.js';
-import { userSchema } from '../schemas/user.schema.js';
 
 export async function buildOpenApiDoc() {
   return {
@@ -655,7 +655,7 @@ export async function buildOpenApiDoc() {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/userObject'
+                      $ref: '#/components/schemas/departmentMember'
                     }
                   }
                 }
@@ -688,7 +688,7 @@ export async function buildOpenApiDoc() {
                   properties: {
                     branch: departmentSlug,
                     userObj: {
-                      $ref: '#/components/schemas/userObject'
+                      $ref: '#/components/schemas/departmentMember'
                     }
                   }
                 }
@@ -702,7 +702,7 @@ export async function buildOpenApiDoc() {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/userObject'
+                    $ref: '#/components/schemas/departmentMember'
                   }
                 }
               }
@@ -1111,7 +1111,7 @@ export async function buildOpenApiDoc() {
       },
       schemas: {
         department: departmentSchema,
-        userObject: userSchema,
+        departmentMember: departmentMember,
         rota: rotaSchema,
         dateRange: dateRangeSchema,
         departmentStatistics: departmentStatisticsSchema,
