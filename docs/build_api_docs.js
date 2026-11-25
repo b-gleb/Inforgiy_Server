@@ -365,14 +365,7 @@ export async function buildOpenApiDoc() {
               'application/json': {
                 schema: {
                   type: 'object',
-                  required: [
-                    'type',
-                    'branch',
-                    'date',
-                    'timeRange',
-                    'userId',
-                    'initDataUnsafe'
-                  ],
+                  required: ['type', 'branch', 'date', 'timeRange', 'userId'],
                   properties: {
                     type: {
                       type: 'string',
@@ -397,9 +390,6 @@ export async function buildOpenApiDoc() {
                       format: 'int64',
                       description: 'ID of the user to add or remove from rota',
                       example: 123456789
-                    },
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
                     }
                   }
                 }
@@ -430,7 +420,8 @@ export async function buildOpenApiDoc() {
             404: {
               description: 'Not Found - Date or user to add is not found.'
             }
-          }
+          },
+          security: [{ bearerAuth: [] }]
         }
       },
       '/addRotaMulti': {
@@ -450,8 +441,7 @@ export async function buildOpenApiDoc() {
                     'endDate',
                     'timeRanges',
                     'daysOfWeek',
-                    'userId',
-                    'initDataUnsafe'
+                    'userId'
                   ],
                   properties: {
                     branch: departmentSlug,
@@ -501,9 +491,6 @@ export async function buildOpenApiDoc() {
                         'If true, allows users to be assigned to rota slots even if they are already taken. If false, the operation only fills unassigned slots.',
                       default: true,
                       example: true
-                    },
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
                     }
                   }
                 }
@@ -540,7 +527,8 @@ export async function buildOpenApiDoc() {
             404: {
               description: 'Not Found - User does not exist.'
             }
-          }
+          },
+          security: [{ bearerAuth: [] }]
         }
       },
       '/removeRotaMulti': {
@@ -560,8 +548,7 @@ export async function buildOpenApiDoc() {
                     'endDate',
                     'timeRanges',
                     'daysOfWeek',
-                    'userId',
-                    'initDataUnsafe'
+                    'userId'
                   ],
                   properties: {
                     branch: departmentSlug,
@@ -604,9 +591,6 @@ export async function buildOpenApiDoc() {
                       format: 'int64',
                       description: 'ID of the user to mass add to rota',
                       example: 123456789
-                    },
-                    initDataUnsafe: {
-                      $ref: '#/components/schemas/WebAppInitData'
                     }
                   }
                 }
@@ -640,7 +624,8 @@ export async function buildOpenApiDoc() {
             403: {
               description: 'Forbidden - User is not authorized to perform this action.'
             }
-          }
+          },
+          security: [{ bearerAuth: [] }]
         }
       },
       '/users': {

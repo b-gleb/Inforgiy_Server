@@ -268,7 +268,6 @@ paths:
                 - date
                 - timeRange
                 - userId
-                - initDataUnsafe
               properties:
                 type:
                   type: string
@@ -292,8 +291,6 @@ paths:
                   format: int64
                   description: ID of the user to add or remove from rota
                   example: 123456789
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
         required: true
       responses:
         "200":
@@ -310,6 +307,8 @@ paths:
           description: Forbidden - User is not authorized to perform this action.
         "404":
           description: Not Found - Date or user to add is not found.
+      security:
+        - bearerAuth: []
   /addRotaMulti:
     post:
       tags:
@@ -330,7 +329,6 @@ paths:
                 - timeRanges
                 - daysOfWeek
                 - userId
-                - initDataUnsafe
               properties:
                 branch: *a1
                 startDate:
@@ -372,8 +370,6 @@ paths:
                     slots.
                   default: true
                   example: true
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
         required: true
       responses:
         "200":
@@ -394,6 +390,8 @@ paths:
           description: Forbidden - User is not authorized to perform this action.
         "404":
           description: Not Found - User does not exist.
+      security:
+        - bearerAuth: []
   /removeRotaMulti:
     post:
       tags:
@@ -413,7 +411,6 @@ paths:
                 - timeRanges
                 - daysOfWeek
                 - userId
-                - initDataUnsafe
               properties:
                 branch: *a1
                 startDate:
@@ -448,8 +445,6 @@ paths:
                   format: int64
                   description: ID of the user to mass add to rota
                   example: 123456789
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
         required: true
       responses:
         "200":
@@ -468,6 +463,8 @@ paths:
           description: Unauthorized - Unable to verify hash.
         "403":
           description: Forbidden - User is not authorized to perform this action.
+      security:
+        - bearerAuth: []
   /users:
     post:
       tags:
