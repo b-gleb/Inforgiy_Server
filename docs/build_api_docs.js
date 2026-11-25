@@ -9,6 +9,7 @@ import { departmentMember } from '../schemas/departmentMember.schema.js';
 import { departmentStatisticsSchema } from '../schemas/departmentStatistics.schema.js';
 import { jwtResponseSchema } from '../schemas/jwtResponse.schema.js';
 import { rotaSchema } from '../schemas/rota.schema.js';
+import { userDetail } from '../schemas/userDetail.schema.js';
 
 export async function buildOpenApiDoc() {
   return {
@@ -1112,6 +1113,7 @@ export async function buildOpenApiDoc() {
       schemas: {
         department: departmentSchema,
         departmentMember: departmentMember,
+        userDetail: userDetail,
         rota: rotaSchema,
         dateRange: dateRangeSchema,
         departmentStatistics: departmentStatisticsSchema,
