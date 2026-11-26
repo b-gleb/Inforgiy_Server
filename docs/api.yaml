@@ -465,6 +465,36 @@ paths:
           description: Forbidden - User is not authorized to perform this action.
       security:
         - bearerAuth: []
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Find user by identifier
+      description: Returns a single user and all of their permissions across departments
+      parameters:
+        - name: userId
+          in: path
+          description: Unique identifier on Telegram
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userDetail"
+        "400":
+          description: Bad Request - Invalid input data.
+        "401":
+          description: Unauthorized - Invalid or expired token.
+        "403":
+          description: Forbidden - User is not allowed to view this information.
+        "404":
+          description: Not Found - User does not exist.
+      security:
+        - bearerAuth: []
   /users:
     post:
       tags:
