@@ -19,67 +19,6 @@ paths:
               schema:
                 type: string
                 example: pong
-  /auth:
-    post:
-      summary: Authorise user on ther server
-      description: Authorise user on the server, validate initDataUnsafe and get the
-        information needed for app launch.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - initDataUnsafe
-              properties:
-                initDataUnsafe:
-                  $ref: "#/components/schemas/WebAppInitData"
-      responses:
-        "200":
-          description: Returns a JSON object of user permissions including admin permissions
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  branches:
-                    additionalProperties:
-                      type: object
-                      properties:
-                        color:
-                          type: integer
-                          description: Integer code for user's color
-                          minimum: 0
-                          maximum: 6
-                          example: 3
-                        maxDuties:
-                          type: integer
-                          description: Maximum number of users per hour slot
-                          example: 3
-                    example:
-                      lns:
-                        color: 0
-                        maxDuties: 3
-                      gp:
-                        color: 1
-                        maxDuties: 2
-                  rotaAdmin:
-                    type: array
-                    items:
-                      type: string
-                      enum:
-                        - lns
-                        - gp
-                        - di
-        "400":
-          description: Bad Request - Invalid input data.
-        "401":
-          description: Unauthorized - Unable to verify hash.
-        "403":
-          description: Forbidden - User does not have any rota roles.
-        "404":
-          description: Not Found - User does not exist.
   /auth/telegram-webapp:
     post:
       summary: Authenticate Telegram WebApp user and issue JWT
