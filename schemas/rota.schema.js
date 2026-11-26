@@ -1,4 +1,4 @@
-import { userSchema } from './user.schema.js';
+import { departmentMember } from './departmentMember.schema.js';
 
 export const rotaSchema = {
   type: 'array',
@@ -9,7 +9,7 @@ export const rotaSchema = {
     properties: {
       users: {
         type: 'array',
-        items: userSchema,
+        items: departmentMember,
         description: 'Array of user object for the timeslot'
       },
       label: {

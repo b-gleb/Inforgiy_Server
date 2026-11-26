@@ -44,6 +44,43 @@ export default function makeUserController(database) {
     res.json(userArray);
   };
 
+  const userDetail = async (req, res) => {
+    // Validation
+    const paramsSchema = Joi.object({
+      userId: validateUserId.required()
+    });
+
+    const { error: paramsError, value: params } = paramsSchema.validate(req.params ?? {});
+    if (paramsError) return res.status(400).send(paramsError.details[0].message);
+
+    if (req.user.id !== params.userId)
+      return res.status(403).send('Not authorised to view this user entry');
+
+    // Logic
+    const userEntry = await database.getUser(params.userId);
+
+    if (userEntry === null) return res.status(404).send('User not found');
+
+    const departments = Object.entries(userEntry.roles)
+      .filter(([key, value]) => key.startsWith('rota_') && value !== null)
+      .map(([key, value]) => {
+        const department = key.replace('rota_', '');
+
+        return {
+          department,
+          nick: value.nick,
+          color: value.c,
+          isAdmin: Object.hasOwn(userEntry.roles, `admin_rota_${department}`)
+        };
+      });
+
+    return res.json({
+      id: userEntry.telegram_id,
+      username: userEntry.telegram,
+      departments
+    });
+  };
+
   const removeUser = async (req, res) => {
     // Validation
     const validationSchema = Joi.object({
@@ -147,6 +184,7 @@ export default function makeUserController(database) {
 
   return {
     users,
+    userDetail,
     removeUser,
     updateUser
   };

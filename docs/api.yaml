@@ -465,6 +465,36 @@ paths:
           description: Forbidden - User is not authorized to perform this action.
       security:
         - bearerAuth: []
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Find user by identifier
+      description: Returns a single user and all of their permissions across departments
+      parameters:
+        - name: userId
+          in: path
+          description: Unique identifier on Telegram
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userDetail"
+        "400":
+          description: Bad Request - Invalid input data.
+        "401":
+          description: Unauthorized - Invalid or expired token.
+        "403":
+          description: Forbidden - User is not allowed to view this information.
+        "404":
+          description: Not Found - User does not exist.
+      security:
+        - bearerAuth: []
   /users:
     post:
       tags:
@@ -489,7 +519,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/userObject"
+                  $ref: "#/components/schemas/departmentMember"
         "400":
           description: Bad Request - Invalid input data.
         "401":
@@ -514,7 +544,7 @@ paths:
               properties:
                 branch: *a1
                 userObj:
-                  $ref: "#/components/schemas/userObject"
+                  $ref: "#/components/schemas/departmentMember"
         required: true
       responses:
         "200":
@@ -522,7 +552,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userObject"
+                $ref: "#/components/schemas/departmentMember"
         "400":
           description: Bad Request - Invalid input data.
         "401":
@@ -834,7 +864,7 @@ components:
         - name
         - maxDuties
       additionalProperties: false
-    userObject: &a2
+    departmentMember: &a2
       type: object
       properties:
         id:
@@ -866,6 +896,53 @@ components:
         - username
         - nick
         - color
+      additionalProperties: false
+    userDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier on Telegram
+          minimum: 0
+          examples:
+            - 1234567890
+        username:
+          type: string
+          pattern: ^@\S+$
+          description: Username on Telegram
+          examples:
+            - "@b_gleb"
+        departments:
+          type: array
+          items:
+            type: object
+            properties:
+              department: *a1
+              nick:
+                type: string
+                description: User's short name of callsign. Used as a display name in the rota
+                examples:
+                  - Глеб
+              color:
+                type: integer
+                description: Integer code for user's display colour
+                minimum: 0
+                maximum: 6
+                examples:
+                  - 6
+              isAdmin:
+                type: boolean
+                description: Indicates if user has admin access in the department
+            required:
+              - department
+              - nick
+              - color
+              - isAdmin
+            additionalProperties: false
+      required:
+        - id
+        - username
+        - departments
       additionalProperties: false
     rota:
       type: array

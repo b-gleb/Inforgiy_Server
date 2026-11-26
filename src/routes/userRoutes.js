@@ -6,6 +6,8 @@ export default function makeUserRoutes(database) {
   const router = express.Router();
   const userController = makeUserController(database);
 
+  router.get('/users/:userId', authenticate, userController.userDetail);
+
   router.post('/users', authenticate, userController.users);
   router.post('/updateUser', authenticate, userController.updateUser);
   router.post('/removeUser', authenticate, userController.removeUser);

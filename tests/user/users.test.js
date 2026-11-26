@@ -2,7 +2,7 @@
 import { afterEach, beforeAll, describe, expect, jest } from '@jest/globals';
 import Ajv from 'ajv';
 import request from 'supertest';
-import { userSchema } from '../../schemas/user.schema.js';
+import { departmentMember } from '../../schemas/departmentMember.schema.js';
 import cache from '../../src/utils/cache.js';
 import { generateAdmin, generateUser } from '../generators.js';
 
@@ -115,11 +115,11 @@ describe(`POST ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it('should return payload matching an array of userSchema', async () => {
+    it('should return payload matching an array of departmentMember', async () => {
       const ajv = new Ajv({ allErrors: true, strict: true });
       const validSchema = ajv.compile({
         type: 'array',
-        items: userSchema
+        items: departmentMember
       });
 
       const res = await request(app)

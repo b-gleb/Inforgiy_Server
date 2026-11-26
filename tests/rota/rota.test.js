@@ -79,7 +79,7 @@ describe(`GET ${apiUrl}`, () => {
       expect(res.headers['content-type']).toEqual(expect.stringContaining('json'));
     });
 
-    it('should return payload matching an array of userSchema', async () => {
+    it('should return payload matching an array of rotaSchema', async () => {
       const ajv = new Ajv({ allErrors: true, strict: true });
       const validSchema = ajv.compile(rotaSchema);
 
